@@ -1,0 +1,45 @@
+services:
+  poemtown.api:
+    image: poemtown.api
+    container_name: poemtown.api
+    build:
+      context: .
+      dockerfile: PoemTown.API/Dockerfile
+    restart: on-failure
+    networks:
+      - poemtown-network
+    depends_on:
+      - poemtown.sqlserver
+        
+  poemtown.sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Password123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1434:1433"
+    volumes:
+      - poemtown-sqlserver:/var/opt/mssql
+    networks:
+      - poemtown-network
+
+  poemtown.rabbitmq:
+    image: rabbitmq:management
+    container_name: poemtown.rabbitmq
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: rabbitmqsecretpassword123
+    networks:
+      - poemtown.rabbitmq_network
+
+          
+networks:
+    poemtown-network:
+        driver: bridge
+    poemtown.rabbitmq_network:
+        driver: bridge
+volumes:
+    poemtown-sqlserver:

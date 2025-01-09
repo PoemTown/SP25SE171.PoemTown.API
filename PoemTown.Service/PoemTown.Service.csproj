@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <RootNamespace>PoemTown.Service</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\PoemTown.Repository\PoemTown.Repository.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="AutoMapper" Version="13.0.1" />
+      <PackageReference Include="MassTransit" Version="8.3.4" />
+      <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.4" />
+      <PackageReference Include="RazorLight" Version="2.3.1" />
+    </ItemGroup>
+
+</Project>

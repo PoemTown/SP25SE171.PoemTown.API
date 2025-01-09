@@ -1,0 +1,21 @@
+﻿@model PoemTown.Service.BusinessModels.ViewTemplateModels.EmailOtp
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<body>
+<h2>Two-Step Verification</h2>
+<p>Dear @Model.Email,</p>
+<p>Your 2-step verification code is: <strong>@Model.Otp</strong></p>
+<p>Do not share this code for anybody.</p>
+<p>Thank you,</p>
+<p>Your Company</p>
+</body>
+<div>
+
+</div>
+</html>

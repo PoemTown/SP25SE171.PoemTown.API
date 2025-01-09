@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.34928.147
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1.API", "1.API", "{6B32ECBB-414C-43A7-A326-A1DF3EC12677}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3.Repositories", "3.Repositories", "{7D91D9FB-9E5C-43C6-8CD3-F1A714DC0504}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2.Services", "2.Services", "{AF211E2F-4CDA-4E70-AAA0-42CDECC9E5B8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PoemTown.API", "PoemTown.API\PoemTown.API.csproj", "{6820E9FA-D542-429D-B3EC-50E532744088}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PoemTown.Service", "PoemTown.Service\PoemTown.Service.csproj", "{51399551-8B1C-45A0-A7F6-028C5CFB1824}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PoemTown.Repository", "PoemTown.Repository\PoemTown.Repository.csproj", "{978CEC1F-86FF-42D5-8878-165FA5CC093F}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{6B5906A7-1ABA-4654-92A2-84880E896724}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6820E9FA-D542-429D-B3EC-50E532744088}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6820E9FA-D542-429D-B3EC-50E532744088}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6820E9FA-D542-429D-B3EC-50E532744088}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6820E9FA-D542-429D-B3EC-50E532744088}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51399551-8B1C-45A0-A7F6-028C5CFB1824}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51399551-8B1C-45A0-A7F6-028C5CFB1824}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51399551-8B1C-45A0-A7F6-028C5CFB1824}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51399551-8B1C-45A0-A7F6-028C5CFB1824}.Release|Any CPU.Build.0 = Release|Any CPU
+		{978CEC1F-86FF-42D5-8878-165FA5CC093F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{978CEC1F-86FF-42D5-8878-165FA5CC093F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{978CEC1F-86FF-42D5-8878-165FA5CC093F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{978CEC1F-86FF-42D5-8878-165FA5CC093F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B5906A7-1ABA-4654-92A2-84880E896724}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B5906A7-1ABA-4654-92A2-84880E896724}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B5906A7-1ABA-4654-92A2-84880E896724}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B5906A7-1ABA-4654-92A2-84880E896724}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6820E9FA-D542-429D-B3EC-50E532744088} = {6B32ECBB-414C-43A7-A326-A1DF3EC12677}
+		{51399551-8B1C-45A0-A7F6-028C5CFB1824} = {AF211E2F-4CDA-4E70-AAA0-42CDECC9E5B8}
+		{978CEC1F-86FF-42D5-8878-165FA5CC093F} = {7D91D9FB-9E5C-43C6-8CD3-F1A714DC0504}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B09A40E7-B695-414F-B92F-EFAF6CAB5A1D}
+	EndGlobalSection
+EndGlobal

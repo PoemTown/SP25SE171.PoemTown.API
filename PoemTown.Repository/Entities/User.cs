@@ -18,7 +18,9 @@ public class User : IdentityUser<Guid>, IBaseEntity
     
     public string? PhoneOtp { get; set; }
     public string? PhoneOtpExpiration { get; set; }
+    
 
+    public virtual ICollection<Collection>? Collections { get; set; }
     public virtual UserEWallet? EWallet { get; set; }
     public virtual ICollection<Poem>? Poems { get; set; }
     public virtual ICollection<TargetMark>? MarkByUsers { get; set; }

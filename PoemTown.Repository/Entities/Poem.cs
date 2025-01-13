@@ -28,6 +28,7 @@ namespace PoemTown.Repository.Entities
         public PoemStatus? PoemStatus { get; set; } = default;
         public string? PoemImage { get; set; } = null;
         public Guid? SourceCopyRight { get; set; } = null;
+        public bool? IsDraft { get; set; } = false;
         public Guid UserId { get; set; }
         public Guid? CollectionId { get; set; }
         public virtual User User { get; set; }

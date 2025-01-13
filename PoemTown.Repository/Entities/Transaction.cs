@@ -19,7 +19,7 @@ namespace PoemTown.Repository.Entities
         public string? Description { get; set; } = "";
         public string? Status { get; set; } = "";
         public decimal? BalanceBefore { get; set; } = default;
-        public decimal? BalacneAfter { get; set; } = default;
+        public decimal? BalanceAfter { get; set; } = default;
         public decimal Amount { get; set; }
 
         public Guid? UserId { get; set; }
@@ -28,7 +28,7 @@ namespace PoemTown.Repository.Entities
         public Guid? OrderId {  get; set; }
 
         public virtual User? User { get; set; }
-        public virtual PaymentGateway? PayementGateway { get; set; }
+        public virtual PaymentGateway? PaymentGateway { get; set; }
         public virtual UserEWallet? EWallet { get; set; }
         public virtual Order? Order { get; set; }
     }

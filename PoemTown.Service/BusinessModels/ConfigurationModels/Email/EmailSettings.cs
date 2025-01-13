@@ -10,6 +10,8 @@ public class EmailSettings
     public int Port { get; set; }
     [Required(ErrorMessage = "Smtp: Username is required")]
     public string Username { get; set; }
+    [Required(ErrorMessage = "Smtp: SenderName is required")]
+    public string SenderName { get; set; }
     [Required(ErrorMessage = "Smtp: Password is required")]
     public string Password { get; set; }
 }

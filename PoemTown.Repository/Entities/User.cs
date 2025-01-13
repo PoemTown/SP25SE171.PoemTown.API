@@ -18,13 +18,34 @@ public class User : IdentityUser<Guid>, IBaseEntity
     
     public string? PhoneOtp { get; set; }
     public string? PhoneOtpExpiration { get; set; }
-    
+
+    public virtual UserEWallet? EWallet { get; set; }
+    public virtual ICollection<Poem>? Poems { get; set; }
+    public virtual ICollection<TargetMark>? MarkByUsers { get; set; }
+    public virtual ICollection<TargetMark>? MarkedUsers { get; set; }
+    public virtual ICollection<Report>? ReportUsers { get; set; }
+    public virtual ICollection<Report>? ReportedUsers { get; set; }
+
+    public virtual ICollection<Comment>? AuthorComments { get; set; }
+ /*   public virtual ICollection<Comment> ParentComments { get; set; }*/
+    public virtual ICollection<Message>? FromUser { get; set; }
+    public virtual ICollection<Message>? ToUser { get; set; }
+    public virtual ICollection<UserCopyRight>? UserCopyRights { get; set; }
+    public virtual ICollection<Order>? Orders { get; set; }
+    public virtual ICollection<UserTemplate>? UserTemplates { get; set; }
+    public virtual ICollection<Transaction>? Transactions { get; set; }
+
+
+
+    public virtual ICollection<Announcement>? Announcements { get; set; }
     public string? CreatedBy { get; set; }
     public string? LastUpdatedBy { get; set; }
     public string? DeletedBy { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
     public DateTimeOffset LastUpdatedTime { get; set; }
     public DateTimeOffset? DeletedTime { get; set; }
+
+
 
     public User()
     {

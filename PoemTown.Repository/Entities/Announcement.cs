@@ -6,30 +6,21 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Base;
+using PoemTown.Repository.Enums;
 
 namespace PoemTown.Repository.Entities
 {
-    public class Announcement : IBaseEntity
+    public class Announcement : BaseEntity
     {
         [Key]
         public Guid Id { get; set; }
-        public string? Title { get; set; }
-        public string? Content { get; set; }
-        public string? Type { get; set; }
-        public bool? IsRead { get; set; }
+
+        public string Title { get; set; } = default!;
+        public string Content { get; set; } = default!;
+        public AnnouncementType? Type { get; set; } = default!;
+        public bool? IsRead { get; set; } = false;
         public Guid? UserId { get; set; }
         public virtual User? User { get; set; }
-
-        public string? CreatedBy { get; set; }
-        public string? LastUpdatedBy { get; set; }
-        public string? DeletedBy { get; set; }
-        public DateTimeOffset CreatedTime { get; set; }
-        public DateTimeOffset LastUpdatedTime { get; set; }
-        public DateTimeOffset? DeletedTime { get; set; }
-
-        public Announcement()
-        {
-            CreatedTime = LastUpdatedTime = DateTimeHelper.SystemTimeNow;
-        }
     }
 }

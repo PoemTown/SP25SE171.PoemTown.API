@@ -18,7 +18,7 @@ namespace PoemTown.Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ImageIcon = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsSuspended = table.Column<bool>(type: "bit", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -59,10 +59,10 @@ namespace PoemTown.Repository.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TemplateName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: true),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     TagName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -149,7 +149,7 @@ namespace PoemTown.Repository.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DesignContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: true),
                     TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -174,9 +174,9 @@ namespace PoemTown.Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: true),
                     IsRead = table.Column<bool>(type: "bit", nullable: true),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -201,7 +201,7 @@ namespace PoemTown.Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CollectionName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CollectionName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CollectionDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TotalChapter = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -260,13 +260,11 @@ namespace PoemTown.Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: true),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    OrderDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    BalanceBefore = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    BalanceAfter = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    Message = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OrderDate = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    OrderDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -319,7 +317,7 @@ namespace PoemTown.Repository.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     WalletBalance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    WalletStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    WalletStatus = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -402,7 +400,7 @@ namespace PoemTown.Repository.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsUse = table.Column<bool>(type: "bit", nullable: false),
+                    IsUse = table.Column<bool>(type: "bit", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -464,18 +462,18 @@ namespace PoemTown.Repository.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LikeCount = table.Column<int>(type: "int", nullable: true),
                     CommentCount = table.Column<int>(type: "int", nullable: true),
                     ViewCount = table.Column<int>(type: "int", nullable: true),
                     ChapterNumber = table.Column<int>(type: "int", nullable: true),
                     ChapterName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PoemStatus = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PoemStatus = table.Column<int>(type: "int", nullable: true),
                     PoemImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SourceCopyRight = table.Column<int>(type: "int", nullable: true),
+                    SourceCopyRight = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CollectionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CollectionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -510,11 +508,11 @@ namespace PoemTown.Repository.Migrations
                     Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     BalanceBefore = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     BalacneAfter = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PayementGatewayId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserEWalletId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Amount = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PaymentGatewayId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserEWalletId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -529,14 +527,12 @@ namespace PoemTown.Repository.Migrations
                         name: "FK_Transactions_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Transactions_PaymentGateways_PayementGatewayId",
-                        column: x => x.PayementGatewayId,
+                        name: "FK_Transactions_PaymentGateways_PaymentGatewayId",
+                        column: x => x.PaymentGatewayId,
                         principalTable: "PaymentGateways",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Transactions_UserEWallets_UserEWalletId",
                         column: x => x.UserEWalletId,
@@ -556,7 +552,7 @@ namespace PoemTown.Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PoemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     AuthorCommentId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ParentCommentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
@@ -671,12 +667,12 @@ namespace PoemTown.Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReportReason = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ReportReason = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     IsSystem = table.Column<bool>(type: "bit", nullable: true),
-                    ReportUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ReportedUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PoemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReportUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    ReportedUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PoemId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -691,8 +687,7 @@ namespace PoemTown.Repository.Migrations
                         name: "FK_Reports_Poems_PoemId",
                         column: x => x.PoemId,
                         principalTable: "Poems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Reports_Users_ReportUserId",
                         column: x => x.ReportUserId,
@@ -712,12 +707,12 @@ namespace PoemTown.Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: false),
                     TargetContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CollectionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    PoemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MarkByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    MarkedUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CollectionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    PoemId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    MarkByUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    MarkedUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -732,14 +727,12 @@ namespace PoemTown.Repository.Migrations
                         name: "FK_TargetMarks_Collections_CollectionId",
                         column: x => x.CollectionId,
                         principalTable: "Collections",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_TargetMarks_Poems_PoemId",
                         column: x => x.PoemId,
                         principalTable: "Poems",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_TargetMarks_Users_MarkByUserId",
                         column: x => x.MarkByUserId,
@@ -761,7 +754,7 @@ namespace PoemTown.Repository.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ItemPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     ItemQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CopyRightId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -783,7 +776,8 @@ namespace PoemTown.Repository.Migrations
                         name: "FK_OrderDetails_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_OrderDetails_Templates_TemplateId",
                         column: x => x.TemplateId,
@@ -827,8 +821,8 @@ namespace PoemTown.Repository.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "CreatedBy", "CreatedTime", "DeletedBy", "DeletedTime", "LastUpdatedBy", "LastUpdatedTime", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { new Guid("89fca251-f021-425b-de62-08dcdfcdb851"), "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", "System", new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3383), new TimeSpan(0, 7, 0, 0, 0)), null, null, "System", new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3384), new TimeSpan(0, 7, 0, 0, 0)), "USER", "USER" },
-                    { new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"), "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", "System", new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3378), new TimeSpan(0, 7, 0, 0, 0)), null, null, "System", new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3379), new TimeSpan(0, 7, 0, 0, 0)), "ADMIN", "ADMIN" }
+                    { new Guid("89fca251-f021-425b-de62-08dcdfcdb851"), "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", "System", new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2812), new TimeSpan(0, 7, 0, 0, 0)), null, null, "System", new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2813), new TimeSpan(0, 7, 0, 0, 0)), "USER", "USER" },
+                    { new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"), "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", "System", new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2806), new TimeSpan(0, 7, 0, 0, 0)), null, null, "System", new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2807), new TimeSpan(0, 7, 0, 0, 0)), "ADMIN", "ADMIN" }
                 });
 
             migrationBuilder.InsertData(
@@ -836,8 +830,8 @@ namespace PoemTown.Repository.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "Address", "ConcurrencyStamp", "CreatedBy", "CreatedTime", "DateOfBirth", "DeletedBy", "DeletedTime", "Email", "EmailConfirmed", "EmailOtp", "EmailOtpExpiration", "FullName", "Gender", "GoogleId", "LastUpdatedBy", "LastUpdatedTime", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneOtp", "PhoneOtpExpiration", "Salt", "SecurityStamp", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"), 0, null, "4fcf64ef-c304-4f4c-9692-63d809eb45f3", null, new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3241), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, "admin@gmail.com", true, null, null, "admin", null, null, null, new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3241), new TimeSpan(0, 7, 0, 0, 0)), false, null, "ADMIN@GMAIL.COM", "admin", "AQAAAAIAAYagAAAAEKlMNvvuvDkRs2XwysLan5iHCJP9ImDgi6iw39nygXtE1ant3Kv5n2oi6hZCqwDybA==", null, false, null, null, "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=", "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", false, "admin@gmail.com" },
-                    { new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"), 0, null, "55edeb11-5f05-4c57-974e-3c42aea3e9f0", null, new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3323), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, "user@gmail.com", true, null, null, "user", null, null, null, new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3323), new TimeSpan(0, 7, 0, 0, 0)), false, null, "USER@GMAIL.COM", "user", "AQAAAAIAAYagAAAAEKlMNvvuvDkRs2XwysLan5iHCJP9ImDgi6iw39nygXtE1ant3Kv5n2oi6hZCqwDybA==", null, false, null, null, "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=", "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", false, "user@gmail.com" }
+                    { new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"), 0, null, "49cef343-ed18-4832-801f-85ef0e158761", null, new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2706), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, "admin@gmail.com", true, null, null, "admin", null, null, null, new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2706), new TimeSpan(0, 7, 0, 0, 0)), false, null, "ADMIN@GMAIL.COM", "admin", "AQAAAAIAAYagAAAAEKlMNvvuvDkRs2XwysLan5iHCJP9ImDgi6iw39nygXtE1ant3Kv5n2oi6hZCqwDybA==", null, false, null, null, "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=", "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", false, "admin@gmail.com" },
+                    { new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"), 0, null, "825cd233-6686-4410-a3d6-b75864b73a4e", null, new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2752), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, "user@gmail.com", true, null, null, "user", null, null, null, new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2752), new TimeSpan(0, 7, 0, 0, 0)), false, null, "USER@GMAIL.COM", "user", "AQAAAAIAAYagAAAAEKlMNvvuvDkRs2XwysLan5iHCJP9ImDgi6iw39nygXtE1ant3Kv5n2oi6hZCqwDybA==", null, false, null, null, "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=", "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", false, "user@gmail.com" }
                 });
 
             migrationBuilder.InsertData(
@@ -845,8 +839,8 @@ namespace PoemTown.Repository.Migrations
                 columns: new[] { "RoleId", "UserId", "CreatedBy", "CreatedTime", "DeletedBy", "DeletedTime", "LastUpdatedBy", "LastUpdatedTime" },
                 values: new object[,]
                 {
-                    { new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"), new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"), null, new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3414), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3414), new TimeSpan(0, 7, 0, 0, 0)) },
-                    { new Guid("89fca251-f021-425b-de62-08dcdfcdb851"), new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"), null, new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3417), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, new DateTimeOffset(new DateTime(2025, 1, 13, 13, 56, 47, 51, DateTimeKind.Unspecified).AddTicks(3417), new TimeSpan(0, 7, 0, 0, 0)) }
+                    { new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"), new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"), null, new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2919), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2919), new TimeSpan(0, 7, 0, 0, 0)) },
+                    { new Guid("89fca251-f021-425b-de62-08dcdfcdb851"), new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"), null, new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2929), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, new DateTimeOffset(new DateTime(2025, 1, 13, 16, 4, 21, 671, DateTimeKind.Unspecified).AddTicks(2929), new TimeSpan(0, 7, 0, 0, 0)) }
                 });
 
             migrationBuilder.CreateIndex(
@@ -990,12 +984,13 @@ namespace PoemTown.Repository.Migrations
                 name: "IX_Transactions_OrderId",
                 table: "Transactions",
                 column: "OrderId",
-                unique: true);
+                unique: true,
+                filter: "[OrderId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_PayementGatewayId",
+                name: "IX_Transactions_PaymentGatewayId",
                 table: "Transactions",
-                column: "PayementGatewayId");
+                column: "PaymentGatewayId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transactions_UserEWalletId",

@@ -6,35 +6,25 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Base;
+using PoemTown.Repository.Enums;
 
 namespace PoemTown.Repository.Entities
 {
-    public class Order : IBaseEntity
+    public class Order : BaseEntity
     {
         [Key]
         public Guid Id { get; set; }
-        public string? Type { get; set; }
-        public decimal? Amount { get; set; }
-        public DateTime? OrderDate { get; set; }
-        public decimal? BalanceBefore { get; set; }
-        public decimal? BalanceAfter { get; set; }
-        public string? Message { get; set; }
-        public string? Status { get; set; }
+
+        public OrderType? Type { get; set; } = default!;
+        public decimal? Amount { get; set; } = 0;
+        public DateTimeOffset? OrderDate { get; set; } = DateTimeHelper.SystemTimeNow;
+        public string? OrderDescription { get; set; } = null;
+        public OrderStatus? Status { get; set; }
 
         public Guid UserId { get; set; }
         public virtual User User { get; set; }
-        public virtual Transaction Transaction { get; set; }
-        public virtual ICollection<OrderDetail> OrderDetails { get; set; }
-        public string? CreatedBy { get; set; }
-        public string? LastUpdatedBy { get; set; }
-        public string? DeletedBy { get; set; }
-        public DateTimeOffset CreatedTime { get; set; }
-        public DateTimeOffset LastUpdatedTime { get; set; }
-        public DateTimeOffset? DeletedTime { get; set; }
-
-        public Order()
-        {
-            CreatedTime = LastUpdatedTime = DateTimeHelper.SystemTimeNow;
-        }
+        public virtual Transaction? Transaction { get; set; }
+        public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
     }
 }

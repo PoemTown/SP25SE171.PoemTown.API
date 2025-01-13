@@ -6,31 +6,21 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Base;
 
 namespace PoemTown.Repository.Entities
 {
-    public class CopyRight : IBaseEntity
+    public class CopyRight : BaseEntity
     {
         [Key]
         public Guid Id { get; set; }
-        public decimal? Price { get; set; }
-        public int? SourceCopyRight { get; set; }
 
-        public Guid PoemId { get; set; }
-        public virtual Poem Poem { get; set; }
-        public virtual OrderDetail OrderDetail { get; set; }
-        public virtual ICollection<UserCopyRight> UserCopyRights { get; set; }
+        public decimal? Price { get; set; } = 0;
+        public int? SourceCopyRight { get; set; } = null;
 
-        public string? CreatedBy { get; set; }
-        public string? LastUpdatedBy { get; set; }
-        public string? DeletedBy { get; set; }
-        public DateTimeOffset CreatedTime { get; set; }
-        public DateTimeOffset LastUpdatedTime { get; set; }
-        public DateTimeOffset? DeletedTime { get; set; }
-
-        public CopyRight()
-        {
-            CreatedTime = LastUpdatedTime = DateTimeHelper.SystemTimeNow;
-        }
+        public Guid PoemId { get; set; } = default;
+        public virtual Poem Poem { get; set; } = default!;
+        public virtual OrderDetail? OrderDetail { get; set; } = null;
+        public virtual ICollection<UserCopyRight>? UserCopyRights { get; set; } = null;
     }
 }

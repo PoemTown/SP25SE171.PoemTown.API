@@ -111,7 +111,7 @@ public static class ConfigureService
     
     private static void AddSmtpClient(this IServiceCollection services)
     {
-        services.AddSingleton<SmtpClient>(options =>
+        services.AddScoped<SmtpClient>(options =>
         {
             var emailSettings = options.GetRequiredService<EmailSettings>();
             var smtpClient = new SmtpClient();

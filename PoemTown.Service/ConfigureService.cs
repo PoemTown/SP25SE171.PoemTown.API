@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Email;
 using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
 using PoemTown.Service.BusinessModels.MappingModels;
+using PoemTown.Service.Consumers.CollectionConsumers;
 using PoemTown.Service.Consumers.EmailConsumers;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.Services;
@@ -49,6 +50,7 @@ public static class ConfigureService
             //Register consumers
             config.AddConsumer<EmailOtpConsumer>();
             config.AddConsumer<ForgotPasswordConsumer>();
+            config.AddConsumer<CreateDefaultCollectionConsumer>();
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {

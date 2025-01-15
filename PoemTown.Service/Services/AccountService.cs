@@ -9,6 +9,7 @@ using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AccountRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AccountResponses;
+using PoemTown.Service.Events.CollectionEvents;
 using PoemTown.Service.Events.EmailEvents;
 using PoemTown.Service.Interfaces;
 
@@ -20,7 +21,7 @@ public class AccountService : IAccountService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly ITokenService _tokenService;
-    private readonly IMapper _mapper; 
+    private readonly IMapper _mapper;
     
     public AccountService
     (
@@ -74,6 +75,13 @@ public class AccountService : IAccountService
         user.EmailOtpExpiration = null;
         
         await _userManager.UpdateAsync(user);
+        
+        //Create default collection for user
+        CreateDefaultCollectionEvent message = new CreateDefaultCollectionEvent()
+        {
+            UserId = user.Id
+        };
+        await _publishEndpoint.Publish(message);
     }
 
     public async Task SendEmailOtp(ResendEmailConfirmationRequest request)

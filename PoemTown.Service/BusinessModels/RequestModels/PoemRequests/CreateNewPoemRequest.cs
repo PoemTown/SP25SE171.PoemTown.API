@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PoemTown.Repository.Enums;
 
 namespace PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 
@@ -36,4 +37,7 @@ public class CreateNewPoemRequest
     
     [FromForm(Name = "isDraft")]
     public bool? IsDraft { get; set; }
+    
+    [FromForm(Name = "type")]
+    public PoemType Type { get; set; }
 }

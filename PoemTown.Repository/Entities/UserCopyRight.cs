@@ -14,13 +14,14 @@ namespace PoemTown.Repository.Entities
     {
         [Key]
         public Guid Id { get; set; }
+        public DateTime ExperiedTime { get; set; }  
         public Guid UserId { get; set; }
-        public Guid CopyRightId { get; set; }
+        public Guid PoemId { get; set; }
 
         [ForeignKey("UserId")]
         public virtual User User { get; set; }
-        [ForeignKey("CopyRightId")]
-        public virtual CopyRight CopyRight { get; set; }
+        [ForeignKey("PoemId")]
+        public virtual Poem Poem { get; set; }
 
 
         public string? CreatedBy { get; set; }

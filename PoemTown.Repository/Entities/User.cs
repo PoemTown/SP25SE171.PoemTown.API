@@ -20,11 +20,14 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public string? PhoneOtpExpiration { get; set; }
 
     public virtual UserEWallet? EWallet { get; set; }
-    public virtual ICollection<Poem>? Poems { get; set; }
+    public virtual ICollection<UserPoems>? UserPoems { get; set; }
     public virtual ICollection<TargetMark>? MarkByUsers { get; set; }
     public virtual ICollection<TargetMark>? MarkedUsers { get; set; }
+    public virtual ICollection<Followers>? FollowUser { get; set; }
+    public virtual ICollection<Followers>? FollowedUser { get; set; }
     public virtual ICollection<Report>? ReportUsers { get; set; }
     public virtual ICollection<Report>? ReportedUsers { get; set; }
+    public virtual ICollection<RecordFile>? RecordFiles { get; set; }
 
     public virtual ICollection<Comment>? AuthorComments { get; set; }
  /*   public virtual ICollection<Comment> ParentComments { get; set; }*/

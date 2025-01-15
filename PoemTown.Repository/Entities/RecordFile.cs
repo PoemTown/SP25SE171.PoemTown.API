@@ -16,7 +16,9 @@ namespace PoemTown.Repository.Entities
         public string? FileName { get; set; }
         public string? FileUrl { get; set; }
         public Guid PoemId { get; set; }
+        public Guid UserId { get; set; }
         public virtual Poem? Poem { get; set; }
+        public virtual Poem? User { get; set; }
         public string? CreatedBy { get; set; }
         public string? LastUpdatedBy { get; set; }
         public string? DeletedBy { get; set; }

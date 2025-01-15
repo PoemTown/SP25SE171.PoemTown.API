@@ -27,14 +27,15 @@ namespace PoemTown.Repository.Entities
         public int? SourceCopyRight { get; set; }
         public Guid UserId { get; set; }
         public Guid CollectionId { get; set; }
-        public virtual User User { get; set; }
+        public virtual ICollection<UserPoems> UserPoems { get; set; }
         public virtual Collection Collection { get; set; }
-        public virtual CopyRight CopyRight { get; set; }
+/*        public virtual CopyRight CopyRight { get; set; }*/
         public virtual ICollection<PoemHistory> PoemHistories { get; set; }
         public virtual ICollection<RecordFile> RecordFiles { get; set; }
         public virtual ICollection<TargetMark> TargetMarks { get; set; }
         public virtual ICollection<Report> Reports { get; set; }
         public virtual ICollection<Comment> Comments { get; set; }
+        public virtual ICollection<UserCopyRight>? UserCopyRights { get; set; }
 
         public string? CreatedBy { get; set; }
         public string? LastUpdatedBy { get; set; }

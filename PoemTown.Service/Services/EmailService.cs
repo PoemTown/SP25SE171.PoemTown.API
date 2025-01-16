@@ -1,4 +1,5 @@
-﻿using System.Net.Mail;
+﻿using MailKit.Net.Smtp;
+using MimeKit;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Email;
 using PoemTown.Service.BusinessModels.ViewTemplateModels;
 using PoemTown.Service.Interfaces;
@@ -27,16 +28,21 @@ public class EmailService : IEmailService
     
     public Task SendEmailAsync(string toEmail, string subject, string body)
     {
-        var mailMessage = new MailMessage
+        var mailMessage = new MimeMessage()
         {
-            From = new MailAddress(_emailSettings.Username),
+            From =
+            {
+                new MailboxAddress(_emailSettings.Username, _emailSettings.Username)
+            },
             Subject = subject,
-            Body = body,
-            IsBodyHtml = true,
+            Body = new TextPart("html")
+            {
+                Text = body
+            },
         };
-        mailMessage.To.Add(toEmail);
+        mailMessage.To.Add(new MailboxAddress(String.Empty, toEmail));
 
-        return _smtpClient.SendMailAsync(mailMessage);
+        return _smtpClient.SendAsync(mailMessage);
     }
 
     public async Task SendOtp(EmailOtp emailOtp)

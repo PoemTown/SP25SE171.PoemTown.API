@@ -6,33 +6,25 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Base;
 
 namespace PoemTown.Repository.Entities
 {
-    public class Collection : IBaseEntity
+    public class Collection : BaseEntity
     {
         [Key]
         public Guid Id { get; set; }
-        public string? CollectionName { get; set; }
-        public string? CollectionDescription { get; set; }
-        public int? TotalChapter { get; set; }
+        public string CollectionName { get; set; } = default!;
+        public string? CollectionDescription { get; set; } = default!;
+        public bool? IsDefault { get; set; } = false;
+        public int? TotalChapter { get; set; } = default!;
 
-        public Guid UserId { get; set; }
-        public virtual User User { get; set; } 
+        public Guid UserId { get; set; } = default;
+        public virtual User User { get; set; } = default!;
 
-        public virtual ICollection<Poem> Poems { get; set; }
-        public virtual ICollection<TargetMark> TargetMarks { get; set; }
+        public virtual ICollection<Poem>? Poems { get; set; } = null;
+        public virtual ICollection<TargetMark>? TargetMarks { get; set; } = null;
 
-        public string? CreatedBy { get; set; }
-        public string? LastUpdatedBy { get; set; }
-        public string? DeletedBy { get; set; }
-        public DateTimeOffset CreatedTime { get; set; }
-        public DateTimeOffset LastUpdatedTime { get; set; }
-        public DateTimeOffset? DeletedTime { get; set; }
-        public Collection()
-        {
-            CreatedTime = LastUpdatedTime = DateTimeHelper.SystemTimeNow;
-        }
 
     }
 }

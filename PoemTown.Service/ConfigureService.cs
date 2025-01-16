@@ -1,5 +1,6 @@
 ﻿using System.Net;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +34,7 @@ public static class ConfigureService
         services.AddScoped<ITokenService, TokenService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IAccountService, AccountService>();
+        services.AddScoped<IPoemService, PoemService>();
     }
     
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)
@@ -87,6 +89,7 @@ public static class ConfigureService
             {
                 Username = configuration["Email:Username"]!,
                 Password = configuration["Email:Password"]!,
+                SenderName = configuration["Email:SenderName"]!,
                 Host = configuration["Email:Host"]!,
                 Port = int.Parse(configuration["Email:Port"]!)
             };
@@ -108,16 +111,14 @@ public static class ConfigureService
     
     private static void AddSmtpClient(this IServiceCollection services)
     {
-        services.AddSingleton<SmtpClient>(options =>
+        services.AddScoped<SmtpClient>(options =>
         {
             var emailSettings = options.GetRequiredService<EmailSettings>();
-            return new SmtpClient
-            {
-                Host = emailSettings.Host,
-                Port = emailSettings.Port,
-                Credentials = new NetworkCredential(emailSettings.Username, emailSettings.Password),
-                EnableSsl = true
-            };
+            var smtpClient = new SmtpClient();
+            smtpClient.Connect(emailSettings.Host, emailSettings.Port, SecureSocketOptions.StartTls);
+            smtpClient.Authenticate(emailSettings.Username, emailSettings.Password);
+
+            return smtpClient;
         });
     }
 }

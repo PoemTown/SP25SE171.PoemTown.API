@@ -7,10 +7,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Base;
 
 namespace PoemTown.Repository.Entities
 {
-    public class UserCopyRight : IBaseEntity
+    public class UserCopyRight : BaseEntity
     {
         [Key]
         public Guid Id { get; set; }
@@ -35,5 +36,6 @@ namespace PoemTown.Repository.Entities
         {
             CreatedTime = LastUpdatedTime = DateTimeHelper.SystemTimeNow;
         }
+
     }
 }

@@ -7,33 +7,22 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Base;
 
 namespace PoemTown.Repository.Entities
 {
-    public class Message : IBaseEntity
+    public class Message : BaseEntity
     {
         [Key]
         public Guid Id { get; set; }
-        public string MessageText { get; set; }
-        public Guid FromUserId { get; set; }
-        public Guid ToUserId { get; set; }
+        public string MessageText { get; set; } = default!;
+        public Guid FromUserId { get; set; } = default;
+        public Guid ToUserId { get; set; } = default;
 
         [ForeignKey("FromUserId")]
-        public virtual User FromUser { get; set; }
+        public virtual User FromUser { get; set; } = default!;
         [ForeignKey("ToUserId")]
-        public virtual User ToUser { get; set; }
-
-
-        public string? CreatedBy { get; set; }
-        public string? LastUpdatedBy { get; set; }
-        public string? DeletedBy { get; set; }
-        public DateTimeOffset CreatedTime { get; set; }
-        public DateTimeOffset LastUpdatedTime { get; set; }
-        public DateTimeOffset? DeletedTime { get; set; }
-
-        public Message()
-        {
-            CreatedTime = LastUpdatedTime = DateTimeHelper.SystemTimeNow;
-        }
+        public virtual User ToUser { get; set; } = default!;
+        
     }
 }

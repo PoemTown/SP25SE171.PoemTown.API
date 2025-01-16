@@ -31,7 +31,11 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<UserCopyRight> UserCopyRights => Set<UserCopyRight>();
     public virtual DbSet<UserEWallet> UserEWallets => Set<UserEWallet>();
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
-    public virtual DbSet<Followers> Followers => Set<Followers>();
+    public virtual DbSet<Follower> Followers => Set<Follower>();
+    public virtual DbSet<UserLeaderBoard> UserLeaderBoards => Set<UserLeaderBoard>();
+    public virtual DbSet<LeaderBoard> LeaderBoards => Set<LeaderBoard>();
+    public virtual DbSet<LeaderBoardDetail> LeaderBoardDetails => Set<LeaderBoardDetail>();
+
 
 
 
@@ -58,6 +62,9 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
         builder.Entity<UserToken>()
             .HasIndex(ut => ut.UserId)
             .IsUnique(false);  // Index to speed up queries, but no uniqueness
+
+
+
 
 
         // Transactions -> UserEWallets
@@ -132,25 +139,76 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
         .OnDelete(DeleteBehavior.Restrict);
 
         // Quan hệ giữa Follow và User (FollowUser)
-        builder.Entity<Followers>()
+        builder.Entity<Follower>()
             .HasOne(tm => tm.FollowUser) 
             .WithMany(u => u.FollowUser) 
             .HasForeignKey(tm => tm.FollowUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Quan hệ giữa Follow và User (FollowedUser)
-        builder.Entity<Followers>()
+        builder.Entity<Follower>()
             .HasOne(tm => tm.FollowedUser) 
             .WithMany(u => u.FollowedUser) 
             .HasForeignKey(tm => tm.FollowedUserId)
             .OnDelete(DeleteBehavior.Restrict);
-
+        // Cấu hình tự tham chiếu ParentCommentId
         builder.Entity<Comment>()
-            .HasOne(c => c.ParentComment) // Quan hệ 1-n với ParentComment
+            .HasOne(c => c.ParentComment)
             .WithMany(c => c.ChildComments)
             .HasForeignKey(c => c.ParentCommentId)
-            .OnDelete(DeleteBehavior.Restrict); // Tránh xóa cascade
-}
+            .OnDelete(DeleteBehavior.Restrict); // Hoặc DeleteBehavior.NoAction
+
+        // Cấu hình quan hệ với User
+        builder.Entity<Comment>()
+            .HasOne(c => c.AuthorComment)
+            .WithMany()
+            .HasForeignKey(c => c.AuthorCommentId)
+            .OnDelete(DeleteBehavior.Restrict); // Hoặc DeleteBehavior.NoAction
+
+        // Cấu hình quan hệ với Poem
+        builder.Entity<Comment>()
+            .HasOne(c => c.Poem)
+            .WithMany(p => p.Comments)
+            .HasForeignKey(c => c.PoemId)
+            .OnDelete(DeleteBehavior.Cascade); // Cascade có thể giữ nguyên
+
+        builder.Entity<UserPoem>()
+       .HasOne(uc => uc.Poem) // Một UserCopyRight liên kết với một CopyRight
+       .WithMany(c => c.UserPoems) // Một CopyRight có nhiều UserCopyRight
+       .HasForeignKey(uc => uc.PoemId) // Khóa ngoại trong UserCopyRight
+       .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<UserPoem>()
+        .HasOne(uc => uc.User) // Một UserCopyRight liên kết với một User
+        .WithMany(u => u.UserPoems) // Một User có nhiều UserCopyRight
+        .HasForeignKey(uc => uc.UserId) // Khóa ngoại trong UserCopyRight
+        .OnDelete(DeleteBehavior.Restrict);
+
+
+        builder.Entity<RecordFile>()
+       .HasOne(uc => uc.Poem) // Một UserCopyRight liên kết với một CopyRight
+       .WithMany(c => c.RecordFiles) // Một CopyRight có nhiều UserCopyRight
+       .HasForeignKey(uc => uc.PoemId) // Khóa ngoại trong UserCopyRight
+       .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<RecordFile>()
+        .HasOne(uc => uc.User) // Một UserCopyRight liên kết với một User
+        .WithMany(u => u.RecordFiles) // Một User có nhiều UserCopyRight
+        .HasForeignKey(uc => uc.UserId) // Khóa ngoại trong UserCopyRight
+        .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<UserLeaderBoard>()
+       .HasOne(uc => uc.LeaderBoard) // Một UserCopyRight liên kết với một CopyRight
+       .WithMany(c => c.UserLeaderBoards) // Một CopyRight có nhiều UserCopyRight
+       .HasForeignKey(uc => uc.LeaderBoardId) // Khóa ngoại trong UserCopyRight
+       .OnDelete(DeleteBehavior.Restrict);
+
+        builder.Entity<UserLeaderBoard>()
+        .HasOne(uc => uc.User) // Một UserCopyRight liên kết với một User
+        .WithMany(u => u.UserLeaderBoards) // Một User có nhiều UserCopyRight
+        .HasForeignKey(uc => uc.UserId) // Khóa ngoại trong UserCopyRight
+        .OnDelete(DeleteBehavior.Restrict);
+    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

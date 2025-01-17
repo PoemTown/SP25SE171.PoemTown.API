@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using PoemTown.Repository.Base.Interfaces;
+using PoemTown.Repository.Enums;
 using PoemTown.Repository.Utils;
 
 namespace PoemTown.Repository.Entities;
@@ -18,7 +19,9 @@ public class User : IdentityUser<Guid>, IBaseEntity
     
     public string? PhoneOtp { get; set; }
     public string? PhoneOtpExpiration { get; set; }
-    
+    public string? DisplayName { get; set; }
+    public string? Avatar { get; set; }
+    public AccountStatus? Status { get; set; } = AccountStatus.InActive;
 
     public virtual ICollection<Collection>? Collections { get; set; }
     public virtual UserEWallet? EWallet { get; set; }

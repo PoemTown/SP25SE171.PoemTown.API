@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AccountRequests;
@@ -71,6 +72,7 @@ public class AccountService : IAccountService
         }
         //Set email confirmed to true and remove current email otp
         user.EmailConfirmed = true;
+        user.Status = AccountStatus.Active;
         user.EmailOtp = null;
         user.EmailOtpExpiration = null;
         

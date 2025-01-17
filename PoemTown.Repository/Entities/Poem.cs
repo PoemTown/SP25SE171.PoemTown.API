@@ -15,7 +15,6 @@ namespace PoemTown.Repository.Entities
     {
         [Key]
         public Guid Id { get; set; }
-
         public string? Title { get; set; } = "";
         public string? Content { get; set; } = "";
         public PoemType? Type { get; set; } = default!;
@@ -25,10 +24,9 @@ namespace PoemTown.Repository.Entities
         public int? ViewCount { get; set; } = 0;
         public int? ChapterNumber { get; set; }
         public string? ChapterName { get; set; } = "";
-        public PoemStatus? PoemStatus { get; set; } = default;
+        public PoemStatus? Status { get; set; } = PoemStatus.Draft;
         public string? PoemImage { get; set; } = null;
         public Guid? SourceCopyRight { get; set; } = null;
-        public bool? IsDraft { get; set; } = true;
         public Guid UserId { get; set; }
         public Guid? CollectionId { get; set; }
         public virtual User User { get; set; }

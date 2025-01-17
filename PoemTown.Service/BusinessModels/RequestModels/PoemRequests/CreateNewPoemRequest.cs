@@ -8,25 +8,24 @@ namespace PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 
 public class CreateNewPoemRequest
 {
-    public string? Title { get; set; }
+    public string? Title { get; set; } = "";
     
-    public string? Content { get; set; }
+    public string? Content { get; set; } = "";
     
-    public string? Description { get; set; }
+    public string? Description { get; set; } = "";
     
     public int? ChapterNumber { get; set; }
     
-    public string? ChapterName { get; set; }
+    public string? ChapterName { get; set; } = "";
     
+    public PoemStatus? Status { get; set; } = PoemStatus.Draft;
     public Guid? CollectionId { get; set; }
     
     public Guid? SourceCopyRight { get; set; }
     
-    public string? PoemImageUrl { get; set; }
+    public string? PoemImageUrl { get; set; } = null;
     
     public ICollection<CreateNewRecordFileRequest>? RecordFiles { get; set; }
 
-    public bool? IsDraft { get; set; } = true;
-    
     public PoemType Type { get; set; }
 }

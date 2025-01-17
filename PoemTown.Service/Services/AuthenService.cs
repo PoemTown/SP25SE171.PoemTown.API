@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PoemTown.Repository.CustomException;
+using PoemTown.Repository.Enums;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AuthenticationRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AuthenResponses;
@@ -64,14 +65,23 @@ namespace PoemTown.Service.Services
             User? user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+                throw new CoreException(StatusCodes.Status401Unauthorized, "User not found");
             }
 
             //check if email is confirmed
             if (!await _userManager.IsEmailConfirmedAsync(user))
             {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Email is not confirmed");
+                throw new CoreException(StatusCodes.Status401Unauthorized, "Email is not confirmed");
             }
+
+            switch (user.Status)
+            {
+                case AccountStatus.Locked:
+                    throw new CoreException(StatusCodes.Status401Unauthorized, "Account is locked, please contact admin");
+                case AccountStatus.InActive:
+                    throw new CoreException(StatusCodes.Status401Unauthorized, "Account is inactive");
+            }
+            
             /*if(!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash, user.Salt))
             {
                 _signInManager.CheckPasswordSignInAsync()
@@ -97,13 +107,13 @@ namespace PoemTown.Service.Services
             var resultSucceeded = await _signInManager.CheckPasswordSignInAsync(user, hashedPassword, true);
             if (!resultSucceeded.Succeeded)
             {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Password is incorrect");
+                throw new CoreException(StatusCodes.Status401Unauthorized, "Password is incorrect");
             }
 
             var signInResult = await _signInManager.PasswordSignInAsync(user, hashedPassword, true, false);
             if (!signInResult.Succeeded)
             {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Login failed");
+                throw new CoreException(StatusCodes.Status401Unauthorized, "Login failed");
             }
 
             var token = await _tokenService.GenerateTokens(user, userAgent, ipAddress);
@@ -146,6 +156,7 @@ namespace PoemTown.Service.Services
                 Email = request.Email,
                 PhoneNumber = request.PhoneNumber,
                 FullName = request.FullName,
+                DisplayName = request.FullName,
                 CreatedBy = "System",
                 LastUpdatedBy = "System",
                 Salt = salt,
@@ -155,6 +166,7 @@ namespace PoemTown.Service.Services
                 Address = request.Address,
                 Gender = request.Gender,
                 DateOfBirth = request.DateOfBirth,
+                Status = AccountStatus.InActive
             };
             
             //If user first register as google account, then transfer data to identity user
@@ -163,6 +175,7 @@ namespace PoemTown.Service.Services
                 var addPasswordResult = await _userManager.AddPasswordAsync(user, newUser.PasswordHash);
                 user.PhoneNumber = newUser.PhoneNumber;
                 user.FullName = newUser.FullName;
+                user.DisplayName = newUser.DisplayName;
                 user.CreatedBy = newUser.CreatedBy;
                 user.LastUpdatedBy = newUser.LastUpdatedBy;
                 user.Salt = newUser.Salt;

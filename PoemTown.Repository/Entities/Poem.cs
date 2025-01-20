@@ -27,15 +27,24 @@ namespace PoemTown.Repository.Entities
         public PoemStatus? Status { get; set; } = PoemStatus.Draft;
         public string? PoemImage { get; set; } = null;
         public Guid? SourceCopyRight { get; set; } = null;
+
         public Guid UserId { get; set; }
         public Guid? CollectionId { get; set; }
-        public virtual User User { get; set; }
-        public virtual Collection? Collection { get; set; } = null;
-        public virtual CopyRight? CopyRight { get; set; } = null;
-        public virtual ICollection<PoemHistory>? PoemHistories { get; set; } = null;
-        public virtual ICollection<RecordFile>? RecordFiles { get; set; } = null;
-        public virtual ICollection<TargetMark>? TargetMarks { get; set; } = null;
-        public virtual ICollection<Report>? Reports { get; set; } = null;
-        public virtual ICollection<Comment>? Comments { get; set; } = null;
+        public virtual Collection? Collection { get; set; }
+        public virtual OrderDetail? OrderDetail { get; set; }
+        public virtual LeaderBoardDetail? LeaderBoardDetail { get; set; }
+
+        public virtual ICollection<Like>? Likes { get; set; }
+        /*        public virtual CopyRight CopyRight { get; set; }*/
+        public virtual ICollection<UserPoem>? UserPoems { get; set; }
+
+        public virtual ICollection<PoemHistory>? PoemHistories { get; set; }
+        public virtual ICollection<RecordFile>? RecordFiles { get; set; }
+        public virtual ICollection<TargetMark>? TargetMarks { get; set; }
+        public virtual ICollection<Report>? Reports { get; set; }
+        public virtual ICollection<Comment>? Comments { get; set; }
+        /*
+        public virtual ICollection<UserCopyRight>? UserCopyRights { get; set; }
+    */
     }
 }

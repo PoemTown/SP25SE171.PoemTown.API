@@ -1,4 +1,5 @@
 ﻿using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums;
 
 namespace PoemTown.Repository.DataSeedings;
 
@@ -15,6 +16,7 @@ public class AccountDataSeeding
             Email = "admin@gmail.com",
             NormalizedEmail = "ADMIN@GMAIL.COM",
             EmailConfirmed = true,
+            Status = AccountStatus.Active,
             Salt = "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=",
             SecurityStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",
             PasswordHash = "AQAAAAIAAYagAAAAEKlMNvvuvDkRs2XwysLan5iHCJP9ImDgi6iw39nygXtE1ant3Kv5n2oi6hZCqwDybA==",
@@ -27,6 +29,7 @@ public class AccountDataSeeding
             NormalizedUserName = "user",
             Email = "user@gmail.com",
             NormalizedEmail = "USER@GMAIL.COM",
+            Status = AccountStatus.Active,
             EmailConfirmed = true,
             Salt = "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=",
             SecurityStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",

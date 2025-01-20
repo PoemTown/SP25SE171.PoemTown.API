@@ -21,9 +21,6 @@ namespace PoemTown.Repository.Entities
         public Guid? CollectionId { get; set; }
         public Guid? PoemId { get; set; }
         public Guid? MarkByUserId { get; set; }
-        public Guid? MarkedUserId { get; set; }
-        [ForeignKey("MarkedUserId")]
-        public virtual User? MarkedUser { get; set; }
         [ForeignKey("MarkByUserId")]
         public virtual User? MarkByUser { get; set; }
         public virtual Poem? Poem { get; set; }

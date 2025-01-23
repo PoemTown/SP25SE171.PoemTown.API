@@ -21,6 +21,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<LeaderBoard> LeaderBoards => Set<LeaderBoard>();
     public virtual DbSet<LeaderBoardDetail> LeaderBoardDetails => Set<LeaderBoardDetail>();
     public virtual DbSet<Like> Likes => Set<Like>();
+    public virtual DbSet<MasterTemplate> MasterTemplates => Set<MasterTemplate>();
     public virtual DbSet<Message> Messages=> Set<Message>();
     public virtual DbSet<Order> Orders => Set<Order>();
     public virtual DbSet<OrderDetail> OrderDetails => Set<OrderDetail>();
@@ -33,12 +34,14 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<Template> Templates => Set<Template>();
     public virtual DbSet<TemplateDetail> TemplateDetails => Set<TemplateDetail>();
     public virtual DbSet<Transaction> Transactions => Set<Transaction>();
-    public virtual DbSet<UserCopyRight> UserCopyRights => Set<UserCopyRight>();
-    public virtual DbSet<UserCopyRightPoems> UserCopyRightPoems => Set<UserCopyRightPoems>();
+    /*public virtual DbSet<UserCopyRight> UserCopyRights => Set<UserCopyRight>();
+    public virtual DbSet<UserCopyRightPoems> UserCopyRightPoems => Set<UserCopyRightPoems>();*/
     public virtual DbSet<UserEWallet> UserEWallets => Set<UserEWallet>();
     public virtual DbSet<UserLeaderBoard> UserLeaderBoards => Set<UserLeaderBoard>();
     public virtual DbSet<UserPoem> UserPoems => Set<UserPoem>();
+    /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
+    */
     
 
 
@@ -128,11 +131,11 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
        .HasForeignKey(uc => uc.PoemId) // Khóa ngoại trong UserCopyRight
        .OnDelete(DeleteBehavior.Restrict);*/
 
-        builder.Entity<UserCopyRight>()
+        /*builder.Entity<UserCopyRight>()
         .HasOne(uc => uc.User) // Một UserCopyRight liên kết với một User
         .WithMany(u => u.UserCopyRights) // Một User có nhiều UserCopyRight
         .HasForeignKey(uc => uc.UserId) // Khóa ngoại trong UserCopyRight
-        .OnDelete(DeleteBehavior.Restrict);
+        .OnDelete(DeleteBehavior.Restrict);*/
 
         // Quan hệ giữa Follow và User (FollowUser)
         builder.Entity<Follower>()

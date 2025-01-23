@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Reports;
 
 namespace PoemTown.Repository.Entities
 {

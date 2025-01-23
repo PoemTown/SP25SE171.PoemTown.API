@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.TemplateDetails;
 
 namespace PoemTown.Repository.Entities
 {
@@ -18,6 +19,9 @@ namespace PoemTown.Repository.Entities
         public string? DesignContent { get; set; }
         public TemplateDetailType? Type { get; set; }
         public Guid TemplateId { get; set; }
-        public virtual Template Template { get; set; }
+        public Guid MasterTemplateId { get; set; }
+        
+        public virtual MasterTemplate MasterTemplate { get; set; } = null!;
+        public virtual Template Template { get; set; } = null!;
     }
 }

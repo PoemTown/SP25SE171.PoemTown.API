@@ -1,5 +1,6 @@
 ﻿using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Accounts;
 
 namespace PoemTown.Repository.DataSeedings;
 

@@ -1,4 +1,5 @@
-﻿using PoemTown.Repository.Base.Interfaces;
+﻿/*
+using PoemTown.Repository.Base.Interfaces;
 using PoemTown.Repository.Utils;
 using System;
 using System.Collections.Generic;
@@ -21,3 +22,4 @@ namespace PoemTown.Repository.Entities
         public virtual Template Template { get; set; }
     }
 }
+*/

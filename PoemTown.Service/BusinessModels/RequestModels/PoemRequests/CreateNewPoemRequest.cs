@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Poems;
 using PoemTown.Service.BusinessModels.RequestModels.RecordFileRequests;
 
 namespace PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
@@ -21,11 +22,11 @@ public class CreateNewPoemRequest
     public PoemStatus? Status { get; set; } = PoemStatus.Draft;
     public Guid? CollectionId { get; set; }
     
-    public Guid? SourceCopyRight { get; set; }
+    public Guid? SourceCopyRightId { get; set; }
     
     public string? PoemImageUrl { get; set; } = null;
     
     public ICollection<CreateNewRecordFileRequest>? RecordFiles { get; set; }
 
-    public PoemType Type { get; set; }
+    public PoemType? Type { get; set; }
 }

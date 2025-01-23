@@ -29,31 +29,21 @@ public class PoemService : IPoemService
         // Mapping request to entity
         Poem poem = _mapper.Map<CreateNewPoemRequest, Poem>(request);
 
-        // Check if source copy right exist
-        if (request.SourceCopyRight != null)
+        // Check if source copy right exist, if not then throw exception else assign source copy right to poem
+        if (request.SourceCopyRightId != null)
         {
-            User? sourceCopyRight = await _unitOfWork.GetRepository<User>()
-                .FindAsync(p => p.Id == request.SourceCopyRight);
+            UserPoem? sourceCopyRight = await _unitOfWork.GetRepository<UserPoem>()
+                .FindAsync(p => p.Id == request.SourceCopyRightId && p.UserId == userId);
             if(sourceCopyRight == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Source copy right not found");
             }
+            poem.SourceCopyRightId = sourceCopyRight.Id;
         }
 
         Collection? collection = null;
         
-        // If collectionId is not null then check if the collection exist
-        if (request.CollectionId != null)
-        {
-            collection = await _unitOfWork.GetRepository<Collection>()
-                .FindAsync(p => p.Id == request.CollectionId);
-            if(collection == null)
-            {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
-            }
-        }
-        
-        // Check if user has any collection, if not then create default collection, finally assign that poem to default collection
+        // Check if user has any collection, if not then create default collection, first assign that poem to default collection
         bool existCollections = await _unitOfWork.GetRepository<Collection>()
             .AsQueryable()
             .AnyAsync(p => p.UserId == userId);
@@ -68,9 +58,24 @@ public class PoemService : IPoemService
             };
             await _unitOfWork.GetRepository<Collection>().InsertAsync(collection);
         }
+        else
+        {
+            collection = await _unitOfWork.GetRepository<Collection>()
+                .FindAsync(p => p.UserId == userId && p.IsDefault == true);
+        }
+        
+        // If collectionId is not null then check if the collection exist
+        if (request.CollectionId != null)
+        {
+            collection = await _unitOfWork.GetRepository<Collection>()
+                .FindAsync(p => p.Id == request.CollectionId && p.UserId == userId);
+            if(collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            }
+        }
         
         poem.Collection = collection;
-        poem.UserId = userId;
         // Add poem to database
         await _unitOfWork.GetRepository<Poem>().InsertAsync(poem);
         
@@ -83,7 +88,7 @@ public class PoemService : IPoemService
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
         
-        poemQuery.Where(p => p.UserId == userId);
+        poemQuery = poemQuery.Where(p => p.Collection!.UserId == userId);
         
         // Apply filter
         if (request.FilterOptions != null)
@@ -117,23 +122,17 @@ public class PoemService : IPoemService
         // Apply sort
         switch (request.SortOptions)
         {
-            case GetMyPoemSortOption.ViewCountAscending:
-                poemQuery = poemQuery.OrderBy(p => p.ViewCount);
-                break;
-            case GetMyPoemSortOption.ViewCountDescending:
-                poemQuery = poemQuery.OrderByDescending(p => p.ViewCount);
-                break;
             case GetMyPoemSortOption.LikeCountAscending:
-                poemQuery = poemQuery.OrderBy(p => p.LikeCount);
+                poemQuery = poemQuery.OrderBy(p => p.Likes!.Count(l => l.PoemId == p.Id));
                 break;
             case GetMyPoemSortOption.LikeCountDescending:
-                poemQuery = poemQuery.OrderByDescending(p => p.LikeCount);
+                poemQuery = poemQuery.OrderByDescending(p => p.Likes!.Count(l => l.PoemId == p.Id));
                 break;
             case GetMyPoemSortOption.CommentCountAscending:
-                poemQuery = poemQuery.OrderBy(p => p.CommentCount);
+                poemQuery = poemQuery.OrderBy(p => p.Comments!.Count(c => c.PoemId == p.Id));
                 break;
             case GetMyPoemSortOption.CommentCountDescending:
-                poemQuery = poemQuery.OrderByDescending(p => p.CommentCount);
+                poemQuery = poemQuery.OrderByDescending(p => p.Comments!.Count(c => c.PoemId == p.Id));
                 break;
             case GetMyPoemSortOption.TypeAscending:
                 poemQuery = poemQuery.OrderBy(p => p.Type);
@@ -150,15 +149,16 @@ public class PoemService : IPoemService
                     .GetPagination(poemQuery, request.PageNumber, request.PageSize);
 
         var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
-
+        
+        /*
         foreach (var poem in poems)
         {
-            var sourceCopyRight = poem.SourceCopyRight.Id;
-            var user = await _unitOfWork.GetRepository<User>()
-                .FindAsync(p => p.Id == sourceCopyRight);
+            var copyRights = queryPaging.Data
+                .SelectMany(p => p.UserPoems!.Where(up => up.UserId == userId && up.PoemId == poem.Id))
+                .ToList();
             
-        }
-        
+            poem.CopyRights = _mapper.Map<IList<GetUserPoemResponse>>(copyRights);
+        }*/
         return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }

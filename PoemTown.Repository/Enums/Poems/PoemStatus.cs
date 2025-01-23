@@ -1,4 +1,4 @@
-﻿namespace PoemTown.Repository.Enums;
+﻿namespace PoemTown.Repository.Enums.Poems;
 
 public enum PoemStatus
 {

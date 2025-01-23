@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using PoemTown.Repository.Base.Interfaces;
 using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Accounts;
 using PoemTown.Repository.Utils;
 
 namespace PoemTown.Repository.Entities;
@@ -40,11 +41,16 @@ public class User : IdentityUser<Guid>, IBaseEntity
  /*   public virtual ICollection<Comment> ParentComments { get; set; }*/
     public virtual ICollection<Message>? FromUser { get; set; }
     public virtual ICollection<Message>? ToUser { get; set; }
+    /*
     public virtual ICollection<UserCopyRight>? UserCopyRights { get; set; }
+    */
     
     
     public virtual ICollection<Order>? Orders { get; set; }
+    /*
     public virtual ICollection<UserTemplate>? UserTemplates { get; set; }
+    */
+    public virtual ICollection<Template> Templates { get; set; }
     public virtual ICollection<Transaction>? Transactions { get; set; }
 
     public virtual ICollection<Like> Likes { get; set; }

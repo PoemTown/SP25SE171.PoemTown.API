@@ -23,6 +23,22 @@ public class PoemsController : BaseController
         _mapper = mapper;
     }
 
+    /// <summary>
+    /// Tạo mới một bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Tất cả thuộc tính đều có thể NULL
+    ///
+    /// Status: Trạng thái của bài thơ, mặc định là Draft
+    /// 
+    /// - 0: Draft (Nháp)
+    /// - 1: Posted (Đã đăng)
+    /// - 2: Suspended (Không sử dụng)
+    ///
+    /// Type: Loại bài thơ, thể thơ:
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost]
     [Route("v1")]
     [Authorize]
@@ -33,6 +49,29 @@ public class PoemsController : BaseController
         return Ok(new BaseResponse(StatusCodes.Status201Created, "Poem created successfully"));
     }
     
+    /// <summary>
+    /// Lấy danh sách bài thơ của tôi, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Status: Trạng thái của bài thơ
+    ///
+    /// - 0: Draft
+    /// - 1: Posted
+    /// - 2: Suspended
+    ///
+    /// Type: Loại bài thơ, thể thơ:
+    ///
+    /// SortOptions: Sắp xếp bài thơ theo thứ tự
+    ///
+    /// - 0: LikeCountAscending (Lượt thích tăng dần)
+    /// - 1: LikeCountDescending (Lượt thích giảm dần)
+    /// - 2: CommentCountAscending (Lượt bình luận tăng dần)
+    /// - 3: CommentCountDescending (Lượt bình luận giảm dần)
+    /// - 4: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
+    /// - 5: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    /// </remarks>
+    /// <param name="reqeust"></param>
+    /// <returns></returns>
     [HttpGet]
     [Route("v1/mine")]
     [Authorize]

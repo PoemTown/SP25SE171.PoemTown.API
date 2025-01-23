@@ -21,9 +21,9 @@ namespace PoemTown.Repository.Entities
         public decimal ItemQuantity { get; set; } = default;
         public Guid OrderId { get; set; }
         public Guid? PoemId { get; set; }
-        public Guid? TemplateId { get; set; }
+        public Guid? MasterTemplateId { get; set; }
         public virtual Order Order { get; set; } = default!;
         public virtual Poem? Poem { get; set; }
-        public virtual Template? Template {  get; set; }
+        public virtual MasterTemplate? MasterTemplate {  get; set; }
     }
 }

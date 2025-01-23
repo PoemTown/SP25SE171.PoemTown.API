@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Poems;
 
 namespace PoemTown.Repository.Entities
 {
@@ -19,21 +20,16 @@ namespace PoemTown.Repository.Entities
         public string? Content { get; set; } = "";
         public PoemType? Type { get; set; } = default!;
         public string? Description { get; set; } = "";
-        public int? LikeCount { get; set; } = 0;
-        public int? CommentCount { get; set; } = 0;
-        public int? ViewCount { get; set; } = 0;
         public int? ChapterNumber { get; set; }
         public string? ChapterName { get; set; } = "";
         public PoemStatus? Status { get; set; } = PoemStatus.Draft;
         public string? PoemImage { get; set; } = null;
-        public Guid? SourceCopyRight { get; set; } = null;
-
-        public Guid UserId { get; set; }
+        public decimal Price { get; set; }
+        public Guid? SourceCopyRightId { get; set; }
         public Guid? CollectionId { get; set; }
         public virtual Collection? Collection { get; set; }
         public virtual OrderDetail? OrderDetail { get; set; }
         public virtual LeaderBoardDetail? LeaderBoardDetail { get; set; }
-
         public virtual ICollection<Like>? Likes { get; set; }
         /*        public virtual CopyRight CopyRight { get; set; }*/
         public virtual ICollection<UserPoem>? UserPoems { get; set; }

@@ -8,6 +8,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.UserPoems;
 
 namespace PoemTown.Repository.Entities
 {
@@ -18,6 +20,12 @@ namespace PoemTown.Repository.Entities
 
         public Guid UserId { get; set; }
         public Guid PoemId { get; set; }
+        
+        public UserPoemType? Type { get; set; }
+        
+        public DateTime? CopyRightValidFrom { get; set; }
+        
+        public DateTime? CopyRightValidTo { get; set; }
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }
 

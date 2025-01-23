@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿/*using System.ComponentModel.DataAnnotations;
 using PoemTown.Repository.Base;
 
 namespace PoemTown.Repository.Entities;
@@ -13,4 +13,4 @@ public class UserCopyRightPoems : BaseEntity
     
     public virtual UserCopyRight? UserCopyRight { get; set; }
     public virtual Poem? Poem { get; set; }
-}
+}*/

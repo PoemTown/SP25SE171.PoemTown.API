@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Accounts;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AuthenticationRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AuthenResponses;

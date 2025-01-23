@@ -1,6 +1,8 @@
-﻿namespace PoemTown.Repository.Entities;
+﻿using PoemTown.Repository.Base;
 
-public class Achievement
+namespace PoemTown.Repository.Entities;
+
+public class Achievement : BaseEntity
 {
     public Guid Id { get; set; }
     public string Name { get; set; }

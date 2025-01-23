@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Poems;
 
 namespace PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 

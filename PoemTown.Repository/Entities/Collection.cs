@@ -16,6 +16,7 @@ namespace PoemTown.Repository.Entities
         public Guid Id { get; set; }
         public string CollectionName { get; set; } = default!;
         public string? CollectionDescription { get; set; } = default!;
+        public string? CollectionImage { get; set; } = default!;
         public bool? IsDefault { get; set; } = false;
         public int? TotalChapter { get; set; } = default!;
 

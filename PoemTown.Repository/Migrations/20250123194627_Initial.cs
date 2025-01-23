@@ -34,6 +34,22 @@ namespace PoemTown.Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MasterTemplates",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TemplateName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    TagName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MasterTemplates", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PaymentGateways",
                 columns: table => new
                 {
@@ -71,28 +87,6 @@ namespace PoemTown.Repository.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Roles", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Templates",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TemplateName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: true),
-                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
-                    TagName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<int>(type: "int", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DeletedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Templates", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -167,32 +161,6 @@ namespace PoemTown.Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TemplateDetails",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    DesignContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Type = table.Column<int>(type: "int", nullable: true),
-                    TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DeletedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_TemplateDetails", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_TemplateDetails_Templates_TemplateId",
-                        column: x => x.TemplateId,
-                        principalTable: "Templates",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Achievements",
                 columns: table => new
                 {
@@ -200,7 +168,13 @@ namespace PoemTown.Repository.Migrations
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EarnedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    DeletedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -247,6 +221,7 @@ namespace PoemTown.Repository.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     CollectionName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CollectionDescription = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CollectionImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsDefault = table.Column<bool>(type: "bit", nullable: true),
                     TotalChapter = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -361,6 +336,41 @@ namespace PoemTown.Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Templates",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    TemplateName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: true),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
+                    TagName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: true),
+                    MasterTemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    DeletedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Templates", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Templates_MasterTemplates_MasterTemplateId",
+                        column: x => x.MasterTemplateId,
+                        principalTable: "MasterTemplates",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Templates_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserClaims",
                 columns: table => new
                 {
@@ -385,31 +395,6 @@ namespace PoemTown.Repository.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserCopyRights",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ExperiedTime = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DeletedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserCopyRights", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserCopyRights_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -526,38 +511,6 @@ namespace PoemTown.Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserTemplates",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    IsUse = table.Column<bool>(type: "bit", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DeletedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserTemplates", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserTemplates_Templates_TemplateId",
-                        column: x => x.TemplateId,
-                        principalTable: "Templates",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserTemplates_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserTokens",
                 columns: table => new
                 {
@@ -596,15 +549,12 @@ namespace PoemTown.Repository.Migrations
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Type = table.Column<int>(type: "int", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LikeCount = table.Column<int>(type: "int", nullable: true),
-                    CommentCount = table.Column<int>(type: "int", nullable: true),
-                    ViewCount = table.Column<int>(type: "int", nullable: true),
                     ChapterNumber = table.Column<int>(type: "int", nullable: true),
                     ChapterName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Status = table.Column<int>(type: "int", nullable: true),
                     PoemImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    SourceCopyRight = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
+                    SourceCopyRightId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CollectionId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -621,6 +571,39 @@ namespace PoemTown.Repository.Migrations
                         column: x => x.CollectionId,
                         principalTable: "Collections",
                         principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "TemplateDetails",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    DesignContent = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Type = table.Column<int>(type: "int", nullable: true),
+                    TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MasterTemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    DeletedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TemplateDetails", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TemplateDetails_MasterTemplates_MasterTemplateId",
+                        column: x => x.MasterTemplateId,
+                        principalTable: "MasterTemplates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_TemplateDetails_Templates_TemplateId",
+                        column: x => x.TemplateId,
+                        principalTable: "Templates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -757,6 +740,7 @@ namespace PoemTown.Repository.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Rating = table.Column<int>(type: "int", nullable: true),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     PoemId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -790,7 +774,7 @@ namespace PoemTown.Repository.Migrations
                     ItemQuantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PoemId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    TemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    MasterTemplateId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -802,6 +786,11 @@ namespace PoemTown.Repository.Migrations
                 {
                     table.PrimaryKey("PK_OrderDetails", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_OrderDetails_MasterTemplates_MasterTemplateId",
+                        column: x => x.MasterTemplateId,
+                        principalTable: "MasterTemplates",
+                        principalColumn: "Id");
+                    table.ForeignKey(
                         name: "FK_OrderDetails_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
@@ -811,11 +800,6 @@ namespace PoemTown.Repository.Migrations
                         name: "FK_OrderDetails_Poems_PoemId",
                         column: x => x.PoemId,
                         principalTable: "Poems",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_OrderDetails_Templates_TemplateId",
-                        column: x => x.TemplateId,
-                        principalTable: "Templates",
                         principalColumn: "Id");
                 });
 
@@ -956,41 +940,15 @@ namespace PoemTown.Repository.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserCopyRightPoems",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserCopyRightId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    PoemId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    LastUpdatedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    DeletedTime = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserCopyRightPoems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserCopyRightPoems_Poems_PoemId",
-                        column: x => x.PoemId,
-                        principalTable: "Poems",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_UserCopyRightPoems_UserCopyRights_UserCopyRightId",
-                        column: x => x.UserCopyRightId,
-                        principalTable: "UserCopyRights",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "UserPoems",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     PoemId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: true),
+                    CopyRightValidFrom = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    CopyRightValidTo = table.Column<DateTime>(type: "datetime2", nullable: true),
                     CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastUpdatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DeletedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -1020,8 +978,8 @@ namespace PoemTown.Repository.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "CreatedBy", "CreatedTime", "DeletedBy", "DeletedTime", "LastUpdatedBy", "LastUpdatedTime", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { new Guid("89fca251-f021-425b-de62-08dcdfcdb851"), "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", "System", new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1939), new TimeSpan(0, 7, 0, 0, 0)), null, null, "System", new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1940), new TimeSpan(0, 7, 0, 0, 0)), "USER", "USER" },
-                    { new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"), "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", "System", new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1933), new TimeSpan(0, 7, 0, 0, 0)), null, null, "System", new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1934), new TimeSpan(0, 7, 0, 0, 0)), "ADMIN", "ADMIN" }
+                    { new Guid("89fca251-f021-425b-de62-08dcdfcdb851"), "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", "System", new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8875), new TimeSpan(0, 7, 0, 0, 0)), null, null, "System", new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8876), new TimeSpan(0, 7, 0, 0, 0)), "USER", "USER" },
+                    { new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"), "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", "System", new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8866), new TimeSpan(0, 7, 0, 0, 0)), null, null, "System", new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8868), new TimeSpan(0, 7, 0, 0, 0)), "ADMIN", "ADMIN" }
                 });
 
             migrationBuilder.InsertData(
@@ -1029,8 +987,8 @@ namespace PoemTown.Repository.Migrations
                 columns: new[] { "Id", "AccessFailedCount", "Address", "Avatar", "ConcurrencyStamp", "CreatedBy", "CreatedTime", "DateOfBirth", "DeletedBy", "DeletedTime", "DisplayName", "Email", "EmailConfirmed", "EmailOtp", "EmailOtpExpiration", "FullName", "Gender", "GoogleId", "LastUpdatedBy", "LastUpdatedTime", "LockoutEnabled", "LockoutEnd", "NormalizedEmail", "NormalizedUserName", "PasswordHash", "PhoneNumber", "PhoneNumberConfirmed", "PhoneOtp", "PhoneOtpExpiration", "Salt", "SecurityStamp", "Status", "TwoFactorEnabled", "UserName" },
                 values: new object[,]
                 {
-                    { new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"), 0, null, null, "65e5602d-9592-4cee-bcfd-d6b00d88ed8d", null, new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1823), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, null, "admin@gmail.com", true, null, null, "admin", null, null, null, new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1823), new TimeSpan(0, 7, 0, 0, 0)), false, null, "ADMIN@GMAIL.COM", "admin", "AQAAAAIAAYagAAAAEKlMNvvuvDkRs2XwysLan5iHCJP9ImDgi6iw39nygXtE1ant3Kv5n2oi6hZCqwDybA==", null, false, null, null, "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=", "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", 2, false, "admin@gmail.com" },
-                    { new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"), 0, null, null, "7e505731-1823-46eb-8bda-7ca47eedf380", null, new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1872), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, null, "user@gmail.com", true, null, null, "user", null, null, null, new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1872), new TimeSpan(0, 7, 0, 0, 0)), false, null, "USER@GMAIL.COM", "user", "AQAAAAIAAYagAAAAEKlMNvvuvDkRs2XwysLan5iHCJP9ImDgi6iw39nygXtE1ant3Kv5n2oi6hZCqwDybA==", null, false, null, null, "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=", "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", 2, false, "user@gmail.com" }
+                    { new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"), 0, null, null, "f0da0d32-6985-4588-b1dc-10638d207f7a", null, new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8709), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, null, "admin@gmail.com", true, null, null, "admin", null, null, null, new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8709), new TimeSpan(0, 7, 0, 0, 0)), false, null, "ADMIN@GMAIL.COM", "admin", "AQAAAAIAAYagAAAAEKlMNvvuvDkRs2XwysLan5iHCJP9ImDgi6iw39nygXtE1ant3Kv5n2oi6hZCqwDybA==", null, false, null, null, "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=", "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", 1, false, "admin@gmail.com" },
+                    { new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"), 0, null, null, "e4539db4-4992-4acc-b018-24111df0c367", null, new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8786), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, null, "user@gmail.com", true, null, null, "user", null, null, null, new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8786), new TimeSpan(0, 7, 0, 0, 0)), false, null, "USER@GMAIL.COM", "user", "AQAAAAIAAYagAAAAEKlMNvvuvDkRs2XwysLan5iHCJP9ImDgi6iw39nygXtE1ant3Kv5n2oi6hZCqwDybA==", null, false, null, null, "UQquiGRiRIG1g/4gdm/sfMY7Kk0qqcV8iAYaY8eRmAo=", "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US", 1, false, "user@gmail.com" }
                 });
 
             migrationBuilder.InsertData(
@@ -1038,8 +996,8 @@ namespace PoemTown.Repository.Migrations
                 columns: new[] { "RoleId", "UserId", "CreatedBy", "CreatedTime", "DeletedBy", "DeletedTime", "LastUpdatedBy", "LastUpdatedTime" },
                 values: new object[,]
                 {
-                    { new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"), new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"), null, new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1967), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1967), new TimeSpan(0, 7, 0, 0, 0)) },
-                    { new Guid("89fca251-f021-425b-de62-08dcdfcdb851"), new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"), null, new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1973), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, new DateTimeOffset(new DateTime(2025, 1, 20, 14, 10, 23, 198, DateTimeKind.Unspecified).AddTicks(1973), new TimeSpan(0, 7, 0, 0, 0)) }
+                    { new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"), new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"), null, new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8925), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8925), new TimeSpan(0, 7, 0, 0, 0)) },
+                    { new Guid("89fca251-f021-425b-de62-08dcdfcdb851"), new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"), null, new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8932), new TimeSpan(0, 7, 0, 0, 0)), null, null, null, new DateTimeOffset(new DateTime(2025, 1, 24, 2, 46, 26, 390, DateTimeKind.Unspecified).AddTicks(8932), new TimeSpan(0, 7, 0, 0, 0)) }
                 });
 
             migrationBuilder.CreateIndex(
@@ -1127,6 +1085,13 @@ namespace PoemTown.Repository.Migrations
                 column: "ToUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrderDetails_MasterTemplateId",
+                table: "OrderDetails",
+                column: "MasterTemplateId",
+                unique: true,
+                filter: "[MasterTemplateId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrderDetails_OrderId",
                 table: "OrderDetails",
                 column: "OrderId");
@@ -1137,13 +1102,6 @@ namespace PoemTown.Repository.Migrations
                 column: "PoemId",
                 unique: true,
                 filter: "[PoemId] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrderDetails_TemplateId",
-                table: "OrderDetails",
-                column: "TemplateId",
-                unique: true,
-                filter: "[TemplateId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserId",
@@ -1213,9 +1171,24 @@ namespace PoemTown.Repository.Migrations
                 column: "PoemId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TemplateDetails_MasterTemplateId",
+                table: "TemplateDetails",
+                column: "MasterTemplateId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TemplateDetails_TemplateId",
                 table: "TemplateDetails",
                 column: "TemplateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Templates_MasterTemplateId",
+                table: "Templates",
+                column: "MasterTemplateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Templates_UserId",
+                table: "Templates",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Transactions_OrderId",
@@ -1242,21 +1215,6 @@ namespace PoemTown.Repository.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_UserClaims_UserId",
                 table: "UserClaims",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserCopyRightPoems_PoemId",
-                table: "UserCopyRightPoems",
-                column: "PoemId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserCopyRightPoems_UserCopyRightId",
-                table: "UserCopyRightPoems",
-                column: "UserCopyRightId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserCopyRights_UserId",
-                table: "UserCopyRights",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
@@ -1306,16 +1264,6 @@ namespace PoemTown.Repository.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserTemplates_TemplateId",
-                table: "UserTemplates",
-                column: "TemplateId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserTemplates_UserId",
-                table: "UserTemplates",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserTokens_UserId",
@@ -1375,9 +1323,6 @@ namespace PoemTown.Repository.Migrations
                 name: "UserClaims");
 
             migrationBuilder.DropTable(
-                name: "UserCopyRightPoems");
-
-            migrationBuilder.DropTable(
                 name: "UserLeaderBoards");
 
             migrationBuilder.DropTable(
@@ -1390,10 +1335,10 @@ namespace PoemTown.Repository.Migrations
                 name: "UserRoles");
 
             migrationBuilder.DropTable(
-                name: "UserTemplates");
+                name: "UserTokens");
 
             migrationBuilder.DropTable(
-                name: "UserTokens");
+                name: "Templates");
 
             migrationBuilder.DropTable(
                 name: "Orders");
@@ -1405,9 +1350,6 @@ namespace PoemTown.Repository.Migrations
                 name: "UserEWallets");
 
             migrationBuilder.DropTable(
-                name: "UserCopyRights");
-
-            migrationBuilder.DropTable(
                 name: "LeaderBoards");
 
             migrationBuilder.DropTable(
@@ -1417,7 +1359,7 @@ namespace PoemTown.Repository.Migrations
                 name: "Roles");
 
             migrationBuilder.DropTable(
-                name: "Templates");
+                name: "MasterTemplates");
 
             migrationBuilder.DropTable(
                 name: "Collections");

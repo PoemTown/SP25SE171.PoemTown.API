@@ -67,9 +67,6 @@ public static class ConfigureService
         services.AddControllers(options =>
         {
             options.Conventions.Add(new KebabCaseControllerModelConvention());
-        }).AddJsonOptions(options =>
-        {
-            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
         });
     }
 

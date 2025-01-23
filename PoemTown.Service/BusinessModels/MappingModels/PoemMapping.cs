@@ -11,6 +11,10 @@ public class PoemMapping : Profile
     public PoemMapping()
     {
         CreateMap<CreateNewPoemRequest, Poem>();
-        CreateMap<Poem, GetPoemResponse>().ReverseMap();
+        CreateMap<GetPoemResponse, Poem>().ReverseMap()
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
+            .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count));
+        
+
     }
 }

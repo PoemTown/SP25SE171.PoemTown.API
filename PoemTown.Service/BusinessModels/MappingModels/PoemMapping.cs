@@ -3,6 +3,7 @@ using PoemTown.Repository.Entities;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.MappingModels;
@@ -18,6 +19,8 @@ public class PoemMapping : Profile
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count));
         
-        CreateMap<GetPoemHistoryResponse, GetPoemResponse>();
+        CreateMap<GetRecordFileResponse, GetPoemDetailResponse>().ReverseMap();
+        CreateMap<Poem, GetPoemDetailResponse>()
+            .ForMember(dest => dest.RecordFiles, opt => opt.Ignore());
     }
 }

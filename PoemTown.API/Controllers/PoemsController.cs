@@ -53,6 +53,10 @@ public class PoemsController : BaseController
     /// Lấy danh sách bài thơ của tôi, yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
+    /// CHÚ Ý REQUEST PARAMETER:
+    ///
+    /// - tất cả lấy từ request query
+    /// 
     /// Status: Trạng thái của bài thơ
     ///
     /// - 0: Draft
@@ -70,15 +74,15 @@ public class PoemsController : BaseController
     /// - 4: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
     /// - 5: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
     /// </remarks>
-    /// <param name="reqeust"></param>
+    /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
     [Route("v1/mine")]
     [Authorize]
-    public async Task<ActionResult<BasePaginationResponse<GetPoemResponse>>> GetMyPoems(RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> reqeust)
+    public async Task<ActionResult<BasePaginationResponse<GetPoemResponse>>> GetMyPoems(RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-        var paginationResponse = await _poemService.GetMyPoems(userId, reqeust);
+        var paginationResponse = await _poemService.GetMyPoems(userId, request);
         
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;
@@ -119,6 +123,11 @@ public class PoemsController : BaseController
     /// <summary>
     /// Xóa một bài thơ (Chuyển vào thùng rác), yêu cầu đăng nhập
     /// </summary>
+    /// <remarks>
+    /// CHÚ Ý REQUEST PARAMETER:
+    ///
+    /// - poemId: lấy từ request path
+    /// </remarks>
     /// <param name="poemId"></param>
     /// <returns></returns>
     [HttpDelete]
@@ -133,6 +142,11 @@ public class PoemsController : BaseController
     /// <summary>
     /// Xóa một bài thơ (vĩnh viễn), yêu cầu đăng nhập
     /// </summary>
+    /// <remarks>
+    /// CHÚ Ý REQUEST PARAMETER:
+    ///
+    /// - poemId: lấy từ request path
+    /// </remarks>
     /// <param name="poemId"></param>
     /// <returns></returns>
     [HttpDelete]
@@ -143,4 +157,47 @@ public class PoemsController : BaseController
         await _poemService.DeletePoemPermanent(poemId);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem deleted permanently successfully"));
     }
+    
+    /// <summary>
+    /// Lấy chi tiết của một bài thơ (Không bao gồm lịch sử chỉnh sửa), yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Chỉ áp dụng filter, sort cũng như paging cho RecordFiles (Tức là poem không có filter, sort, paging)
+    ///
+    /// HIỆN TẠI FILTER CHƯA SỬ DỤNG CHO MỤC ĐÍCH NÀO NÊN KHÔNG CẦN ĐIỀN
+    ///
+    /// CHÚ Ý REQUEST PARAMETER:
+    ///
+    /// - poemId: lấy từ request path
+    /// - tất cả còn lại lấy từ request query
+    /// 
+    /// Status: Trạng thái của bài thơ
+    ///
+    /// - 0: Draft
+    /// - 1: Posted
+    /// - 2: Suspended
+    ///
+    /// Type: Loại bài thơ, thể thơ:
+    ///
+    /// SortOptions: Sắp xếp bài thơ theo thứ tự:
+    ///
+    /// - CreatedTimeAscending = 0 (Thời gian tạo tăng dần),
+    /// - CreatedTimeDescending = 1 (Thời gian tạo giảm dần) (Mặc định)
+    /// 
+    /// </remarks>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/{poemId}/detail")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<GetPoemDetailResponse>>> 
+        GetPoemDetail(Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _poemService.GetPoemDetail(userId, poemId, request);
+        
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Get poem detail successfully", response));
+    }
+    
+    
 }

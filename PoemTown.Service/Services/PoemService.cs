@@ -8,6 +8,7 @@ using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -94,6 +95,63 @@ public class PoemService : IPoemService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<GetPoemDetailResponse> 
+        GetPoemDetail(Guid userId, Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+    {
+        Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
+        
+        if(poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+        
+        // Check if user own this poem
+        if (poem.Collection!.UserId != userId)
+        {
+            throw new CoreException(StatusCodes.Status403Forbidden, "User does not own this poem");
+        }
+        
+        var poemDetail = _mapper.Map<GetPoemDetailResponse>(poem);
+        
+        if (poem.RecordFiles != null && poem.RecordFiles.Count <= 0)
+        {
+            return poemDetail;
+        }
+        
+        // Get record files of poem with filter, sort and paging
+        var recordFilesQuery = _unitOfWork.GetRepository<RecordFile>()
+            .AsQueryable();
+
+        recordFilesQuery = recordFilesQuery.Where(p => p.PoemId == poemId && p.Poem!.Collection!.UserId == userId);
+        
+        switch (request.SortOptions)
+        {
+            case GetPoemRecordFileDetailSortOption.CreatedTimeAscending:
+                recordFilesQuery = recordFilesQuery.OrderBy(p => p.CreatedTime);
+                break;
+            case GetPoemRecordFileDetailSortOption.CreatedTimeDescending:
+                recordFilesQuery = recordFilesQuery.OrderByDescending(p => p.CreatedTime);
+                break;
+            default:
+                recordFilesQuery = recordFilesQuery.OrderByDescending(p => p.CreatedTime);
+                break;
+        }
+        
+        var queryPaging = await _unitOfWork.GetRepository<RecordFile>()
+            .GetPagination(recordFilesQuery, request.PageNumber, request.PageSize);
+
+        poemDetail.RecordFiles = new PaginationResponse<GetRecordFileResponse>
+        (
+            _mapper.Map<IList<GetRecordFileResponse>>(queryPaging.Data),
+            queryPaging.PageNumber,
+            queryPaging.PageSize,
+            queryPaging.TotalRecords,
+            queryPaging.CurrentPageRecords
+        );
+
+        return poemDetail;
+    }
+    
     public async Task<PaginationResponse<GetPoemResponse>> GetMyPoems
         (Guid userId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {

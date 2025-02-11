@@ -18,4 +18,6 @@ public interface IPoemService
 
     Task DeletePoem(Guid poemId);
     Task DeletePoemPermanent(Guid poemId);
+    Task<GetPoemDetailResponse> 
+        GetPoemDetail(Guid userId, Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
 }

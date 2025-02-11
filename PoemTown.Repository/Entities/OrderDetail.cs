@@ -22,7 +22,9 @@ namespace PoemTown.Repository.Entities
         public Guid OrderId { get; set; }
         public Guid? PoemId { get; set; }
         public Guid? MasterTemplateId { get; set; }
+        public Guid? RecordFileId { get; set; }
         public virtual Order Order { get; set; } = default!;
+        public virtual RecordFile? RecordFile { get; set; }
         public virtual Poem? Poem { get; set; }
         public virtual MasterTemplate? MasterTemplate {  get; set; }
     }

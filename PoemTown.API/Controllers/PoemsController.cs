@@ -86,4 +86,61 @@ public class PoemsController : BaseController
         
         return Ok(basePaginationResponse);
     }
+    
+    /// <summary>
+    /// Chỉnh sửa một bài thơ, sau đó tạo ra bản sao (history) của bài thơ trước khi chỉnh sửa, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Tất cả thuộc tính đều có thể NULL
+    ///
+    /// MỘT BÀI THƠ CHỈ CÓ THỂ CHỈNH SỬA KHI STATUS = 0 (DRAFT)
+    /// 
+    /// Status: Trạng thái của bài thơ
+    /// 
+    /// - 0: Draft (Nháp)
+    /// - 1: Posted (Đã đăng)
+    /// - 2: Suspended (Không sử dụng)
+    ///
+    /// Type: Loại bài thơ, thể thơ:
+    /// </remarks>
+
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> UpdatePoem(UpdatePoemRequest request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.UpdatePoem(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem updated successfully"));
+    }
+    
+    /// <summary>
+    /// Xóa một bài thơ (Chuyển vào thùng rác), yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/{poemId}")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> DeletePoem(Guid poemId)
+    {
+        await _poemService.DeletePoem(poemId);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem deleted successfully"));
+    }
+    
+    /// <summary>
+    /// Xóa một bài thơ (vĩnh viễn), yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/{poemId}/permanent")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> DeletePoemPermanent(Guid poemId)
+    {
+        await _poemService.DeletePoemPermanent(poemId);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem deleted permanently successfully"));
+    }
 }

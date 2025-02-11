@@ -106,10 +106,13 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class, IBase
         }
     }
 
-    public void UpdateDate(T entity)
+    public void UpdateRange(IList<T> entities)
     {
-        _dbContext.Entry(entity).State = EntityState.Modified;
-        entity.LastUpdatedTime = DateTimeHelper.SystemTimeNow;
+        foreach (var entity in entities)
+        {
+            _dbContext.Entry(entity).State = EntityState.Modified;
+            entity.LastUpdatedTime = DateTimeHelper.SystemTimeNow;
+        }
     }
     
     public void SaveChanges() => _dbContext.SaveChanges();

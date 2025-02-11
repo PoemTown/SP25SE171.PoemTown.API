@@ -1,6 +1,7 @@
 ﻿using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums;
 using PoemTown.Repository.Enums.Poems;
+using PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -18,6 +19,9 @@ public class GetPoemResponse
     public string ChapterName { get; set; }
     public string PoemImage { get; set; }
     public decimal Price { get; set; }
+    public bool IsPublic { get; set; }
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
+    
+    public ICollection<GetPoemHistoryResponse> PoemHistories { get; set; }
 }

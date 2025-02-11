@@ -27,12 +27,13 @@ namespace PoemTown.Repository.Entities
         public decimal Price { get; set; }
         public Guid? SourceCopyRightId { get; set; }
         public Guid? CollectionId { get; set; }
+        public bool? IsPublic { get; set; } = true;
         public virtual Collection? Collection { get; set; }
         public virtual OrderDetail? OrderDetail { get; set; }
         public virtual LeaderBoardDetail? LeaderBoardDetail { get; set; }
         public virtual ICollection<Like>? Likes { get; set; }
         /*        public virtual CopyRight CopyRight { get; set; }*/
-        public virtual ICollection<UserPoem>? UserPoems { get; set; }
+        public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }
 
         public virtual ICollection<PoemHistory>? PoemHistories { get; set; }
         public virtual ICollection<RecordFile>? RecordFiles { get; set; }

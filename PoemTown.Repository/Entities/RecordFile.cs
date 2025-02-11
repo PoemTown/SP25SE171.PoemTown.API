@@ -17,13 +17,17 @@ namespace PoemTown.Repository.Entities
         public Guid Id { get; set; }
         public string? FileName { get; set; }
         public string? FileUrl { get; set; }
+        public bool? IsPublic { get; set; } = true;
         public Guid PoemId { get; set; } 
-        public Guid UserId { get; set; }
+        /*public Guid UserId { get; set; }*/
         [ForeignKey("PoemId")]
         public virtual Poem? Poem { get; set; }
-        [ForeignKey("UserId")]
+        /*[ForeignKey("UserId")]
 
-        public virtual User? User { get; set; }
+        public virtual User? User { get; set; }*/
+        
+        public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }
+        
     }
 
 }

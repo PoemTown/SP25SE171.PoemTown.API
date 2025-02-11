@@ -29,13 +29,15 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public virtual ICollection<UserLeaderBoard>? UserLeaderBoards { get; set; }
 
     public virtual ICollection<Collection>? Collections { get; set; }
-    public virtual ICollection<UserPoem>? UserPoems { get; set; }
+    public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }
     public virtual ICollection<TargetMark>? MarkByUsers { get; set; }
     public virtual ICollection<Follower>? FollowUser { get; set; }
     public virtual ICollection<Follower>? FollowedUser { get; set; }
     public virtual ICollection<Report>? ReportUsers { get; set; }
     public virtual ICollection<Report>? ReportedUsers { get; set; }
+    /*
     public virtual ICollection<RecordFile>? RecordFiles { get; set; }
+    */
 
     public virtual ICollection<Comment>? AuthorComments { get; set; }
  /*   public virtual ICollection<Comment> ParentComments { get; set; }*/

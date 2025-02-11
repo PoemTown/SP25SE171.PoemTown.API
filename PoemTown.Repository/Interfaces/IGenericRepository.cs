@@ -60,10 +60,10 @@ public interface IGenericRepository<T> where T : class
     void Update(T entity);
 
     /// <summary>
-    /// Updates the last modified date of an entity.
+    /// Updates a range of entities.
     /// </summary>
-    /// <param name="entity">The entity to update the date for.</param>
-    void UpdateDate(T entity);
+    /// <param name="entities">The list of entities to update.</param>
+    void UpdateRange(IList<T> entities);
 
     /// <summary>
     /// Marks an entity as deleted without removing it from the data store.

@@ -21,7 +21,6 @@ public class CreateNewPoemRequest
     
     public PoemStatus? Status { get; set; } = PoemStatus.Draft;
     public Guid? CollectionId { get; set; }
-    
     public Guid? SourceCopyRightId { get; set; }
     
     public string? PoemImageUrl { get; set; } = null;
@@ -29,4 +28,5 @@ public class CreateNewPoemRequest
     public ICollection<CreateNewRecordFileRequest>? RecordFiles { get; set; }
 
     public PoemType? Type { get; set; }
+    public bool? IsPublic { get; set; }
 }

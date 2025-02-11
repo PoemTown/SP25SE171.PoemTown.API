@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PoemTown.Repository.Base;
+using PoemTown.Repository.Enums.Poems;
 
 namespace PoemTown.Repository.Entities
 {
@@ -15,8 +16,19 @@ namespace PoemTown.Repository.Entities
         [Key]
         public Guid Id { get; set; }
 
-        public string? Version { get; set; } = "";
-        public Guid PoemId { get; set; } = default;
+        public int? Version { get; set; }
+        public string? Title { get; set; }
+        public string? Content { get; set; }
+        public PoemType? Type { get; set; }
+        public string? Description { get; set; }
+        public int? ChapterNumber { get; set; }
+        public string? ChapterName { get; set; }
+        public string? PoemImage { get; set; } 
+        public decimal Price { get; set; }
+        public Guid? SourceCopyRightId { get; set; }
+        public bool? IsPublic { get; set; }
+        public Guid PoemId { get; set; }
+        
         public virtual Poem Poem { get; set; } = default!;
     }
 }

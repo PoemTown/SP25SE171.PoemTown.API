@@ -13,13 +13,14 @@ using PoemTown.Repository.Enums.UserPoems;
 
 namespace PoemTown.Repository.Entities
 {
-    public class UserPoem : BaseEntity
+    public class UserPoemRecordFile : BaseEntity
     {
         [Key]
         public Guid Id { get; set; }
 
         public Guid UserId { get; set; }
         public Guid PoemId { get; set; }
+        public Guid RecordFileId { get; set; }
         
         public UserPoemType? Type { get; set; }
         
@@ -31,5 +32,7 @@ namespace PoemTown.Repository.Entities
 
         [ForeignKey("PoemId")]
         public virtual Poem? Poem { get; set; }
+        [ForeignKey("RecordFileId")]
+        public virtual RecordFile? RecordFile { get; set; }
     }
 }

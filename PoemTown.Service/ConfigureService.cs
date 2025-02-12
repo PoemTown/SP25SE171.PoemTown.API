@@ -37,6 +37,7 @@ public static class ConfigureService
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IPoemService, PoemService>();
         services.AddScoped<IPoemHistoryService, PoemHistoryService>();
+        services.AddScoped<ILikeService, LikeService>();
     }
     
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)

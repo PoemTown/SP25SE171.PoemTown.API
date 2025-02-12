@@ -22,6 +22,7 @@ public class GetPoemDetailResponse
     public bool IsPublic { get; set; }
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
+    public DateTimeOffset CreatedTime { get; set; }
     
     public PaginationResponse<GetRecordFileResponse> RecordFiles { get; set; }
 }

@@ -9,7 +9,7 @@ public class RequestOptionsBase <TFilterOption, TSortOption>
     public TFilterOption? FilterOptions { get; set; }
     
     [FromQuery(Name = "sortOptions")]
-    public TSortOption SortOptions { get; set; }
+    public TSortOption? SortOptions { get; set; } = default;
         
     [FromQuery(Name = "isDelete")]
     public bool? IsDelete { get; set; } = false;

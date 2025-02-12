@@ -67,12 +67,12 @@ public class PoemsController : BaseController
     ///
     /// SortOptions: Sắp xếp bài thơ theo thứ tự
     ///
-    /// - 0: LikeCountAscending (Lượt thích tăng dần)
-    /// - 1: LikeCountDescending (Lượt thích giảm dần)
-    /// - 2: CommentCountAscending (Lượt bình luận tăng dần)
-    /// - 3: CommentCountDescending (Lượt bình luận giảm dần)
-    /// - 4: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
-    /// - 5: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    /// - 1: LikeCountAscending (Lượt thích tăng dần)
+    /// - 2: LikeCountDescending (Lượt thích giảm dần)
+    /// - 3: CommentCountAscending (Lượt bình luận tăng dần)
+    /// - 4: CommentCountDescending (Lượt bình luận giảm dần)
+    /// - 5: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
+    /// - 6: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -181,8 +181,8 @@ public class PoemsController : BaseController
     ///
     /// SortOptions: Sắp xếp bài thơ theo thứ tự:
     ///
-    /// - CreatedTimeAscending = 0 (Thời gian tạo tăng dần),
-    /// - CreatedTimeDescending = 1 (Thời gian tạo giảm dần) (Mặc định)
+    /// - CreatedTimeAscending = 1 (Thời gian tạo tăng dần),
+    /// - CreatedTimeDescending = 2 (Thời gian tạo giảm dần) (Mặc định)
     /// 
     /// </remarks>
     /// <param name="poemId"></param>

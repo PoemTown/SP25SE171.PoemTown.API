@@ -2,6 +2,6 @@
 
 public enum GetPoemRecordFileDetailSortOption
 {
-    CreatedTimeAscending = 0,
-    CreatedTimeDescending = 1,
+    CreatedTimeAscending = 1,
+    CreatedTimeDescending = 2,
 }

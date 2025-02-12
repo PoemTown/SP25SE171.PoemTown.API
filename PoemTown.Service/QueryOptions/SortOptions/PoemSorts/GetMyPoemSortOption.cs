@@ -2,10 +2,10 @@
 
 public enum GetMyPoemSortOption
 {
-    LikeCountAscending = 0,
-    LikeCountDescending = 1,
-    CommentCountAscending = 2,
-    CommentCountDescending = 3,
-    TypeAscending = 4,
-    TypeDescending = 5,
+    LikeCountAscending = 1,
+    LikeCountDescending = 2,
+    CommentCountAscending = 3,
+    CommentCountDescending = 4,
+    TypeAscending = 5,
+    TypeDescending = 6,
 }

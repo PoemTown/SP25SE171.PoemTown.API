@@ -21,4 +21,5 @@ public interface IPoemService
     Task<GetPoemDetailResponse> 
         GetPoemDetail(Guid userId, Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
     Task<PaginationResponse<GetPoemResponse>> GetPostedPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
+    Task<PaginationResponse<GetPoemResponse>> GetTrendingPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 }

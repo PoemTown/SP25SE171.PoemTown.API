@@ -432,4 +432,99 @@ public class PoemService : IPoemService
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
 
     }
+
+    public async Task<PaginationResponse<GetPoemResponse>> GetTrendingPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+    {
+        var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
+
+        poemQuery = poemQuery.Where(p => p.Status == PoemStatus.Posted);
+
+        poemQuery = poemQuery
+         .Select(p => new
+         {
+             Poem = p,
+             Score = (p.Likes!.Count * 1.0 + p.Comments!.Count * 0.2) /
+                     ((EF.Functions.DateDiffHour(p.CreatedTime, DateTime.UtcNow) + 2) *
+                      Math.Sqrt(EF.Functions.DateDiffHour(p.CreatedTime, DateTime.UtcNow) + 2))
+         })
+         .OrderByDescending(x => x.Score)
+         .Select(x => x.Poem);
+
+        if (request.IsDelete == true)
+        {
+            poemQuery = poemQuery.Where(p => p.DeletedTime != null);
+        }
+        else
+        {
+            poemQuery = poemQuery.Where(p => p.DeletedTime == null);
+        }
+
+        if (request.FilterOptions != null)
+        {
+            if (!String.IsNullOrWhiteSpace(request.FilterOptions.Title))
+            {
+                poemQuery = poemQuery.Where(p => p.Title!.Contains(request.FilterOptions.Title, StringComparison.OrdinalIgnoreCase));
+            }
+            if (!String.IsNullOrWhiteSpace(request.FilterOptions.ChapterName))
+            {
+                poemQuery = poemQuery.Where(p => p.ChapterName!.Contains(request.FilterOptions.ChapterName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (request.FilterOptions.Type != null)
+            {
+                poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
+            }
+
+            if (request.FilterOptions.CollectionId != null)
+            {
+                poemQuery = poemQuery.Where(p => p.CollectionId == request.FilterOptions.CollectionId);
+            }
+
+            if (request.FilterOptions.AudioStatus != null)
+            {
+                if (request.FilterOptions.AudioStatus == PoemAudio.HaveAudio)
+                {
+                    poemQuery = poemQuery.Where(p => p.RecordFiles.Any());
+                }
+                if (request.FilterOptions.AudioStatus == PoemAudio.NoAudio)
+                {
+                    poemQuery = poemQuery.Where(p => !p.RecordFiles.Any());
+                }
+            }
+        }
+
+        //apply sort
+        switch (request.SortOptions)
+        {
+            case GetPoemsSortOption.LikeCountAscending:
+                poemQuery = poemQuery.OrderBy(p => p.Likes!.Count(l => l.PoemId == p.Id));
+                break;
+            case GetPoemsSortOption.LikeCountDescending:
+                poemQuery = poemQuery.OrderByDescending(p => p.Likes!.Count(l => l.PoemId == p.Id));
+                break;
+            case GetPoemsSortOption.CommentCountAscending:
+                poemQuery = poemQuery.OrderBy(p => p.Comments!.Count(c => c.PoemId == p.Id));
+                break;
+            case GetPoemsSortOption.CommentCountDescending:
+                poemQuery = poemQuery.OrderByDescending(p => p.Comments!.Count(c => c.PoemId == p.Id));
+                break;
+            case GetPoemsSortOption.TypeAscending:
+                poemQuery = poemQuery.OrderBy(p => p.Type);
+                break;
+            case GetPoemsSortOption.TypeDescending:
+                poemQuery = poemQuery.OrderByDescending(p => p.Type);
+                break;
+            default:
+                break;
+        }
+
+        var queryPaging = await _unitOfWork.GetRepository<Poem>()
+            .GetPagination(poemQuery, request.PageNumber, request.PageSize);
+
+        var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
+
+        return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+
+    }
 }

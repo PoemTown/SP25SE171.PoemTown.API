@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
@@ -16,12 +17,13 @@ public class PoemHistoryService : IPoemHistoryService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+
     public PoemHistoryService(IUnitOfWork unitOfWork, IMapper mapper)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
-    
+
     public async Task<PaginationResponse<GetPoemHistoryResponse>> GetPoemHistories
         (Guid poemId, RequestOptionsBase<GetPoemHistoryFilterOption, GetPoemHistorySortOptions> request)
     {
@@ -31,7 +33,7 @@ public class PoemHistoryService : IPoemHistoryService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
         }
-        
+
         var poemHistoryQuery = _unitOfWork.GetRepository<PoemHistory>().AsQueryable();
 
         poemHistoryQuery = poemHistoryQuery.Where(p => p.PoemId == poemId);
@@ -45,9 +47,9 @@ public class PoemHistoryService : IPoemHistoryService
         {
             poemHistoryQuery = poemHistoryQuery.Where(p => p.DeletedTime != null);
         }
-        
+
         // Filter by FilterOptions
-        if(request.FilterOptions != null)
+        if (request.FilterOptions != null)
         {
         }
 
@@ -58,14 +60,96 @@ public class PoemHistoryService : IPoemHistoryService
             GetPoemHistorySortOptions.CreatedTimeDescending => poemHistoryQuery.OrderByDescending(p => p.CreatedTime),
             _ => poemHistoryQuery.OrderByDescending(p => p.CreatedTime)
         };
-        
+
         // Paging
         var queryPaging = await _unitOfWork.GetRepository<PoemHistory>()
             .GetPagination(poemHistoryQuery, request.PageNumber, request.PageSize);
-        
+
         var poemHistory = _mapper.Map<IList<GetPoemHistoryResponse>>(queryPaging.Data);
 
         return new PaginationResponse<GetPoemHistoryResponse>(poemHistory, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+    }
+
+    public async Task<GetPoemHistoryDetailResponse> GetPoemHistoryDetail(Guid poemHistoryId)
+    {
+        // Check if poem history exists
+        PoemHistory? poemHistory = await _unitOfWork.GetRepository<PoemHistory>()
+            .FindAsync(p => p.Id == poemHistoryId);
+        if (poemHistory == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem history not found");
+        }
+
+        var poemHistoryDetail = _mapper.Map<GetPoemHistoryDetailResponse>(poemHistory);
+        return poemHistoryDetail;
+    }
+
+    public async Task DeletePoemHistory(Guid poemHistoryId)
+    {
+        // Check if poem history exists
+        PoemHistory? poemHistory = await _unitOfWork.GetRepository<PoemHistory>()
+            .FindAsync(p => p.Id == poemHistoryId);
+        if (poemHistory == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem history not found");
+        }
+
+        _unitOfWork.GetRepository<PoemHistory>().Delete(poemHistory);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeletePoemHistoryPermanent(Guid poemHistoryId)
+    {
+        // Check if poem history exists
+        PoemHistory? poemHistory = await _unitOfWork.GetRepository<PoemHistory>()
+            .FindAsync(p => p.Id == poemHistoryId);
+        if (poemHistory == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem history not found");
+        }
+
+        _unitOfWork.GetRepository<PoemHistory>().DeletePermanent(poemHistory);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeletePoemHistories(IEnumerable<Guid> poemHistoryIds)
+    {
+        foreach (var poemHistoryId in poemHistoryIds)
+        {
+            // Check if poem history exists
+            PoemHistory? poemHistory = await _unitOfWork.GetRepository<PoemHistory>()
+                .FindAsync(p => p.Id == poemHistoryId);
+            if (poemHistory == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poem history not found");
+            }
+
+            _unitOfWork.GetRepository<PoemHistory>().Delete(poemHistory);
+        }
+        await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task DeletePoemHistoriesPermanent(IEnumerable<Guid> poemHistoryIds)
+    {
+        foreach (var poemHistoryId in poemHistoryIds)
+        {
+            // Check if poem history exists
+            PoemHistory? poemHistory = await _unitOfWork.GetRepository<PoemHistory>()
+                .FindAsync(p => p.Id == poemHistoryId);
+            if (poemHistory == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poem history not found");
+            }
+            
+            // Check if poem history has not yet soft deleted, then throw exception
+            if(poemHistory.DeletedTime == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poem history has not yet soft deleted");
+            }
+            
+            _unitOfWork.GetRepository<PoemHistory>().DeletePermanent(poemHistory);
+        }
+        await _unitOfWork.SaveChangesAsync();
     }
 }

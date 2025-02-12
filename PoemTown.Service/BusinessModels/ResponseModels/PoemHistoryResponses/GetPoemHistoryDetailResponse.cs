@@ -1,0 +1,21 @@
+﻿using PoemTown.Repository.Enums.Poems;
+
+namespace PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
+
+public class GetPoemHistoryDetailResponse
+{
+    public Guid Id { get; set; }
+    public int Version { get; set; }
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public PoemType Type { get; set; }
+    public PoemStatus Status { get; set; }
+    public string Description { get; set; }
+    public int ChapterNumber { get; set; }
+    public string ChapterName { get; set; }
+    public string PoemImage { get; set; }
+    public decimal Price { get; set; }
+    public Guid? SourceCopyRightId { get; set; }
+    public bool IsPublic { get; set; }
+    public DateTimeOffset CreatedTime { get; set; }
+}

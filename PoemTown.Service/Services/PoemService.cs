@@ -105,6 +105,7 @@ public class PoemService : IPoemService
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
         }
         
+        
         // Check if user own this poem
         if (poem.Collection!.UserId != userId)
         {
@@ -290,7 +291,8 @@ public class PoemService : IPoemService
         poemHistory.PoemId = poem.Id;
         poemHistory.Version = await _unitOfWork.GetRepository<PoemHistory>()
             .AsQueryable()
-            .CountAsync(p => request.Id == p.PoemId) + 1;
+            .Where(p => request.Id == p.PoemId && p.DeletedTime == null)
+            .MaxAsync(p => p.Version) + 1;
         await _unitOfWork.GetRepository<PoemHistory>().InsertAsync(poemHistory);
         
         await _unitOfWork.SaveChangesAsync();

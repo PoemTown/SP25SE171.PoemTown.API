@@ -48,7 +48,7 @@ public class PoemsController : BaseController
         await _poemService.CreateNewPoem(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status201Created, "Poem created successfully"));
     }
-    
+
     /// <summary>
     /// Lấy danh sách bài thơ của tôi, yêu cầu đăng nhập
     /// </summary>
@@ -83,14 +83,14 @@ public class PoemsController : BaseController
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
         var paginationResponse = await _poemService.GetMyPoems(userId, request);
-        
+
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;
         basePaginationResponse.Message = "Get poems successfully";
-        
+
         return Ok(basePaginationResponse);
     }
-    
+
     /// <summary>
     /// Chỉnh sửa một bài thơ, sau đó tạo ra bản sao (history) của bài thơ trước khi chỉnh sửa, yêu cầu đăng nhập
     /// </summary>
@@ -119,7 +119,7 @@ public class PoemsController : BaseController
         await _poemService.UpdatePoem(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem updated successfully"));
     }
-    
+
     /// <summary>
     /// Xóa một bài thơ (Chuyển vào thùng rác), yêu cầu đăng nhập
     /// </summary>
@@ -138,7 +138,7 @@ public class PoemsController : BaseController
         await _poemService.DeletePoem(poemId);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem deleted successfully"));
     }
-    
+
     /// <summary>
     /// Xóa một bài thơ (vĩnh viễn), yêu cầu đăng nhập
     /// </summary>
@@ -157,7 +157,7 @@ public class PoemsController : BaseController
         await _poemService.DeletePoemPermanent(poemId);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem deleted permanently successfully"));
     }
-    
+
     /// <summary>
     /// Lấy chi tiết của một bài thơ (Không bao gồm lịch sử chỉnh sửa), yêu cầu đăng nhập
     /// </summary>
@@ -190,14 +190,52 @@ public class PoemsController : BaseController
     [HttpGet]
     [Route("v1/{poemId}/detail")]
     [Authorize]
-    public async Task<ActionResult<BaseResponse<GetPoemDetailResponse>>> 
+    public async Task<ActionResult<BaseResponse<GetPoemDetailResponse>>>
         GetPoemDetail(Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
         var response = await _poemService.GetPoemDetail(userId, poemId, request);
-        
+
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Get poem detail successfully", response));
     }
-    
-    
+
+    /// <summary>
+    /// Lấy danh sách bài thơ, không yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// CHÚ Ý REQUEST PARAMETER:
+    ///
+    /// - tất cả lấy từ request query
+    /// 
+    /// Status: Trạng thái của bài thơ
+    ///
+    /// - 0: Draft
+    /// - 1: Posted
+    /// - 2: Suspended
+    ///
+    /// Type: Loại bài thơ, thể thơ:
+    ///
+    /// SortOptions: Sắp xếp bài thơ theo thứ tự
+    ///
+    /// - 0: LikeCountAscending (Lượt thích tăng dần)
+    /// - 1: LikeCountDescending (Lượt thích giảm dần)
+    /// - 2: CommentCountAscending (Lượt bình luận tăng dần)
+    /// - 3: CommentCountDescending (Lượt bình luận giảm dần)
+    /// - 4: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
+    /// - 5: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/poems")]
+    public async Task<ActionResult<BaseResponse<GetPoemResponse>>> GetPostedPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+    {
+        var paginationResponse = await _poemService.GetPostedPoems(request);
+
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get poems successfully";
+
+        return Ok(basePaginationResponse);
+    }
 }

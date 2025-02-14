@@ -40,6 +40,7 @@ public static class ConfigureService
         services.AddScoped<ILikeService, LikeService>();
         services.AddScoped<ICommentService, CommentService>();
         services.AddScoped<ITargetMarkService, TargetMarkService>();
+        services.AddScoped<IReportService, ReportService>();
     }
     
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)

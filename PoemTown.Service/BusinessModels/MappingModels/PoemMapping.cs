@@ -22,5 +22,8 @@ public class PoemMapping : Profile
         CreateMap<GetRecordFileResponse, GetPoemDetailResponse>().ReverseMap();
         CreateMap<Poem, GetPoemDetailResponse>()
             .ForMember(dest => dest.RecordFiles, opt => opt.Ignore());
+        
+        // poem in target mark
+        CreateMap<Poem, GetPoemInTargetMarkResponse>().ReverseMap();
     }
 }

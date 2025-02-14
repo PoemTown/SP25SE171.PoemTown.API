@@ -39,6 +39,7 @@ public static class ConfigureService
         services.AddScoped<IPoemHistoryService, PoemHistoryService>();
         services.AddScoped<ILikeService, LikeService>();
         services.AddScoped<ICommentService, CommentService>();
+        services.AddScoped<ITargetMarkService, TargetMarkService>();
     }
     
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)

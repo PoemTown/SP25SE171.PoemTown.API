@@ -36,6 +36,7 @@ public static class ConfigureService
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<IPoemService, PoemService>();
+        services.AddScoped<ICollectionService, CollectionService>();
         services.AddScoped<IPoemHistoryService, PoemHistoryService>();
     }
     

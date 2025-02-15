@@ -41,7 +41,11 @@ namespace PoemTown.Service.Services
 
         public async Task UpdateCollection(UpdateCollectionRequest request)
         {
-            Collection collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == request.Id) ?? throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == request.Id);
+                if(collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            }
             _mapper.Map(request, collection);
             _unitOfWork.GetRepository<Collection>().Update(collection);
             await _unitOfWork.SaveChangesAsync();
@@ -114,8 +118,13 @@ namespace PoemTown.Service.Services
 
         public async Task DeleteCollection(Guid collectionId)
         {
-            Collection collection = await _unitOfWork.GetRepository<Collection>()
-                .FindAsync(a => a.Id == collectionId) ?? throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            Collection? collection = await _unitOfWork.GetRepository<Collection>()
+                .FindAsync(a => a.Id == collectionId);
+                
+                if(collection == null)
+                {
+                 throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                }
            
             _unitOfWork.GetRepository<Collection>().Delete(collection);
             await _unitOfWork.SaveChangesAsync();
@@ -123,8 +132,12 @@ namespace PoemTown.Service.Services
 
         public async Task DeleteCollectionPermanent(Guid collectionId)
         {
-            Collection collection = await _unitOfWork.GetRepository<Collection>()
-               .FindAsync(a => a.Id == collectionId) ?? throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            Collection? collection = await _unitOfWork.GetRepository<Collection>()
+               .FindAsync(a => a.Id == collectionId);
+            if(collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            }
 
             if (collection.DeletedTime == null)
             {
@@ -141,7 +154,11 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status404NotFound, "Poem not found");
             }
-            Collection collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId) ?? throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
+                if(collection == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                }
             if (poem.CollectionId == collectionId)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem is already in this collection");

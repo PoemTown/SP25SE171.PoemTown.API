@@ -198,6 +198,45 @@ public class PoemsController : BaseController
         
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Get poem detail successfully", response));
     }
-    
-    
+
+    /// <summary>
+    /// Lấy danh sách bài thơ của tôi, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// CHÚ Ý REQUEST PARAMETER:
+    ///
+    /// - tất cả lấy từ request query
+    /// 
+    /// Status: Trạng thái của bài thơ
+    ///
+    /// - 0: Draft
+    /// - 1: Posted
+    /// - 2: Suspended
+    ///
+    /// Type: Loại bài thơ, thể thơ:
+    ///
+    /// SortOptions: Sắp xếp bài thơ theo thứ tự
+    ///
+    /// - 1: LikeCountAscending (Lượt thích tăng dần)
+    /// - 2: LikeCountDescending (Lượt thích giảm dần)
+    /// - 3: CommentCountAscending (Lượt bình luận tăng dần)
+    /// - 4: CommentCountDescending (Lượt bình luận giảm dần)
+    /// - 5: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
+    /// - 6: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/mine/{collectionId}")]
+    [Authorize]
+    public async Task<ActionResult<BasePaginationResponse<GetPoemResponse>>> GetPoemsInCollection(RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request, Guid collectionId)
+    {
+        var paginationResponse = await _poemService.GetPoemsInCollection(collectionId, request);
+
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get poems successfully";
+
+        return Ok(basePaginationResponse);
+    }
 }

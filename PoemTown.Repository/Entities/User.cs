@@ -70,6 +70,10 @@ public class User : IdentityUser<Guid>, IBaseEntity
 
     public User()
     {
+        if (string.IsNullOrWhiteSpace(DisplayName))
+        {
+            DisplayName = UserName;
+        }
         CreatedTime = LastUpdatedTime = DateTimeHelper.SystemTimeNow;
     }
 }

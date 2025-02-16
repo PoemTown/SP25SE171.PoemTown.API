@@ -1,6 +1,6 @@
 ﻿namespace PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
-public class GetBasicAuthorInformationResponse
+public class GetBasicUserInformationResponse
 {
     public Guid Id { get; set; }
     public string DisplayName { get; set; }

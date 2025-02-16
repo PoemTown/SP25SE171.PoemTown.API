@@ -165,7 +165,7 @@ public class TargetMarkService : ITargetMarkService
             }
             poems.Add(_mapper.Map<GetPoemInTargetMarkResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
-            poems.Last().Author = _mapper.Map<GetBasicAuthorInformationResponse>(poemEntity.Collection!.User);
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
         }
         
         return new PaginationResponse<GetPoemInTargetMarkResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
@@ -207,7 +207,7 @@ public class TargetMarkService : ITargetMarkService
             }
             collections.Add(_mapper.Map<GetCollectionInTargetMarkResponse>(collectionEntity));
             // Assign author to collection by adding into the last element of the list
-            collections.Last().Author = _mapper.Map<GetBasicAuthorInformationResponse>(collectionEntity.User);
+            collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
         }
         
         return new PaginationResponse<GetCollectionInTargetMarkResponse>(collections, queryPaging.PageNumber, queryPaging.PageSize,

@@ -9,5 +9,5 @@ public class GetCollectionInTargetMarkResponse
     public string CollectionDescription { get; set; }
     public string CollectionImage { get; set; }
     public int TotalChapter { get; set; }
-    public GetBasicAuthorInformationResponse Author { get; set; }
+    public GetBasicUserInformationResponse User { get; set; }
 }

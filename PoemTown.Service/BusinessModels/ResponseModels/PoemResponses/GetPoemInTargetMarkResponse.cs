@@ -21,5 +21,5 @@ public class GetPoemInTargetMarkResponse
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
     public GetCollectionInPoemResponse Collection { get; set; }
-    public GetBasicAuthorInformationResponse Author { get; set; }
+    public GetBasicUserInformationResponse User { get; set; }
 }

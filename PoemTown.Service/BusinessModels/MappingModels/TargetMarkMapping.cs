@@ -9,7 +9,7 @@ public class TargetMarkMapping : Profile
 {
     public TargetMarkMapping()
     {
-        CreateMap<GetBasicAuthorInformationResponse, GetPoemInTargetMarkResponse>();
-        CreateMap<GetBasicAuthorInformationResponse, GetCollectionInTargetMarkResponse>();
+        CreateMap<GetBasicUserInformationResponse, GetPoemInTargetMarkResponse>();
+        CreateMap<GetBasicUserInformationResponse, GetCollectionInTargetMarkResponse>();
     }
 }

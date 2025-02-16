@@ -241,15 +241,16 @@ public class PoemsController : BaseController
     }
     
     
-    /// <summary>
+    /*/// <summary>
     /// Lấy danh sách bài thơ của tôi, yêu cầu đăng nhập
     /// </summary>
     /// <param name="request"></param>
     /// <param name="collectionId"></param>
     /// <returns></returns>
+    [HttpGet]
     [Route("v1/mine/{collectionId}")]
     [Authorize]
-    public async Task<ActionResult<BasePaginationResponse<GetPoemResponse>>> GetPoemsInCollection(RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request, Guid collectionId)
+    public async Task<ActionResult<BasePaginationResponse<GetPoemResponse>>> GetPoemsInCollection(Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
         var paginationResponse = await _poemService.GetPoemsInCollection(collectionId, request);
 
@@ -258,7 +259,7 @@ public class PoemsController : BaseController
         basePaginationResponse.Message = "Get poems successfully";
 
         return Ok(basePaginationResponse);
-    }
+    }*/
     
     /// <summary>
     /// Lấy danh sách bài thơ trending, không yêu cầu đăng nhập

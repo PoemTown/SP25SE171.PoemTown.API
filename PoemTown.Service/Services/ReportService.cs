@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.Reports;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.RequestModels.ReportRequests;
@@ -23,6 +24,11 @@ public class ReportService : IReportService
         if (poem == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+
+        if (poem.Status != PoemStatus.Posted)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Can not report poem which is not posted");
         }
         
         // Check if the user reported his own poem, if so, throw an exception

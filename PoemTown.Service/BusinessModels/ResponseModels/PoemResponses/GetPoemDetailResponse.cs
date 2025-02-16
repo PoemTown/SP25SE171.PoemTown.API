@@ -1,6 +1,7 @@
 ﻿using PoemTown.Repository.Base;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Poems;
+using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 
@@ -23,6 +24,6 @@ public class GetPoemDetailResponse
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
-    
+    public GetCollectionInPoemResponse Collection { get; set; }
     public PaginationResponse<GetRecordFileResponse> RecordFiles { get; set; }
 }

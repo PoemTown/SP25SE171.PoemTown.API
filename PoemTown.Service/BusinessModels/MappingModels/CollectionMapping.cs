@@ -11,6 +11,7 @@ public class CollectionMapping : Profile
     public CollectionMapping()
     {
         CreateMap<Collection, GetCollectionInTargetMarkResponse>().ReverseMap();
+        CreateMap<Collection, GetCollectionInPoemResponse>().ReverseMap();
         
         CreateMap<CreateCollectionRequest, Collection>();
         CreateMap<UpdateCollectionRequest, Collection>();

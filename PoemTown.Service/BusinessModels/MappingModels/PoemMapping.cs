@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PoemTown.Repository.Entities;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
+using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
@@ -25,5 +26,10 @@ public class PoemMapping : Profile
         
         // poem in target mark
         CreateMap<Poem, GetPoemInTargetMarkResponse>().ReverseMap();
+
+        // poem in collection
+        CreateMap<GetCollectionInPoemResponse, GetPoemResponse>();
+        CreateMap<GetCollectionInPoemResponse, GetPoemDetailResponse>();
+        CreateMap<GetCollectionInPoemResponse, GetPoemResponse>();
     }
 }

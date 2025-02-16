@@ -206,6 +206,12 @@ public class PoemsController : BaseController
     /// CHÚ Ý REQUEST PARAMETER:
     ///
     /// - tất cả lấy từ request query
+    /// 
+    /// Status: Trạng thái của bài thơ
+    ///
+    /// - 0: Draft
+    /// - 1: Posted
+    /// - 2: Suspended
     ///
     /// Type: Loại bài thơ, thể thơ:
     ///
@@ -222,9 +228,30 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpGet]
     [Route("v1/poems")]
-    public async Task<ActionResult<BaseResponse<GetPoemResponse>>> GetPostedPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+    public async Task<ActionResult<BaseResponse<GetPoemResponse>>> GetPostedPoems(
+        RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
         var paginationResponse = await _poemService.GetPostedPoems(request);
+        
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get poems successfully";
+        
+        return Ok(basePaginationResponse);
+    }
+    
+    
+    /// <summary>
+    /// Lấy danh sách bài thơ của tôi, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="collectionId"></param>
+    /// <returns></returns>
+    [Route("v1/mine/{collectionId}")]
+    [Authorize]
+    public async Task<ActionResult<BasePaginationResponse<GetPoemResponse>>> GetPoemsInCollection(RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request, Guid collectionId)
+    {
+        var paginationResponse = await _poemService.GetPoemsInCollection(collectionId, request);
 
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;
@@ -232,7 +259,7 @@ public class PoemsController : BaseController
 
         return Ok(basePaginationResponse);
     }
-
+    
     /// <summary>
     /// Lấy danh sách bài thơ trending, không yêu cầu đăng nhập
     /// </summary>

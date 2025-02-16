@@ -433,6 +433,95 @@ public class PoemService : IPoemService
 
     }
 
+    public async Task<PaginationResponse<GetPoemResponse>> GetPoemsInCollection
+         (Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
+    {
+        Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
+        if(collection == null)
+        {
+            throw new CoreException(StatusCodes.Status404NotFound, "Collection not found");
+        }
+        /*if (collection.DeletedTime != null)
+        {
+            throw new CoreException(StatusCodes.Status404NotFound, "Collection is deleted");
+        }*/
+        var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
+
+        poemQuery = poemQuery.Where(p => p.Collection!.Id == collectionId);
+
+        if (request.IsDelete == true)
+        {
+            poemQuery = poemQuery.Where(p => p.DeletedTime != null);
+        }
+        else
+        {
+            poemQuery = poemQuery.Where(p => p.DeletedTime == null);
+        }
+        // Apply filter
+        if (request.FilterOptions != null)
+        {
+            if (!String.IsNullOrWhiteSpace(request.FilterOptions.Title))
+            {
+                poemQuery = poemQuery.Where(p =>
+                    p.Title!.Contains(request.FilterOptions.Title, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!String.IsNullOrWhiteSpace(request.FilterOptions.ChapterName))
+            {
+                poemQuery = poemQuery.Where(p =>
+                    p.ChapterName!.Contains(request.FilterOptions.ChapterName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (request.FilterOptions.Type != null)
+            {
+                poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
+            }
+
+            if (request.FilterOptions.Status != null)
+            {
+                poemQuery = poemQuery.Where(p => p.Status == request.FilterOptions.Status);
+            }
+
+            if (request.FilterOptions.CollectionId != null)
+            {
+                poemQuery = poemQuery.Where(p => p.CollectionId == request.FilterOptions.CollectionId);
+            }
+        }
+
+        // Apply sort
+        switch (request.SortOptions)
+        {
+            case GetMyPoemSortOption.LikeCountAscending:
+                poemQuery = poemQuery.OrderBy(p => p.Likes!.Count(l => l.PoemId == p.Id));
+                break;
+            case GetMyPoemSortOption.LikeCountDescending:
+                poemQuery = poemQuery.OrderByDescending(p => p.Likes!.Count(l => l.PoemId == p.Id));
+                break;
+            case GetMyPoemSortOption.CommentCountAscending:
+                poemQuery = poemQuery.OrderBy(p => p.Comments!.Count(c => c.PoemId == p.Id));
+                break;
+            case GetMyPoemSortOption.CommentCountDescending:
+                poemQuery = poemQuery.OrderByDescending(p => p.Comments!.Count(c => c.PoemId == p.Id));
+                break;
+            case GetMyPoemSortOption.TypeAscending:
+                poemQuery = poemQuery.OrderBy(p => p.Type);
+                break;
+            case GetMyPoemSortOption.TypeDescending:
+                poemQuery = poemQuery.OrderByDescending(p => p.Type);
+                break;
+            default:
+                poemQuery = poemQuery.OrderByDescending(p => p.CreatedTime);
+                break;
+        }
+
+        var queryPaging = await _unitOfWork.GetRepository<Poem>()
+            .GetPagination(poemQuery, request.PageNumber, request.PageSize);
+
+        var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
+        return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+    }
+
     public async Task<PaginationResponse<GetPoemResponse>> GetTrendingPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
@@ -525,6 +614,5 @@ public class PoemService : IPoemService
 
         return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
-
     }
 }

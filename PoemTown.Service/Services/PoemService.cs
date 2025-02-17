@@ -9,6 +9,7 @@ using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -114,6 +115,9 @@ public class PoemService : IPoemService
         
         var poemDetail = _mapper.Map<GetPoemDetailResponse>(poem);
         
+        // Assign author to poem
+        poemDetail.User = _mapper.Map<GetBasicUserInformationResponse>(poem.Collection!.User);
+        
         if (poem.RecordFiles != null && poem.RecordFiles.Count <= 0)
         {
             return poemDetail;
@@ -193,10 +197,10 @@ public class PoemService : IPoemService
                 poemQuery = poemQuery.Where(p => p.Status == request.FilterOptions.Status);
             }
 
-            if (request.FilterOptions.CollectionId != null)
+            /*if (request.FilterOptions.CollectionId != null)
             {
                 poemQuery = poemQuery.Where(p => p.CollectionId == request.FilterOptions.CollectionId);
-            }
+            }*/
         }
 
         // Apply sort
@@ -228,7 +232,7 @@ public class PoemService : IPoemService
         var queryPaging = await _unitOfWork.GetRepository<Poem>()
             .GetPagination(poemQuery, request.PageNumber, request.PageSize);
 
-        var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
+        //var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
 
         /*
         foreach (var poem in poems)
@@ -239,6 +243,21 @@ public class PoemService : IPoemService
 
             poem.CopyRights = _mapper.Map<IList<GetUserPoemResponse>>(copyRights);
         }*/
+        
+        // Assign poems (in queryPaging.Data) to Poem list
+        IList<GetPoemResponse> poems = new List<GetPoemResponse>();
+        foreach (var poem in queryPaging.Data)
+        {
+            var poemEntity = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poem.Id);
+            if (poemEntity == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+            }
+            poems.Add(_mapper.Map<GetPoemResponse>(poemEntity));
+            // Assign author to poem by adding into the last element of the list
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+        }
+        
         return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
@@ -379,10 +398,10 @@ public class PoemService : IPoemService
                 poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
             }
 
-            if (request.FilterOptions.CollectionId != null)
+            /*if (request.FilterOptions.CollectionId != null)
             {
                 poemQuery = poemQuery.Where(p => p.CollectionId == request.FilterOptions.CollectionId);
-            }   
+            }   */
 
             if(request.FilterOptions.AudioStatus != null)
             {
@@ -426,14 +445,27 @@ public class PoemService : IPoemService
         var queryPaging = await _unitOfWork.GetRepository<Poem>()
             .GetPagination(poemQuery, request.PageNumber, request.PageSize);
         
-        var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
+        //var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
 
+        IList<GetPoemResponse> poems = new List<GetPoemResponse>();
+        foreach (var poem in queryPaging.Data)
+        {
+            var poemEntity = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poem.Id);
+            if (poemEntity == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+            }
+            poems.Add(_mapper.Map<GetPoemResponse>(poemEntity));
+            // Assign author to poem by adding into the last element of the list
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+        }
+        
         return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize, 
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
 
     }
 
-    public async Task<PaginationResponse<GetPoemResponse>> GetPoemsInCollection
+    public async Task<PaginationResponse<GetPoemInCollectionResponse>> GetPoemsInCollection
          (Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
         Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
@@ -482,10 +514,10 @@ public class PoemService : IPoemService
                 poemQuery = poemQuery.Where(p => p.Status == request.FilterOptions.Status);
             }
 
-            if (request.FilterOptions.CollectionId != null)
+            /*if (request.FilterOptions.CollectionId != null)
             {
                 poemQuery = poemQuery.Where(p => p.CollectionId == request.FilterOptions.CollectionId);
-            }
+            }*/
         }
 
         // Apply sort
@@ -517,8 +549,22 @@ public class PoemService : IPoemService
         var queryPaging = await _unitOfWork.GetRepository<Poem>()
             .GetPagination(poemQuery, request.PageNumber, request.PageSize);
 
-        var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
-        return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
+        //var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
+        
+        IList<GetPoemInCollectionResponse> poems = new List<GetPoemInCollectionResponse>();
+        foreach (var poem in queryPaging.Data)
+        {
+            var poemEntity = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poem.Id);
+            if (poemEntity == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+            }
+            poems.Add(_mapper.Map<GetPoemInCollectionResponse>(poemEntity));
+            // Assign author to poem by adding into the last element of the list
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+        }
+        
+        return new PaginationResponse<GetPoemInCollectionResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
 
@@ -564,10 +610,12 @@ public class PoemService : IPoemService
                 poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
             }
 
+            /*
             if (request.FilterOptions.CollectionId != null)
             {
                 poemQuery = poemQuery.Where(p => p.CollectionId == request.FilterOptions.CollectionId);
             }
+            */
 
             if (request.FilterOptions.AudioStatus != null)
             {
@@ -610,8 +658,21 @@ public class PoemService : IPoemService
         var queryPaging = await _unitOfWork.GetRepository<Poem>()
             .GetPagination(poemQuery, request.PageNumber, request.PageSize);
 
-        var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
+        //var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
 
+        IList<GetPoemResponse> poems = new List<GetPoemResponse>();
+        foreach (var poem in queryPaging.Data)
+        {
+            var poemEntity = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poem.Id);
+            if (poemEntity == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+            }
+            poems.Add(_mapper.Map<GetPoemResponse>(poemEntity));
+            // Assign author to poem by adding into the last element of the list
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+        }
+        
         return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }

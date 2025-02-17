@@ -10,8 +10,8 @@ namespace PoemTown.Service.QueryOptions.FilterOptions.PoemFilters
 {
     public class GetPoemsFilterOption
     {
-        [FromQuery(Name = "collectionId")]
-        public Guid? CollectionId { get; set; }
+        /*[FromQuery(Name = "collectionId")]
+        public Guid? CollectionId { get; set; }*/
 
         [FromQuery(Name = "chapterName")]
         public string? ChapterName { get; set; }

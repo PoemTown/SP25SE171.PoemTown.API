@@ -200,7 +200,7 @@ public class PoemsController : BaseController
     }
 
     /// <summary>
-    /// Lấy danh sách bài thơ, không yêu cầu đăng nhập
+    /// Lấy danh sách bài thơ đã được đăng tải, không yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
     /// CHÚ Ý REQUEST PARAMETER:
@@ -227,7 +227,7 @@ public class PoemsController : BaseController
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    [Route("v1/poems")]
+    [Route("v1/posts")]
     public async Task<ActionResult<BaseResponse<GetPoemResponse>>> GetPostedPoems(
         RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
@@ -241,25 +241,25 @@ public class PoemsController : BaseController
     }
     
     
-    /*/// <summary>
-    /// Lấy danh sách bài thơ của tôi, yêu cầu đăng nhập
+    /// <summary>
+    /// Lấy danh sách bài thơ theo bộ sưu tập cuủa tôi, yêu cầu đăng nhập
     /// </summary>
     /// <param name="request"></param>
-    /// <param name="collectionId"></param>
+    /// <param name="collectionId">Lấy từ request path</param>
     /// <returns></returns>
     [HttpGet]
     [Route("v1/mine/{collectionId}")]
     [Authorize]
-    public async Task<ActionResult<BasePaginationResponse<GetPoemResponse>>> GetPoemsInCollection(Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
+    public async Task<ActionResult<BasePaginationResponse<GetPoemInCollectionResponse>>> GetPoemsInCollection(Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
         var paginationResponse = await _poemService.GetPoemsInCollection(collectionId, request);
 
-        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemResponse>>(paginationResponse);
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemInCollectionResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;
         basePaginationResponse.Message = "Get poems successfully";
 
         return Ok(basePaginationResponse);
-    }*/
+    }
     
     /// <summary>
     /// Lấy danh sách bài thơ trending, không yêu cầu đăng nhập

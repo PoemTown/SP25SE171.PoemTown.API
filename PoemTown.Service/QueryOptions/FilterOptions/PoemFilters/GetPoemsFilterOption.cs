@@ -26,6 +26,6 @@ namespace PoemTown.Service.QueryOptions.FilterOptions.PoemFilters
         public PoemStatus? Status { get; set; }
 
         [FromQuery(Name = "audio")]
-        public PoemAudio AudioStatus { get; set; }
+        public PoemAudio? AudioStatus { get; set; }
     }
 }

@@ -228,12 +228,18 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpGet]
     [Route("v1/posts")]
-    public async Task<ActionResult<BaseResponse<GetPoemResponse>>> GetPostedPoems(
+    public async Task<ActionResult<BaseResponse<GetPostedPoemResponse>>> GetPostedPoems(
         RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
-        var paginationResponse = await _poemService.GetPostedPoems(request);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }
+        var paginationResponse = await _poemService.GetPostedPoems(userId, request);
         
-        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemResponse>>(paginationResponse);
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPostedPoemResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;
         basePaginationResponse.Message = "Get poems successfully";
         
@@ -242,15 +248,16 @@ public class PoemsController : BaseController
     
     
     /// <summary>
-    /// Lấy danh sách bài thơ theo bộ sưu tập cuủa tôi, yêu cầu đăng nhập
+    /// Lấy danh sách bài thơ theo bộ sưu tập, yêu cầu đăng nhập
     /// </summary>
     /// <param name="request"></param>
     /// <param name="collectionId">Lấy từ request path</param>
     /// <returns></returns>
     [HttpGet]
-    [Route("v1/mine/{collectionId}")]
+    [Route("v1/{collectionId}")]
     [Authorize]
-    public async Task<ActionResult<BasePaginationResponse<GetPoemInCollectionResponse>>> GetPoemsInCollection(Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
+    public async Task<ActionResult<BasePaginationResponse<GetPoemInCollectionResponse>>> 
+        GetPoemsInCollection(Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
         var paginationResponse = await _poemService.GetPoemsInCollection(collectionId, request);
 
@@ -284,10 +291,16 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpGet]
     [Route("v1/trending")]
-    public async Task<ActionResult<BaseResponse<GetPoemResponse>>> GetTrendingPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+    public async Task<ActionResult<BaseResponse<GetPostedPoemResponse>>> GetTrendingPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
-        var paginationResponse = await _poemService.GetTrendingPoems(request);
-        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemResponse>>(paginationResponse);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }        
+        var paginationResponse = await _poemService.GetTrendingPoems(userId, request);
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPostedPoemResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;
         basePaginationResponse.Message = "Get poems successfully";
 

@@ -16,17 +16,28 @@ public class PoemMapping : Profile
         CreateMap<CreateNewPoemRequest, Poem>();
         CreateMap<UpdatePoemRequest, Poem>();
         
+        
         CreateMap<GetPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count));
         
         CreateMap<GetRecordFileResponse, GetPoemDetailResponse>().ReverseMap();
-        CreateMap<Poem, GetPoemDetailResponse>()
-            .ForMember(dest => dest.RecordFiles, opt => opt.Ignore());
-        CreateMap<Poem, GetPoemInCollectionResponse>().ReverseMap();
+        CreateMap<GetPoemDetailResponse, Poem>().ReverseMap()
+            .ForMember(dest => dest.RecordFiles, opt => opt.Ignore())
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
+            .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count));
+        
+        CreateMap<GetPoemInCollectionResponse, Poem>().ReverseMap()
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
+            .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count));
+        CreateMap<GetPostedPoemResponse, Poem>().ReverseMap()
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
+            .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count));
         
         // poem in target mark
-        CreateMap<Poem, GetPoemInTargetMarkResponse>().ReverseMap();
+        CreateMap<GetPoemInTargetMarkResponse, Poem>().ReverseMap()
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
+            .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count));
 
         // poem in collection
         CreateMap<GetCollectionInPoemResponse, GetPoemResponse>();

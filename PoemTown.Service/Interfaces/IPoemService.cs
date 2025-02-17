@@ -21,6 +21,8 @@ public interface IPoemService
     Task DeletePoemPermanent(Guid poemId);
     Task<GetPoemDetailResponse> 
         GetPoemDetail(Guid userId, Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
-    Task<PaginationResponse<GetPoemResponse>> GetPostedPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
-    Task<PaginationResponse<GetPoemResponse>> GetTrendingPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
+    Task<PaginationResponse<GetPostedPoemResponse>> 
+        GetPostedPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
+    Task<PaginationResponse<GetPostedPoemResponse>>
+        GetTrendingPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 }

@@ -7,6 +7,7 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
+using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
@@ -367,7 +368,8 @@ public class PoemService : IPoemService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<PaginationResponse<GetPoemResponse>> GetPostedPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+    public async Task<PaginationResponse<GetPostedPoemResponse>>
+        GetPostedPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
 
@@ -447,7 +449,7 @@ public class PoemService : IPoemService
         
         //var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
 
-        IList<GetPoemResponse> poems = new List<GetPoemResponse>();
+        IList<GetPostedPoemResponse> poems = new List<GetPostedPoemResponse>();
         foreach (var poem in queryPaging.Data)
         {
             var poemEntity = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poem.Id);
@@ -455,12 +457,15 @@ public class PoemService : IPoemService
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
-            poems.Add(_mapper.Map<GetPoemResponse>(poemEntity));
+            poems.Add(_mapper.Map<GetPostedPoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+            
+            // Assign like to poem by adding into the last element of the list
+            poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
         }
         
-        return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize, 
+        return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize, 
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
 
     }
@@ -568,7 +573,8 @@ public class PoemService : IPoemService
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
 
-    public async Task<PaginationResponse<GetPoemResponse>> GetTrendingPoems(RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+    public async Task<PaginationResponse<GetPostedPoemResponse>>
+        GetTrendingPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
 
@@ -660,7 +666,7 @@ public class PoemService : IPoemService
 
         //var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
 
-        IList<GetPoemResponse> poems = new List<GetPoemResponse>();
+        IList<GetPostedPoemResponse> poems = new List<GetPostedPoemResponse>();
         foreach (var poem in queryPaging.Data)
         {
             var poemEntity = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poem.Id);
@@ -668,12 +674,15 @@ public class PoemService : IPoemService
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
-            poems.Add(_mapper.Map<GetPoemResponse>(poemEntity));
+            poems.Add(_mapper.Map<GetPostedPoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+            
+            // Assign like to poem by adding into the last element of the list
+            poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
         }
         
-        return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
+        return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
 }

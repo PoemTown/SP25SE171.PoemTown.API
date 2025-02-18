@@ -5,6 +5,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Email;
 using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
 using PoemTown.Service.BusinessModels.MappingModels;
@@ -43,6 +44,9 @@ public static class ConfigureService
         services.AddScoped<ITargetMarkService, TargetMarkService>();
         services.AddScoped<IReportService, ReportService>();
         services.AddScoped<IFollowerService, FollowerService>();
+        services.AddScoped<IStatisticService, StatisticService>();
+        services.AddScoped<ITemplateService, TemplateService>();
+        services.AddScoped<IUserService, UserService>();
     }
     
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)

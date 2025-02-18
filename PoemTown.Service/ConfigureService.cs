@@ -47,6 +47,7 @@ public static class ConfigureService
         services.AddScoped<IStatisticService, StatisticService>();
         services.AddScoped<ITemplateService, TemplateService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IImageService, ImageService>();
     }
     
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)

@@ -20,6 +20,7 @@ namespace PoemTown.Service.Interfaces
         Task DeleteCollection(Guid collectionId);
         Task DeleteCollectionPermanent(Guid collectionId);
         Task AddPoemToCollection(Guid poemId, Guid collectionId);
-        Task<PaginationResponse<GetCollectionResponse>> GetTrendingCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
+        Task<PaginationResponse<GetCollectionResponse>>
+            GetTrendingCollections(Guid? userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
     }
 }

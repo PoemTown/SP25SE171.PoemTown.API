@@ -149,9 +149,16 @@ namespace PoemTown.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("v1/trending")]
-        public async Task<ActionResult<BaseResponse>> GetTrendingCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        public async Task<ActionResult<BasePaginationResponse<GetCollectionResponse>>> GetTrendingCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
-            var result = await _service.GetTrendingCollections(request);
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }        
+            
+            var result = await _service.GetTrendingCollections(userId, request);
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetCollectionResponse>>(result);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;
             basePaginationResponse.Message = "Get Collection successfully";

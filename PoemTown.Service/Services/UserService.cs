@@ -11,6 +11,8 @@ using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.UserRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.ThirdParties.Interfaces;
+using PoemTown.Service.ThirdParties.Models.AwsS3;
 
 namespace PoemTown.Service.Services;
 
@@ -18,13 +20,16 @@ public class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IAwsS3Service _awsS3Service;
     
     public UserService(IUnitOfWork unitOfWork,
-        IMapper mapper
+        IMapper mapper,
+        IAwsS3Service awsS3Service
         )
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _awsS3Service = awsS3Service;
     }
 
     public async Task<GetUserProfileResponse> GetMyProfile(Guid userId)
@@ -70,5 +75,32 @@ public class UserService : IUserService
         user.NormalizedEmail = StringHelper.CapitalizeString(user.Email);
         _unitOfWork.GetRepository<User>().Update(user);
         await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task<string> UploadProfileImage(Guid userId, IFormFile file)
+    {
+        var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+        if (user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+
+        if (user.Status != AccountStatus.Active)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User is not active");
+        }
+        
+        ImageHelper.ValidateImage(file);
+        
+        //format file name to avoid duplicate file name with userId, unixTimeStamp
+        var fileName = $"{StringHelper.CapitalizeString(userId.ToString())}/profiles";
+        
+        UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
+        {
+            File = file,
+            Quality = 80,
+            FolderName = fileName
+        };
+        return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
     }
 }

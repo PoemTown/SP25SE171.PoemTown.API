@@ -52,4 +52,22 @@ public class UsersController : BaseController
         await _userService.UpdateMyProfile(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "User profile updated successfully"));
     }
+    
+    /// <summary>
+    /// Upload ảnh đại diện của người dùng, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Upload ảnh, sau đó trả ra image url, copy url đó vào trường Avatar trong API "Update: v1/mine/profile" để cập nhật ảnh đại diện
+    /// </remarks>
+    /// <param name="file">lấy từ form data</param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/mine/profile/image")]    
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<string>>> UploadProfileImage(IFormFile file)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _userService.UploadProfileImage(userId, file);
+        return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Profile image uploaded successfully", response));
+    }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Amazon.S3;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MassTransit;
@@ -13,6 +14,9 @@ using PoemTown.Service.Consumers.CollectionConsumers;
 using PoemTown.Service.Consumers.EmailConsumers;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.Services;
+using PoemTown.Service.ThirdParties.Interfaces;
+using PoemTown.Service.ThirdParties.Services;
+using PoemTown.Service.ThirdParties.Settings.AwsS3;
 using RazorLight;
 
 namespace PoemTown.Service;
@@ -28,6 +32,7 @@ public static class ConfigureService
         services.AddEmailSettingsConfig(configuration);
         services.AddRazorLightEngine(env);
         services.AddSmtpClient();
+        services.AddAwsS3Configuration(configuration);
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -47,7 +52,10 @@ public static class ConfigureService
         services.AddScoped<IStatisticService, StatisticService>();
         services.AddScoped<ITemplateService, TemplateService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IImageService, ImageService>();
+        
+        
+        //Third parties
+        services.AddScoped<IAwsS3Service, AwsS3Service>();
     }
     
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)
@@ -133,6 +141,34 @@ public static class ConfigureService
             smtpClient.Authenticate(emailSettings.Username, emailSettings.Password);
 
             return smtpClient;
+        });
+    }
+    
+    public static void AddAwsS3Configuration(this IServiceCollection services, IConfiguration configuration)
+    {
+        var s3Config = configuration.GetSection("AwsS3Settings");
+        services.AddSingleton<AwsS3Settings>(options =>
+        {
+            var awsS3Setting = new AwsS3Settings()
+            {
+                AccessKey = s3Config.GetSection("AccessKey").Value,
+                BucketName = s3Config.GetSection("BucketName").Value,
+                SecretKey = s3Config.GetSection("SecretKey").Value,
+                ServiceUrl = s3Config.GetSection("ServiceUrl").Value
+            };
+            awsS3Setting.IsValid();
+            return awsS3Setting;
+        });
+
+        services.AddSingleton<IAmazonS3>(options =>
+        {
+            var config = options.GetRequiredService<AwsS3Settings>();
+            var amazonConfig = new AmazonS3Config
+            {
+                ServiceURL = config.ServiceUrl,
+                ForcePathStyle = true,
+            };
+            return new AmazonS3Client(config.AccessKey, config.SecretKey, amazonConfig);
         });
     }
 }

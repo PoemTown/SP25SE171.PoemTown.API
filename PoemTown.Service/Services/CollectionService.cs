@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
@@ -186,6 +187,58 @@ namespace PoemTown.Service.Services
             poem.CollectionId = collectionId;
             _unitOfWork.GetRepository<Poem>().Update(poem);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<PaginationResponse<GetCollectionResponse>> GetTrendingCollections(
+    RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        {
+            var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
+
+            // Soft delete filter for collections
+            collectionQuery = request.IsDelete == true
+                ? collectionQuery.Where(c => c.DeletedTime != null)
+                : collectionQuery.Where(c => c.DeletedTime == null);
+
+            // Apply collection name filter
+            if (request.FilterOptions != null &&
+                !string.IsNullOrWhiteSpace(request.FilterOptions.CollectionName))
+            {
+                collectionQuery = collectionQuery.Where(c =>
+                    c.CollectionName.Contains(request.FilterOptions.CollectionName));
+            }
+
+            // Calculate trending score
+            collectionQuery = collectionQuery
+                .Select(c => new
+                {
+                    Collection = c,
+                    TotalLikes = c.Poems
+                        .Where(p => p.DeletedTime == null) // Only non-deleted poems
+                        .SelectMany(p => p.Likes) // Flatten likes
+                        .Count(l => l.DeletedTime == null), // Count non-deleted likes
+                    TotalComments = c.Poems
+                        .Where(p => p.DeletedTime == null) // Only non-deleted poems
+                        .SelectMany(p => p.Comments) // Flatten comments
+                        .Count(c => c.DeletedTime == null), // Count non-deleted comments
+                    HoursSinceCreation = EF.Functions.DateDiffHour(c.CreatedTime, DateTime.UtcNow)
+                })
+                .OrderByDescending(x =>
+                    (x.TotalLikes + 0.2 * x.TotalComments) / (x.HoursSinceCreation + 2)
+                )
+                .Select(x => x.Collection);
+
+            var queryPaging = await _unitOfWork.GetRepository<Collection>()
+                .GetPagination(collectionQuery, request.PageNumber, request.PageSize);
+
+            var collections = _mapper.Map<IList<GetCollectionResponse>>(queryPaging.Data);
+
+            return new PaginationResponse<GetCollectionResponse>(
+                collections,
+                queryPaging.PageNumber,
+                queryPaging.PageSize,
+                queryPaging.TotalRecords,
+                queryPaging.CurrentPageRecords
+            );
         }
     }
 }

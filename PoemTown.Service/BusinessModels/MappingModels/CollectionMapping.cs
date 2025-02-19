@@ -16,6 +16,7 @@ public class CollectionMapping : Profile
         
         CreateMap<CreateCollectionRequest, Collection>();
         CreateMap<UpdateCollectionRequest, Collection>();
-        CreateMap<GetCollectionResponse, Collection>().ReverseMap();
+        CreateMap<GetCollectionResponse, Collection>().ReverseMap()
+             .ForMember(dest => dest.TotalChapter, opt => opt.MapFrom(p => p.Poems!.Count));
     }
 }

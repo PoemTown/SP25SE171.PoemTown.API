@@ -9,7 +9,8 @@ public class UserTemplateDetail : BaseEntity
     public string? ColorCode { get; set; }
     public TemplateDetailType? Type { get; set; }
     public string? Image { get; set; }
-    
+    public TemplateDetailDesignType? DesignType { get; set; }
+
     public Guid? ParentTemplateDetailId { get; set; }
     public Guid UserTemplateId { get; set; }
     

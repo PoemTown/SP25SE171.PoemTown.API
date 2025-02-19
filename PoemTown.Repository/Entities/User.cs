@@ -52,13 +52,14 @@ public class User : IdentityUser<Guid>, IBaseEntity
     /*
     public virtual ICollection<UserTemplate>? UserTemplates { get; set; }
     */
-    public virtual ICollection<Template> Templates { get; set; }
+    public virtual ICollection<UserTemplate> UserTemplates { get; set; }
     public virtual ICollection<Transaction>? Transactions { get; set; }
 
     public virtual ICollection<Like> Likes { get; set; }
 
     public virtual ICollection<Announcement>? Announcements { get; set; }
     public virtual ICollection<Achievement> Achievements { get; set; }
+    public virtual ICollection<Theme> Themes { get; set; }
     public string? CreatedBy { get; set; }
     public string? LastUpdatedBy { get; set; }
     public string? DeletedBy { get; set; }

@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using PoemTown.Repository.Base;
 using PoemTown.Repository.Enums.MasterTemplates;
 
 namespace PoemTown.Repository.Entities;
 
-public class MasterTemplate
+public class MasterTemplate : BaseEntity
 {
     [Key]
     public Guid Id { get; set; }
@@ -13,7 +14,7 @@ public class MasterTemplate
     public string? TagName { get; set; } = null;
     public MasterTemplateType? Type { get; set; }
     
-    public virtual ICollection<TemplateDetail>? TemplateDetails { get; set; }
-    public virtual ICollection<Template>? Templates { get; set; }
+    public virtual ICollection<MasterTemplateDetail>? TemplateDetails { get; set; }
+    public virtual ICollection<UserTemplate>? Templates { get; set; }
     public virtual OrderDetail? OrderDetail { get; set; }
 }

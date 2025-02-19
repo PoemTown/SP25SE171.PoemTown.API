@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
@@ -44,6 +45,7 @@ public class TemplateController : BaseController
     /// <returns></returns>
     [HttpPost]
     [Route("v1/master-templates")]
+    [Authorize(Roles = "ADMIN")]
     public async Task<ActionResult<BaseResponse>> CreateMasterTemplate(CreateMasterTemplateRequest request)
     {
         await _templateService.CreateMasterTemplate(request);

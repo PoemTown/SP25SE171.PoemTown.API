@@ -6,6 +6,7 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
@@ -166,6 +167,7 @@ public class TargetMarkService : ITargetMarkService
             poems.Add(_mapper.Map<GetPoemInTargetMarkResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+            poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
         }
         
         return new PaginationResponse<GetPoemInTargetMarkResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,

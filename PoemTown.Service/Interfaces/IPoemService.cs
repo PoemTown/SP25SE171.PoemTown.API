@@ -14,7 +14,7 @@ public interface IPoemService
     Task<PaginationResponse<GetPoemResponse>> GetMyPoems
         (Guid userId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request);
     Task<PaginationResponse<GetPoemInCollectionResponse>> GetPoemsInCollection
-       (Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request);
+       (Guid userId, Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request);
     Task UpdatePoem(Guid userId, UpdatePoemRequest request);
 
     Task DeletePoem(Guid poemId);

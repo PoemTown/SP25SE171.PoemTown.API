@@ -259,7 +259,8 @@ public class PoemsController : BaseController
     public async Task<ActionResult<BasePaginationResponse<GetPoemInCollectionResponse>>> 
         GetPoemsInCollection(Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
-        var paginationResponse = await _poemService.GetPoemsInCollection(collectionId, request);
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var paginationResponse = await _poemService.GetPoemsInCollection(userId, collectionId, request);
 
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemInCollectionResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;

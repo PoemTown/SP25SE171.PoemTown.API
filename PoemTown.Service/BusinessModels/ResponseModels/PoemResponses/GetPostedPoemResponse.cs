@@ -2,6 +2,7 @@
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.CommentResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -25,4 +26,5 @@ public class GetPostedPoemResponse
     public GetCollectionInPoemResponse Collection { get; set; }
     public GetBasicUserInformationResponse User { get; set; }
     public GetLikeResponse Like { get; set; }
+    public GetTargetMarkResponse TargetMark { get; set; }
 }

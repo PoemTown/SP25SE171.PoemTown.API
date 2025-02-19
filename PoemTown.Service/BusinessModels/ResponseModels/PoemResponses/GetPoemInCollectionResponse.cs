@@ -1,4 +1,6 @@
 ﻿using PoemTown.Repository.Enums.Poems;
+using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -20,4 +22,6 @@ public class GetPoemInCollectionResponse
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
     public GetBasicUserInformationResponse User { get; set; }
+    public GetLikeResponse Like { get; set; }
+    public GetTargetMarkResponse TargetMark { get; set; }
 }

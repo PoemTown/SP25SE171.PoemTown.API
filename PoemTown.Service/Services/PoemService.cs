@@ -5,11 +5,13 @@ using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Poems;
+using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
@@ -259,7 +261,8 @@ public class PoemService : IPoemService
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
             
             poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
-
+            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
         
         return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
@@ -466,6 +469,8 @@ public class PoemService : IPoemService
             
             // Assign like to poem by adding into the last element of the list
             poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
         
         return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize, 
@@ -474,7 +479,7 @@ public class PoemService : IPoemService
     }
 
     public async Task<PaginationResponse<GetPoemInCollectionResponse>> GetPoemsInCollection
-         (Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
+         (Guid userId, Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
         Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
         if(collection == null)
@@ -570,6 +575,9 @@ public class PoemService : IPoemService
             poems.Add(_mapper.Map<GetPoemInCollectionResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+            poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
         
         return new PaginationResponse<GetPoemInCollectionResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
@@ -683,6 +691,8 @@ public class PoemService : IPoemService
             
             // Assign like to poem by adding into the last element of the list
             poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
         
         return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,

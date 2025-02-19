@@ -1,5 +1,6 @@
 ﻿using PoemTown.Repository.Enums.Poems;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -22,4 +23,5 @@ public class GetPoemInTargetMarkResponse
     public PoemStatus Status { get; set; }
     public GetCollectionInPoemResponse Collection { get; set; }
     public GetBasicUserInformationResponse User { get; set; }
+    public GetLikeResponse Like { get; set; }
 }

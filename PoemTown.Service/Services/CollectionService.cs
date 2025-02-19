@@ -15,6 +15,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Enums.TargetMarks;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.Services
 {
@@ -90,7 +93,22 @@ namespace PoemTown.Service.Services
             var queryPaging = await _unitOfWork.GetRepository<Collection>()
             .GetPagination(collectionQuery, request.PageNumber, request.PageSize);
 
-            var collections = _mapper.Map<IList<GetCollectionResponse>>(queryPaging.Data);
+            IList<GetCollectionResponse> collections = new List<GetCollectionResponse>();
+            foreach (var collection in queryPaging.Data)
+            {
+                var collectionEntity = await _unitOfWork.GetRepository<Collection>().FindAsync(p => p.Id == collection.Id);
+                if (collectionEntity == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                }
+                collections.Add(_mapper.Map<GetCollectionResponse>(collectionEntity));
+                // Assign author to poem by adding into the last element of the list
+                collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
+
+                collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                    (collection.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id && tm.Type == TargetMarkType.Collection));
+            }          
+            //var collections = _mapper.Map<IList<GetCollectionResponse>>(queryPaging.Data);
 
             return new PaginationResponse<GetCollectionResponse>(collections, queryPaging.PageNumber, queryPaging.PageSize,
            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);

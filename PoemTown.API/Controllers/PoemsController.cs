@@ -73,6 +73,11 @@ public class PoemsController : BaseController
     /// - 4: CommentCountDescending (Lượt bình luận giảm dần)
     /// - 5: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
     /// - 6: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    ///
+    /// TargetMark Type:
+    ///
+    /// - Poem = 1,
+    /// - Collection = 2
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -223,6 +228,11 @@ public class PoemsController : BaseController
     /// - 4: CommentCountDescending (Lượt bình luận giảm dần)
     /// - 5: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
     /// - 6: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    ///
+    /// TargetMark Type:
+    ///
+    /// - Poem = 1,
+    /// - Collection = 2
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -250,6 +260,12 @@ public class PoemsController : BaseController
     /// <summary>
     /// Lấy danh sách bài thơ theo bộ sưu tập, yêu cầu đăng nhập
     /// </summary>
+    /// <remarks>
+    /// TargetMark Type:
+    ///
+    /// - Poem = 1,
+    /// - Collection = 2
+    /// </remarks>
     /// <param name="request"></param>
     /// <param name="collectionId">Lấy từ request path</param>
     /// <returns></returns>
@@ -287,6 +303,11 @@ public class PoemsController : BaseController
     /// - 4: CommentCountDescending (Lượt bình luận giảm dần)
     /// - 5: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
     /// - 6: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    ///
+    /// TargetMark Type:
+    ///
+    /// - Poem = 1,
+    /// - Collection = 2
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>

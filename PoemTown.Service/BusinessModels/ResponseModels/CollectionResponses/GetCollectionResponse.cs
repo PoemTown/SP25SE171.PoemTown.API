@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses
 {
@@ -13,8 +15,10 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses
         public string CollectionName { get; set; } = default!;
         public string? CollectionDescription { get; set; } = default!;
         public string? CollectionImage { get; set; } = default!;
-        /*public bool? IsDefault { get; set; } = false;*/
+        public bool? IsDefault { get; set; } = false;
         public int? TotalChapter { get; set; } = default!;
-        /*public virtual ICollection<TargetMark>? TargetMarks { get; set; } = null;*/
+        public GetTargetMarkResponse? TargetMark { get; set; }
+        public GetBasicUserInformationResponse? User { get; set; }
+
     }
 }

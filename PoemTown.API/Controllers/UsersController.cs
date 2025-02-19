@@ -70,4 +70,23 @@ public class UsersController : BaseController
         var response = await _userService.UploadProfileImage(userId, file);
         return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Profile image uploaded successfully", response));
     }
+    
+    /// <summary>
+    /// Lấy thông tin cá nhân của người dùng online (trên thanh header), yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// - TotalFollowers: tổng số người đang theo dõi tôi
+    ///
+    /// - TotalFollowings: tổng số người tôi đang theo dõi
+    /// </remarks>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/mine/profile/online")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<GetOwnOnlineProfileResponse>>> GetOwnOnlineProfile()
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _userService.GetOwnOnlineProfile(userId);
+        return Ok(new BaseResponse<GetOwnOnlineProfileResponse>(StatusCodes.Status200OK, "User online profile retrieved successfully", response));
+    }
 }

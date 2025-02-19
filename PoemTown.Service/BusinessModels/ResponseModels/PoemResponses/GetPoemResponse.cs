@@ -25,6 +25,8 @@ public class GetPoemResponse
     public bool IsPublic { get; set; }
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
+    public DateTimeOffset CreatedTime { get; set; }
+
     public GetCollectionInPoemResponse Collection { get; set; }
     public GetBasicUserInformationResponse User { get; set; }
     public GetLikeResponse Like { get; set; }

@@ -93,7 +93,7 @@ public class UserService : IUserService
         ImageHelper.ValidateImage(file);
         
         //format file name to avoid duplicate file name with userId, unixTimeStamp
-        var fileName = $"{StringHelper.CapitalizeString(userId.ToString())}/profiles";
+        var fileName = $"profiles/{StringHelper.CapitalizeString(userId.ToString())}";
         
         UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
         {
@@ -102,5 +102,22 @@ public class UserService : IUserService
             FolderName = fileName
         };
         return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
+    }
+
+    public async Task<GetOwnOnlineProfileResponse> GetOwnOnlineProfile(Guid userId)
+    {
+        var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+        if (user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+
+        if (user.Status != AccountStatus.Active)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User is not active");
+        }
+        
+        
+        return _mapper.Map<GetOwnOnlineProfileResponse>(user);
     }
 }

@@ -8,6 +8,7 @@ using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.CollectionFilters;
@@ -168,6 +169,8 @@ public class TargetMarkService : ITargetMarkService
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
             poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
         
         return new PaginationResponse<GetPoemInTargetMarkResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
@@ -210,6 +213,8 @@ public class TargetMarkService : ITargetMarkService
             collections.Add(_mapper.Map<GetCollectionInTargetMarkResponse>(collectionEntity));
             // Assign author to collection by adding into the last element of the list
             collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
+            collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (collectionEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id && tm.Type == TargetMarkType.Collection));
         }
         
         return new PaginationResponse<GetCollectionInTargetMarkResponse>(collections, queryPaging.PageNumber, queryPaging.PageSize,

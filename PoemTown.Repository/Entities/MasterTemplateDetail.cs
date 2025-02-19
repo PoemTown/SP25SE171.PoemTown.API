@@ -18,6 +18,7 @@ namespace PoemTown.Repository.Entities
         public Guid Id { get; set; } 
         public string? ColorCode { get; set; }
         public TemplateDetailType? Type { get; set; }
+        public string? Image { get; set; }
         public Guid MasterTemplateId { get; set; }
         
         public virtual MasterTemplate MasterTemplate { get; set; } = null!;

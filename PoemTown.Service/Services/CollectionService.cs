@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
@@ -86,12 +87,21 @@ namespace PoemTown.Service.Services
                     collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
                     break;
             }
-
+/*            var collectionIds = await collectionQuery.Select(a => a.Id).ToListAsync();
+            var totalPoem =  _unitOfWork.GetRepository<Poem>()
+                .AsQueryable()
+                .Where(a => collectionIds.Contains(a.Id))
+                .GroupBy(a => a.CollectionId)
+                .Select(g => new { CollectionId = g.Key, TotalPoem = g.Count() })
+                .ToDictionaryAsync(x => x.CollectionId, x => x.TotalPoem);*/
             var queryPaging = await _unitOfWork.GetRepository<Collection>()
             .GetPagination(collectionQuery, request.PageNumber, request.PageSize);
 
             var collections = _mapper.Map<IList<GetCollectionResponse>>(queryPaging.Data);
-
+           /* foreach (var collection in collections)
+            {
+                collection.TotalChapter = totalPoem.ContainsKey(collection.Id) ? totalPoem[collection.Id] : 0;
+            }*/
             return new PaginationResponse<GetCollectionResponse>(collections, queryPaging.PageNumber, queryPaging.PageSize,
            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }

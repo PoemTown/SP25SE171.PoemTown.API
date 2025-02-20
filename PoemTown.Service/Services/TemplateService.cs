@@ -7,6 +7,7 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.TemplateDetails;
 using PoemTown.Repository.Enums.Templates;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 using PoemTown.Service.Interfaces;
@@ -14,6 +15,7 @@ using PoemTown.Service.QueryOptions.FilterOptions.TemplateFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.TemplateSorts;
 using PoemTown.Service.ThirdParties.Interfaces;
+using PoemTown.Service.ThirdParties.Models.AwsS3;
 
 namespace PoemTown.Service.Services;
 
@@ -23,10 +25,14 @@ public class TemplateService : ITemplateService
     private readonly IMapper _mapper;
     private readonly IAwsS3Service _awsS3Service;
 
-    public TemplateService(IUnitOfWork unitOfWork, IMapper mapper)
+    public TemplateService(IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IAwsS3Service awsS3Service
+        )
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _awsS3Service = awsS3Service;
     }
 
     public async Task CreateMasterTemplate(CreateMasterTemplateRequest request)
@@ -316,5 +322,32 @@ public class TemplateService : ITemplateService
 
         _unitOfWork.GetRepository<MasterTemplateDetail>().DeletePermanent(masterTemplateDetail);
         await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task<string> UploadMasterTemplateDetailImage(IFormFile file)
+    {
+        ImageHelper.ValidateImage(file);
+
+        var fileName = "templates";
+        UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
+        {
+            File = file,
+            FolderName = fileName
+        };
+        return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
+    }
+
+    public async Task AddMasterTemplateDetailIntoMasterTemplate(
+        AddMasterTemplateDetailIntoMasterTemplateRequest request)
+    {
+        MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
+            .FindAsync(p => p.Id == request.MasterTemplateId);
+
+        if (masterTemplate == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
+        }
+        
+        
     }
 }

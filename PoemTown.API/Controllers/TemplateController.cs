@@ -254,4 +254,18 @@ public class TemplateController : BaseController
         await _templateService.DeleteMasterTemplateDetailPermanently(masterTemplateDetailId);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Master template detail deleted permanently successfully"));
     }
+    
+    /// <summary>
+    /// Upload ảnh cho master template detail, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/master-templates/detail/image")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse<string>>> UploadMasterTemplateDetailImage(IFormFile file)
+    {
+        var response = await _templateService.UploadMasterTemplateDetailImage(file);
+        return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Master template detail image uploaded successfully", response));
+    }
 }

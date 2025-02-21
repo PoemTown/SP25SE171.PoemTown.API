@@ -347,7 +347,73 @@ public class TemplateService : ITemplateService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
         }
+
+        foreach (var mtd in request.MasterTemplateDetails)
+        {
+            if (mtd is { Image: not null, ColorCode: not null })
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Image and ColorCode cannot be together");
+            }
+
+            if (mtd is { Image: null, ColorCode: null })
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Image or ColorCode is required");
+            }
+
+            MasterTemplateDetail masterTemplateDetail = _mapper.Map<MasterTemplateDetail>(mtd);
+
+            masterTemplateDetail.MasterTemplateId = masterTemplate.Id;
+            // Set DesignType based on Image or ColorCode
+            masterTemplateDetail.DesignType =
+                mtd.Image != null ? TemplateDetailDesignType.Image : TemplateDetailDesignType.ColorCode;
+
+            await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertAsync(masterTemplateDetail);
+        }
         
+        masterTemplate.Type = masterTemplate.MasterTemplateDetails.Count > 1 ? TemplateType.Bundle : TemplateType.Single;
+        _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<PaginationResponse<GetUserTemplateDetailResponse>> GetUserTemplateDetails(Guid userId,
+        RequestOptionsBase<GetUserTemplateDetailFilterOption, GetUserTemplateDetailSortOption> request)
+    {
+        var userTemplateDetailQuery = _unitOfWork.GetRepository<UserTemplateDetail>().AsQueryable();
+        
+        userTemplateDetailQuery = userTemplateDetailQuery.Where(p => p.UserTemplate.UserId == userId);
+        
+        // Filter
+        if (request.FilterOptions != null)
+        {
+            if (request.FilterOptions.Type != default)
+            {
+                userTemplateDetailQuery = userTemplateDetailQuery.Where(p => p.Type == request.FilterOptions.Type);
+            }
+            if(request.FilterOptions.TemplateType != default)
+            {
+                userTemplateDetailQuery = userTemplateDetailQuery.Where(p => p.UserTemplate.Type == request.FilterOptions.TemplateType);
+            }
+        }
+        
+        // Sort
+        userTemplateDetailQuery = request.SortOptions switch
+        {
+            GetUserTemplateDetailSortOption.CreatedTimeAscending => userTemplateDetailQuery.OrderBy(p =>
+                p.CreatedTime),
+            GetUserTemplateDetailSortOption.CreatedTimeDescending => userTemplateDetailQuery.OrderByDescending(p =>
+                p.CreatedTime),
+            _ => userTemplateDetailQuery.OrderBy(p => p.Type).ThenByDescending(p => p.CreatedTime)
+        };
+        
+        // Pagination
+        var queryPaging = await _unitOfWork.GetRepository<UserTemplateDetail>()
+            .GetPagination(userTemplateDetailQuery, request.PageNumber, request.PageSize);
+        
+        var userTemplateDetailResponse = _mapper.Map<IList<GetUserTemplateDetailResponse>>(queryPaging.Data);
+        
+        return new PaginationResponse<GetUserTemplateDetailResponse>(userTemplateDetailResponse,
+            queryPaging.PageNumber,
+            queryPaging.PageSize, queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         
     }
 }

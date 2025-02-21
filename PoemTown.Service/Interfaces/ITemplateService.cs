@@ -26,4 +26,10 @@ public interface ITemplateService
     Task DeleteMasterTemplateDetail(Guid masterTemplateDetailId);
     Task DeleteMasterTemplateDetailPermanently(Guid masterTemplateDetailId);
     Task<string> UploadMasterTemplateDetailImage(IFormFile file);
+
+    Task AddMasterTemplateDetailIntoMasterTemplate(
+        AddMasterTemplateDetailIntoMasterTemplateRequest request);
+
+    Task<PaginationResponse<GetUserTemplateDetailResponse>> GetUserTemplateDetails(Guid userId,
+        RequestOptionsBase<GetUserTemplateDetailFilterOption, GetUserTemplateDetailSortOption> request);
 }

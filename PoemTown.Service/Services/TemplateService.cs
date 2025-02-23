@@ -436,6 +436,8 @@ public class TemplateService : ITemplateService
             throw new CoreException(StatusCodes.Status400BadRequest, "Theme not belong to this user");
         }
 
+        
+        
         // -----UserTemplateDetail-----
         // Check if userTemplateDetail exists
         foreach (var templateDetailId in request.TemplateDetailIds)
@@ -453,7 +455,7 @@ public class TemplateService : ITemplateService
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "UserTemplateDetail not belong to this user");
             }
-
+            
             // Check if UserTemplateDetail exists in ThemeUserTemplateDetail
             ThemeUserTemplateDetail? themeUserTemplateDetail = await _unitOfWork
                 .GetRepository<ThemeUserTemplateDetail>()
@@ -463,6 +465,17 @@ public class TemplateService : ITemplateService
                 throw new CoreException(StatusCodes.Status400BadRequest, $"UserTemplateDetail: {templateDetailId} is already in this Theme");
             }
 
+            //Check if type of UserTemplateDetails duplicated in theme
+            var userTemplateDetailTypes = await _unitOfWork.GetRepository<ThemeUserTemplateDetail>()
+                .AsQueryable()
+                .Where(p => p.ThemeId == request.ThemeId)
+                .AnyAsync(p => p.UserTemplateDetail.Type == userTemplateDetail.Type);
+            
+            if(userTemplateDetailTypes)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, $"UserTemplateDetail Type: {userTemplateDetail.Type} is already in this Theme");
+            }
+            
             themeUserTemplateDetail = new ThemeUserTemplateDetail()
             {
                 ThemeId = request.ThemeId,

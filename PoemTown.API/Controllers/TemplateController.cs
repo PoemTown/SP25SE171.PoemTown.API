@@ -307,6 +307,11 @@ public class TemplateController : BaseController
     /// - Bundle = 1,
     /// - Single = 2
     ///
+    /// DesignType:
+    ///
+    /// - 1: Image,
+    /// - 2: ColorCode
+    /// 
     /// sortOptions:
     /// 
     /// - CreatedTimeAscending = 1,
@@ -329,5 +334,114 @@ public class TemplateController : BaseController
         basePaginationResponse.Message = "Get user template detail successfully";
 
         return Ok(basePaginationResponse);
+    }
+    
+    /// <summary>
+    /// Thêm một user template detail vào user theme, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/user-templates/theme")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> AddUserTemplateDetailIntoUserTheme(AddUserTemplateDetailIntoUserThemeRequest request)
+    {
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value!);
+        
+        await _templateService.AddUserTemplateDetailIntoUserTheme(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "User template detail added into user theme successfully"));
+    }
+    
+    /// <summary>
+    /// Lấy chi tiết (các thành phần) trong user theme, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Type (template detail): 
+    ///
+    /// - Header = 1,
+    /// - NavBackground = 2,
+    /// - NavBorder = 3,
+    /// - MainBackground = 4,
+    /// - AchievementBorder = 5,
+    /// - AchievementBackground = 6,
+    /// - StatisticBorder = 7,
+    /// - StatisticBackground = 8,
+    ///
+    /// templateType (user template):
+    ///
+    /// - Bundle = 1,
+    /// - Single = 2
+    ///
+    /// DesignType:
+    ///
+    /// - 1: Image,
+    /// - 2: ColorCode
+    /// </remarks>
+    /// <param name="themeId"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/user-templates/theme/{themeId}")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<IList<GetUserTemplateDetailInUserThemeResponse>>>> GetUserTemplateDetailInUserTheme(Guid themeId)
+    {
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value!);
+        
+        var response = await _templateService.GetUserTemplateDetailInUserTheme(userId, themeId);
+        return Ok(new BaseResponse<IList<GetUserTemplateDetailInUserThemeResponse>>
+            (StatusCodes.Status200OK, "Get user template detail in user theme successfully", response));
+    }
+    
+    /// <summary>
+    /// Lấy chi tiết (các thành phần) của user theme (đang sử dụng), yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Type (template detail): 
+    ///
+    /// - Header = 1,
+    /// - NavBackground = 2,
+    /// - NavBorder = 3,
+    /// - MainBackground = 4,
+    /// - AchievementBorder = 5,
+    /// - AchievementBackground = 6,
+    /// - StatisticBorder = 7,
+    /// - StatisticBackground = 8,
+    ///
+    /// templateType (user template):
+    ///
+    /// - Bundle = 1,
+    /// - Single = 2
+    ///
+    /// DesignType:
+    ///
+    /// - 1: Image,
+    /// - 2: ColorCode
+    /// </remarks>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/user-templates/theme/in-use")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<IList<GetUserTemplateDetailInUserThemeResponse>>>> GetUserTemplateDetailInUsingUserTheme()
+    {
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value!);
+        
+        var response = await _templateService.GetUserTemplateDetailInUsingUserTheme(userId);
+        return Ok(new BaseResponse<IList<GetUserTemplateDetailInUserThemeResponse>>
+            (StatusCodes.Status200OK, "Get user template detail in using user theme successfully", response));
+    }
+    
+    /// <summary>
+    /// Loại bỏ một mảng user template detail trong user theme, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/user-templates/theme")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> RemoveUserTemplateDetailInUserTheme(RemoveUserTemplateDetailInUserThemeRequest request)
+    {
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value!);
+        
+        await _templateService.RemoveUserTemplateDetailInUserTheme(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "User template detail removed in user theme successfully"));
     }
 }

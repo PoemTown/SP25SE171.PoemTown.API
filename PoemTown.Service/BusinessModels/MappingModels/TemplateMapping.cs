@@ -22,5 +22,7 @@ public class TemplateMapping : Profile
         CreateMap<UpdateMasterTemplateDetailRequest, MasterTemplateDetail>();
         CreateMap<UserTemplateDetail, GetUserTemplateDetailResponse>().ReverseMap();
         CreateMap<GetUserTemplateResponse, GetUserTemplateDetailResponse>();
+
+        CreateMap<GetUserTemplateDetailInUserThemeResponse, UserTemplateDetail>().ReverseMap();
     }
 }

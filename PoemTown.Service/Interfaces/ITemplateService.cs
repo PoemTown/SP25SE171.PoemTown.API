@@ -32,4 +32,12 @@ public interface ITemplateService
 
     Task<PaginationResponse<GetUserTemplateDetailResponse>> GetUserTemplateDetails(Guid userId,
         RequestOptionsBase<GetUserTemplateDetailFilterOption, GetUserTemplateDetailSortOption> request);
+
+    Task AddUserTemplateDetailIntoUserTheme(Guid userId, AddUserTemplateDetailIntoUserThemeRequest request);
+    Task<IList<GetUserTemplateDetailInUserThemeResponse>> GetUserTemplateDetailInUserTheme(Guid userId, Guid themeId);
+
+    Task<IList<GetUserTemplateDetailInUserThemeResponse>> GetUserTemplateDetailInUsingUserTheme(Guid userId);
+
+    Task RemoveUserTemplateDetailInUserTheme(Guid userId,
+        RemoveUserTemplateDetailInUserThemeRequest request);
 }

@@ -19,7 +19,7 @@ namespace PoemTown.Repository.Entities
         public Guid Id { get; set; }
 
         public string ReportReason { get; set; } = default!;
-        public ReportStatus Status { get; set; } = default;
+        public ReportStatus Status { get; set; } = ReportStatus.Pending;
         public bool? IsSystem { get; set; } = false;
 
         public Guid? ReportUserId { get; set; }

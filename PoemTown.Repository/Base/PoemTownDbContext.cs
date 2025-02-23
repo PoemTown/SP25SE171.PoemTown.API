@@ -31,14 +31,16 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<RecordFile> RecordFiles => Set<RecordFile>();
     public virtual DbSet<Report> Reports => Set<Report>();
     public virtual DbSet<TargetMark> TargetMarks => Set<TargetMark>();
-    public virtual DbSet<Template> Templates => Set<Template>();
-    public virtual DbSet<TemplateDetail> TemplateDetails => Set<TemplateDetail>();
+    public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
+    public virtual DbSet<MasterTemplateDetail> MasterTemplateDetails => Set<MasterTemplateDetail>();
     public virtual DbSet<Transaction> Transactions => Set<Transaction>();
     /*public virtual DbSet<UserCopyRight> UserCopyRights => Set<UserCopyRight>();
     public virtual DbSet<UserCopyRightPoems> UserCopyRightPoems => Set<UserCopyRightPoems>();*/
     public virtual DbSet<UserEWallet> UserEWallets => Set<UserEWallet>();
     public virtual DbSet<UserLeaderBoard> UserLeaderBoards => Set<UserLeaderBoard>();
     public virtual DbSet<UserPoemRecordFile> UserPoemRecordFiles => Set<UserPoemRecordFile>();
+    public virtual DbSet<UserTemplateDetail> UserTemplateDetails => Set<UserTemplateDetail>();
+    public virtual DbSet<Theme> Themes => Set<Theme>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
     */
@@ -69,10 +71,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
             .HasIndex(ut => ut.UserId)
             .IsUnique(false);  // Index to speed up queries, but no uniqueness
 
-
-
-
-
+        
         // Transactions -> UserEWallets
         builder.Entity<Transaction>()
             .HasOne(t => t.EWallet)
@@ -87,8 +86,18 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
             .HasForeignKey(t => t.UserId)
             .OnDelete(DeleteBehavior.Restrict); // Thay Cascade bằng Restrict
 
-       
-
+        builder.Entity<UserTemplateDetail>()
+            .HasOne(ut => ut.ParentTemplateDetail)
+            .WithMany()
+            .HasForeignKey(ut => ut.ParentTemplateDetailId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        builder.Entity<ThemeUserTemplateDetail>()
+            .HasOne(t => t.UserTemplateDetail)
+            .WithMany(ut => ut.ThemeUserTemplateDetails) // Explicit inverse relationship
+            .HasForeignKey(t => t.UserTemplateDetailId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent cascade delete
+        
         // Quan hệ giữa Report và User (ReportUser)
         builder.Entity<Report>()
             .HasOne(r => r.ReportUser) // Một Report liên kết tới một User tạo báo cáo
@@ -213,6 +222,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
         .WithMany(u => u.UserLeaderBoards) // Một User có nhiều UserCopyRight
         .HasForeignKey(uc => uc.UserId) // Khóa ngoại trong UserCopyRight
         .OnDelete(DeleteBehavior.Restrict);
+        
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

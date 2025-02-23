@@ -2,5 +2,6 @@
 
 public enum TemplateType
 {
-    
+    Bundle = 1,
+    Single = 2
 }

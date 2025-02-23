@@ -8,5 +8,6 @@ public class GetPoemHistoryResponse
     public int Version { get; set; }
     public string Title { get; set; }
     public PoemType Type { get; set; }
+    public PoemStatus Status { get; set; }
     public string Description { get; set; }
 }

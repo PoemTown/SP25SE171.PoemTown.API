@@ -20,6 +20,7 @@ namespace PoemTown.Repository.Entities
         public string? Title { get; set; }
         public string? Content { get; set; }
         public PoemType? Type { get; set; }
+        public PoemStatus? Status { get; set; }
         public string? Description { get; set; }
         public int? ChapterNumber { get; set; }
         public string? ChapterName { get; set; }

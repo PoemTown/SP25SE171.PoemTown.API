@@ -8,10 +8,13 @@ using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.CollectionFilters;
+using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.CollectionSorts;
+using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
 using PoemTown.Service.Services;
 
 namespace PoemTown.API.Controllers
@@ -137,6 +140,54 @@ namespace PoemTown.API.Controllers
         {
             await _service.AddPoemToCollection(poemId, collectionId);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Add poem to collection successfully"));
+        }
+        /// <summary>
+        /// Lấy danh sách tất cả bộ sưu tập phổ biến, không yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        ///
+        /// 
+        /// </remarks>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/trending")]
+        public async Task<ActionResult<BasePaginationResponse<GetCollectionResponse>>> GetTrendingCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        {
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }        
+            
+            var result = await _service.GetTrendingCollections(userId, request);
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetCollectionResponse>>(result);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get Collection successfully";
+            return Ok(basePaginationResponse);
+        }
+
+
+
+        /// <summary>
+        /// Lấy chi tiết của một bộ sưu tập, yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        ///
+        /// - collectionId: lấy từ request path
+        /// </remarks>
+        /// <param name="collectionId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/{collectionId}/detail")]
+        [Authorize]
+        public async Task<ActionResult<BaseResponse<GetPoemDetailResponse>>>
+            GetPoemDetail(Guid collectionId)
+        {
+            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            var response = await _service.GetCollectionDetail(collectionId, userId);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get collection detail successfully", response));
         }
     }
 }

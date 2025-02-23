@@ -18,7 +18,6 @@ namespace PoemTown.Repository.Entities
         [Key]
         public Guid Id { get; set; }
         public TargetMarkType Type { get; set; } = default;
-        public string? TargetContent { get; set; } = "";
         public Guid? CollectionId { get; set; }
         public Guid? PoemId { get; set; }
         public Guid? MarkByUserId { get; set; }

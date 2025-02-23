@@ -16,6 +16,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Enums.TargetMarks;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace PoemTown.Service.Services
 {
@@ -43,16 +47,18 @@ namespace PoemTown.Service.Services
         public async Task UpdateCollection(UpdateCollectionRequest request)
         {
             Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == request.Id);
-                if(collection == null)
+            if (collection == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
             }
+
             _mapper.Map(request, collection);
             _unitOfWork.GetRepository<Collection>().Update(collection);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<PaginationResponse<GetCollectionResponse>> GetCollections(Guid userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        public async Task<PaginationResponse<GetCollectionResponse>> GetCollections(Guid userId,
+            RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
             collectionQuery.Where(a => a.UserId == userId);
@@ -64,6 +70,7 @@ namespace PoemTown.Service.Services
             {
                 collectionQuery = collectionQuery.Where(p => p.DeletedTime == null);
             }
+
             // Apply filter
             if (request.FilterOptions != null)
             {
@@ -87,55 +94,48 @@ namespace PoemTown.Service.Services
                     collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
                     break;
             }
-/*            var collectionIds = await collectionQuery.Select(a => a.Id).ToListAsync();
-            var totalPoem =  _unitOfWork.GetRepository<Poem>()
-                .AsQueryable()
-                .Where(a => collectionIds.Contains(a.Id))
-                .GroupBy(a => a.CollectionId)
-                .Select(g => new { CollectionId = g.Key, TotalPoem = g.Count() })
-                .ToDictionaryAsync(x => x.CollectionId, x => x.TotalPoem);*/
-            var queryPaging = await _unitOfWork.GetRepository<Collection>()
-            .GetPagination(collectionQuery, request.PageNumber, request.PageSize);
 
-            var collections = _mapper.Map<IList<GetCollectionResponse>>(queryPaging.Data);
-           /* foreach (var collection in collections)
+            var queryPaging = await _unitOfWork.GetRepository<Collection>()
+                .GetPagination(collectionQuery, request.PageNumber, request.PageSize);
+
+
+            IList<GetCollectionResponse> collections = new List<GetCollectionResponse>();
+            foreach (var collection in queryPaging.Data)
             {
-                collection.TotalChapter = totalPoem.ContainsKey(collection.Id) ? totalPoem[collection.Id] : 0;
-            }*/
-            return new PaginationResponse<GetCollectionResponse>(collections, queryPaging.PageNumber, queryPaging.PageSize,
-           queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+                var collectionEntity =
+                    await _unitOfWork.GetRepository<Collection>().FindAsync(p => p.Id == collection.Id);
+                if (collectionEntity == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                }
+
+                collections.Add(_mapper.Map<GetCollectionResponse>(collectionEntity));
+                // Assign author to poem by adding into the last element of the list
+                collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
+
+                collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (collection.TargetMarks!.FirstOrDefault(tm =>
+                    tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id &&
+                    tm.Type == TargetMarkType.Collection));
+            }
+       
+
+            return new PaginationResponse<GetCollectionResponse>(collections, queryPaging.PageNumber,
+                queryPaging.PageSize,
+                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 
-        /*  public async Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
-          {
-              var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-              collectionQuery.Where(a => a.Id == collectionId);
-
-              switch (request.SortOptions)
-              {
-                  case CollectionSortOptions.CreatedTimeAscending:
-                      collectionQuery = collectionQuery.OrderBy(p => p.CreatedTime);
-                      break;
-                  case CollectionSortOptions.CreatedTimeDescending:
-                      collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
-                      break;
-                  default:
-                      collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
-                      break;
-              }
-              return null;
-          }*/
 
         public async Task DeleteCollection(Guid collectionId)
         {
             Collection? collection = await _unitOfWork.GetRepository<Collection>()
                 .FindAsync(a => a.Id == collectionId);
-                
-                if(collection == null)
-                {
-                 throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
-                }
-           
+
+            if (collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            }
+
             _unitOfWork.GetRepository<Collection>().Delete(collection);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -143,8 +143,8 @@ namespace PoemTown.Service.Services
         public async Task DeleteCollectionPermanent(Guid collectionId)
         {
             Collection? collection = await _unitOfWork.GetRepository<Collection>()
-               .FindAsync(a => a.Id == collectionId);
-            if(collection == null)
+                .FindAsync(a => a.Id == collectionId);
+            if (collection == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
             }
@@ -153,6 +153,7 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Collection is not yet soft deleted");
             }
+
             _unitOfWork.GetRepository<Collection>().DeletePermanent(collection);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -164,22 +165,111 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status404NotFound, "Poem not found");
             }
+
             Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
-                if(collection == null)
-                {
-                    throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
-                }
+            if (collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            }
+
             if (poem.CollectionId == collectionId)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem is already in this collection");
             }
+
             collection.TotalChapter += 1;
             collection.Poems.Add(poem);
             poem.CollectionId = collectionId;
             _unitOfWork.GetRepository<Poem>().Update(poem);
             await _unitOfWork.SaveChangesAsync();
         }
+
+
+        public async Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid userId)
+        {
+            Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(c => c.Id == collectionId);
+            if(collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "collection not found");
+            }
+            var collectionDetail = _mapper.Map<GetCollectionResponse>(collection);
+            collectionDetail.User = _mapper.Map<GetBasicUserInformationResponse>(collection?.User);
+            collectionDetail.TargetMark = _mapper.Map<GetTargetMarkResponse>(collection.TargetMarks!.FirstOrDefault(tm =>
+                    tm.MarkByUserId == userId && tm.CollectionId == collectionDetail.Id &&
+                    tm.Type == TargetMarkType.Collection));
+            return collectionDetail;
+        }
+
+        public async Task<PaginationResponse<GetCollectionResponse>>
+            GetTrendingCollections(Guid? userId,
+                RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        {
+            var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
+
+            // Soft delete filter for collections
+            collectionQuery = request.IsDelete == true
+                ? collectionQuery.Where(c => c.DeletedTime != null)
+                : collectionQuery.Where(c => c.DeletedTime == null);
+
+            // Apply collection name filter
+            if (request.FilterOptions != null &&
+                !string.IsNullOrWhiteSpace(request.FilterOptions.CollectionName))
+            {
+                collectionQuery = collectionQuery.Where(c =>
+                    c.CollectionName.Contains(request.FilterOptions.CollectionName));
+            }
+
+            // Calculate trending score
+            collectionQuery = collectionQuery
+                .Select(c => new
+                {
+                    Collection = c,
+                    TotalLikes = c.Poems
+                        .Where(p => p.DeletedTime == null) // Only non-deleted poems
+                        .SelectMany(p => p.Likes) // Flatten likes
+                        .Count(l => l.DeletedTime == null), // Count non-deleted likes
+                    TotalComments = c.Poems
+                        .Where(p => p.DeletedTime == null) // Only non-deleted poems
+                        .SelectMany(p => p.Comments) // Flatten comments
+                        .Count(c => c.DeletedTime == null), // Count non-deleted comments
+                    HoursSinceCreation = EF.Functions.DateDiffHour(c.CreatedTime, DateTime.UtcNow)
+                })
+                .OrderByDescending(x =>
+                    (x.TotalLikes + 0.2 * x.TotalComments) / (x.HoursSinceCreation + 2)
+                )
+                .Select(x => x.Collection);
+
+            var queryPaging = await _unitOfWork.GetRepository<Collection>()
+                .GetPagination(collectionQuery, request.PageNumber, request.PageSize);
+
+            //var collections = _mapper.Map<IList<GetCollectionResponse>>(queryPaging.Data);
+            IList<GetCollectionResponse> collections = new List<GetCollectionResponse>();
+            foreach (var collection in queryPaging.Data)
+            {
+                var collectionEntity =
+                    await _unitOfWork.GetRepository<Collection>().FindAsync(p => p.Id == collection.Id);
+                if (collectionEntity == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                }
+
+                collections.Add(_mapper.Map<GetCollectionResponse>(collectionEntity));
+                // Assign author to poem by adding into the last element of the list
+                collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
+
+                collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (collection.TargetMarks!.FirstOrDefault(tm =>
+                    tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id &&
+                    tm.Type == TargetMarkType.Collection));
+            }
+
+            return new PaginationResponse<GetCollectionResponse>(
+                collections,
+                queryPaging.PageNumber,
+                queryPaging.PageSize,
+                queryPaging.TotalRecords,
+                queryPaging.CurrentPageRecords
+            );
+        }
     }
 }
-
-

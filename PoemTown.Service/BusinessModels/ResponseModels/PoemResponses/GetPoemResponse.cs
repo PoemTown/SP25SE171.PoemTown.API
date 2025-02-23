@@ -1,7 +1,10 @@
 ﻿using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums;
 using PoemTown.Repository.Enums.Poems;
+using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -22,4 +25,10 @@ public class GetPoemResponse
     public bool IsPublic { get; set; }
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
+    public DateTimeOffset CreatedTime { get; set; }
+
+    public GetCollectionInPoemResponse Collection { get; set; }
+    public GetBasicUserInformationResponse User { get; set; }
+    public GetLikeResponse Like { get; set; }
+    public GetTargetMarkResponse TargetMark { get; set; }
 }

@@ -13,12 +13,16 @@ public interface IPoemService
 
     Task<PaginationResponse<GetPoemResponse>> GetMyPoems
         (Guid userId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request);
-    Task<PaginationResponse<GetPoemResponse>> GetPoemsInCollection
-       (Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request);
+    Task<PaginationResponse<GetPoemInCollectionResponse>> GetPoemsInCollection
+       (Guid userId, Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request);
     Task UpdatePoem(Guid userId, UpdatePoemRequest request);
 
     Task DeletePoem(Guid poemId);
     Task DeletePoemPermanent(Guid poemId);
     Task<GetPoemDetailResponse> 
         GetPoemDetail(Guid userId, Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
+    Task<PaginationResponse<GetPostedPoemResponse>> 
+        GetPostedPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
+    Task<PaginationResponse<GetPostedPoemResponse>>
+        GetTrendingPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 }

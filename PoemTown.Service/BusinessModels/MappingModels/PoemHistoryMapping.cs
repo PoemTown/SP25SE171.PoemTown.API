@@ -13,5 +13,6 @@ public class PoemHistoryMapping : Profile
             .ForMember(dest => dest.Id, opt => opt.Ignore());
 
         CreateMap<PoemHistory, GetPoemHistoryResponse>().ReverseMap();
+        CreateMap<PoemHistory, GetPoemHistoryDetailResponse>().ReverseMap();
     }
 }

@@ -12,16 +12,16 @@ using PoemTown.Repository.Enums.TemplateDetails;
 
 namespace PoemTown.Repository.Entities
 {
-    public class TemplateDetail : BaseEntity
+    public class MasterTemplateDetail : BaseEntity
     {
         [Key]
         public Guid Id { get; set; } 
-        public string? DesignContent { get; set; }
+        public string? ColorCode { get; set; }
         public TemplateDetailType? Type { get; set; }
-        public Guid TemplateId { get; set; }
+        public TemplateDetailDesignType? DesignType { get; set; }
+        public string? Image { get; set; }
         public Guid MasterTemplateId { get; set; }
         
         public virtual MasterTemplate MasterTemplate { get; set; } = null!;
-        public virtual Template Template { get; set; } = null!;
     }
 }

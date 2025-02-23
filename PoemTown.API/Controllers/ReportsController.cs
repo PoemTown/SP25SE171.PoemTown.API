@@ -8,11 +8,11 @@ using PoemTown.Service.Interfaces;
 
 namespace PoemTown.API.Controllers;
 
-public class ReportController : BaseController
+public class ReportsController : BaseController
 {
     private readonly IReportService _reportService;
     private readonly IMapper _mapper;
-    public ReportController(IReportService reportService, IMapper mapper)
+    public ReportsController(IReportService reportService, IMapper mapper)
     {
         _reportService = reportService;
         _mapper = mapper;

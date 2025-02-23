@@ -14,12 +14,12 @@ using PoemTown.Service.QueryOptions.SortOptions.ThemeSorts;
 
 namespace PoemTown.API.Controllers;
 
-public class ThemeController : BaseController
+public class ThemesController : BaseController
 {
     private readonly IThemeService _themeService;
     private readonly IMapper _mapper;
     
-    public ThemeController(IThemeService themeService, IMapper mapper)
+    public ThemesController(IThemeService themeService, IMapper mapper)
     {
         _themeService = themeService;
         _mapper = mapper;

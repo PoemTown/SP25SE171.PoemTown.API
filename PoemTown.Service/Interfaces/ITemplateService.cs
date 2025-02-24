@@ -1,4 +1,5 @@
-﻿using PoemTown.Repository.Base;
+﻿using Microsoft.AspNetCore.Http;
+using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 using PoemTown.Service.QueryOptions.FilterOptions.TemplateFilters;
@@ -24,4 +25,19 @@ public interface ITemplateService
     Task DeleteMasterTemplatePermanently(Guid masterTemplateId);
     Task DeleteMasterTemplateDetail(Guid masterTemplateDetailId);
     Task DeleteMasterTemplateDetailPermanently(Guid masterTemplateDetailId);
+    Task<string> UploadMasterTemplateDetailImage(IFormFile file);
+
+    Task AddMasterTemplateDetailIntoMasterTemplate(
+        AddMasterTemplateDetailIntoMasterTemplateRequest request);
+
+    Task<PaginationResponse<GetUserTemplateDetailResponse>> GetUserTemplateDetails(Guid userId,
+        RequestOptionsBase<GetUserTemplateDetailFilterOption, GetUserTemplateDetailSortOption> request);
+
+    Task AddUserTemplateDetailIntoUserTheme(Guid userId, AddUserTemplateDetailIntoUserThemeRequest request);
+    Task<IList<GetUserTemplateDetailInUserThemeResponse>> GetUserTemplateDetailInUserTheme(Guid userId, Guid themeId);
+
+    Task<IList<GetUserTemplateDetailInUserThemeResponse>> GetUserTemplateDetailInUsingUserTheme(Guid userId);
+
+    Task RemoveUserTemplateDetailInUserTheme(Guid userId,
+        RemoveUserTemplateDetailInUserThemeRequest request);
 }

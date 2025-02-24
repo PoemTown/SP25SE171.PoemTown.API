@@ -7,6 +7,7 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.TemplateDetails;
 using PoemTown.Repository.Enums.Templates;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 using PoemTown.Service.Interfaces;
@@ -14,6 +15,7 @@ using PoemTown.Service.QueryOptions.FilterOptions.TemplateFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.TemplateSorts;
 using PoemTown.Service.ThirdParties.Interfaces;
+using PoemTown.Service.ThirdParties.Models.AwsS3;
 
 namespace PoemTown.Service.Services;
 
@@ -23,10 +25,14 @@ public class TemplateService : ITemplateService
     private readonly IMapper _mapper;
     private readonly IAwsS3Service _awsS3Service;
 
-    public TemplateService(IUnitOfWork unitOfWork, IMapper mapper)
+    public TemplateService(IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IAwsS3Service awsS3Service
+    )
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _awsS3Service = awsS3Service;
     }
 
     public async Task CreateMasterTemplate(CreateMasterTemplateRequest request)
@@ -159,8 +165,8 @@ public class TemplateService : ITemplateService
 
         var masterTemplateDetailQuery = _unitOfWork.GetRepository<MasterTemplateDetail>().AsQueryable();
         masterTemplateDetailQuery = masterTemplateDetailQuery.Where(p => p.MasterTemplateId == masterTemplateId);
-        
-        
+
+
         if (request.IsDelete == true)
         {
             masterTemplateDetailQuery = masterTemplateDetailQuery.Where(p => p.DeletedTime != null);
@@ -169,6 +175,7 @@ public class TemplateService : ITemplateService
         {
             masterTemplateDetailQuery = masterTemplateDetailQuery.Where(p => p.DeletedTime == null);
         }
+
         // Filter
         if (request.FilterOptions != null)
         {
@@ -315,6 +322,265 @@ public class TemplateService : ITemplateService
         }
 
         _unitOfWork.GetRepository<MasterTemplateDetail>().DeletePermanent(masterTemplateDetail);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<string> UploadMasterTemplateDetailImage(IFormFile file)
+    {
+        ImageHelper.ValidateImage(file);
+
+        var fileName = "templates";
+        UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
+        {
+            File = file,
+            FolderName = fileName
+        };
+        return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
+    }
+
+    public async Task AddMasterTemplateDetailIntoMasterTemplate(
+        AddMasterTemplateDetailIntoMasterTemplateRequest request)
+    {
+        MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
+            .FindAsync(p => p.Id == request.MasterTemplateId);
+
+        if (masterTemplate == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
+        }
+
+        foreach (var mtd in request.MasterTemplateDetails)
+        {
+            if (mtd is { Image: not null, ColorCode: not null })
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Image and ColorCode cannot be together");
+            }
+
+            if (mtd is { Image: null, ColorCode: null })
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Image or ColorCode is required");
+            }
+
+            MasterTemplateDetail masterTemplateDetail = _mapper.Map<MasterTemplateDetail>(mtd);
+
+            masterTemplateDetail.MasterTemplateId = masterTemplate.Id;
+            // Set DesignType based on Image or ColorCode
+            masterTemplateDetail.DesignType =
+                mtd.Image != null ? TemplateDetailDesignType.Image : TemplateDetailDesignType.ColorCode;
+
+            await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertAsync(masterTemplateDetail);
+        }
+
+        masterTemplate.Type =
+            masterTemplate.MasterTemplateDetails.Count > 1 ? TemplateType.Bundle : TemplateType.Single;
+        _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<PaginationResponse<GetUserTemplateDetailResponse>> GetUserTemplateDetails(Guid userId,
+        RequestOptionsBase<GetUserTemplateDetailFilterOption, GetUserTemplateDetailSortOption> request)
+    {
+        var userTemplateDetailQuery = _unitOfWork.GetRepository<UserTemplateDetail>().AsQueryable();
+
+        userTemplateDetailQuery = userTemplateDetailQuery.Where(p => p.UserTemplate.UserId == userId);
+
+        // Filter
+        if (request.FilterOptions != null)
+        {
+            if (request.FilterOptions.Type != default)
+            {
+                userTemplateDetailQuery = userTemplateDetailQuery.Where(p => p.Type == request.FilterOptions.Type);
+            }
+
+            if (request.FilterOptions.TemplateType != default)
+            {
+                userTemplateDetailQuery =
+                    userTemplateDetailQuery.Where(p => p.UserTemplate.Type == request.FilterOptions.TemplateType);
+            }
+        }
+
+        // Sort
+        userTemplateDetailQuery = request.SortOptions switch
+        {
+            GetUserTemplateDetailSortOption.CreatedTimeAscending => userTemplateDetailQuery.OrderBy(p =>
+                p.CreatedTime),
+            GetUserTemplateDetailSortOption.CreatedTimeDescending => userTemplateDetailQuery.OrderByDescending(p =>
+                p.CreatedTime),
+            _ => userTemplateDetailQuery.OrderBy(p => p.Type).ThenByDescending(p => p.CreatedTime)
+        };
+
+        // Pagination
+        var queryPaging = await _unitOfWork.GetRepository<UserTemplateDetail>()
+            .GetPagination(userTemplateDetailQuery, request.PageNumber, request.PageSize);
+
+        var userTemplateDetailResponse = _mapper.Map<IList<GetUserTemplateDetailResponse>>(queryPaging.Data);
+
+        return new PaginationResponse<GetUserTemplateDetailResponse>(userTemplateDetailResponse,
+            queryPaging.PageNumber,
+            queryPaging.PageSize, queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+    }
+
+    public async Task AddUserTemplateDetailIntoUserTheme(Guid userId, AddUserTemplateDetailIntoUserThemeRequest request)
+    {
+        // -----Theme-----
+        // Check if userTheme exists
+        Theme? theme = await _unitOfWork.GetRepository<Theme>().FindAsync(p => p.Id == request.ThemeId);
+        if (theme == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Theme not found");
+        }
+
+        // Check if userTheme belong to user
+        if (theme.UserId != userId)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Theme not belong to this user");
+        }
+
+        
+        
+        // -----UserTemplateDetail-----
+        // Check if userTemplateDetail exists
+        foreach (var templateDetailId in request.TemplateDetailIds)
+        {
+            UserTemplateDetail? userTemplateDetail = await _unitOfWork.GetRepository<UserTemplateDetail>()
+                .FindAsync(p => p.Id == templateDetailId);
+
+            if (userTemplateDetail == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "UserTemplateDetail not found");
+            }
+
+            // Check if userTemplateDetail belong to user
+            if (userTemplateDetail.UserTemplate.UserId != userId)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "UserTemplateDetail not belong to this user");
+            }
+            
+            // Check if UserTemplateDetail exists in ThemeUserTemplateDetail
+            ThemeUserTemplateDetail? themeUserTemplateDetail = await _unitOfWork
+                .GetRepository<ThemeUserTemplateDetail>()
+                .FindAsync(p => p.ThemeId == request.ThemeId && p.UserTemplateDetailId == templateDetailId);
+            if (themeUserTemplateDetail != null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, $"UserTemplateDetail: {templateDetailId} is already in this Theme");
+            }
+
+            //Check if type of UserTemplateDetails duplicated in theme
+            var userTemplateDetailTypes = await _unitOfWork.GetRepository<ThemeUserTemplateDetail>()
+                .AsQueryable()
+                .Where(p => p.ThemeId == request.ThemeId)
+                .AnyAsync(p => p.UserTemplateDetail.Type == userTemplateDetail.Type);
+            
+            if(userTemplateDetailTypes)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, $"UserTemplateDetail Type: {userTemplateDetail.Type} is already in this Theme");
+            }
+            
+            themeUserTemplateDetail = new ThemeUserTemplateDetail()
+            {
+                ThemeId = request.ThemeId,
+                UserTemplateDetailId = templateDetailId
+            };
+
+            await _unitOfWork.GetRepository<ThemeUserTemplateDetail>().InsertAsync(themeUserTemplateDetail);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<IList<GetUserTemplateDetailInUserThemeResponse>> GetUserTemplateDetailInUserTheme(Guid userId,
+        Guid themeId)
+    {
+        Theme? theme = await _unitOfWork.GetRepository<Theme>()
+            .FindAsync(p => p.Id == themeId && p.UserId == userId);
+
+        // Check if userTheme exists
+        if (theme == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Theme not found");
+        }
+
+        IList<ThemeUserTemplateDetail>? themeUserTemplateDetails = await _unitOfWork
+            .GetRepository<ThemeUserTemplateDetail>()
+            .AsQueryable()
+            .Where(p => p.ThemeId == themeId && p.Theme.UserId == userId)
+            .ToListAsync();
+
+        // Get UserTemplateDetail in ThemeUserTemplateDetail
+        IList<UserTemplateDetail> userTemplateDetail = await _unitOfWork.GetRepository<UserTemplateDetail>()
+            .AsQueryable()
+            .Where(p => themeUserTemplateDetails.Select(t => t.UserTemplateDetailId).Contains(p.Id))
+            .ToListAsync();
+
+        return _mapper.Map<IList<GetUserTemplateDetailInUserThemeResponse>>(userTemplateDetail);
+    }
+
+    public async Task<IList<GetUserTemplateDetailInUserThemeResponse>>
+        GetUserTemplateDetailInUsingUserTheme(Guid userId)
+    {
+        Theme? theme = await _unitOfWork.GetRepository<Theme>()
+            .FindAsync(p => p.UserId == userId && p.IsInUse == true);
+
+        // Check if userTheme exists
+        if (theme == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Theme not found");
+        }
+
+        IList<ThemeUserTemplateDetail>? themeUserTemplateDetails = await _unitOfWork
+            .GetRepository<ThemeUserTemplateDetail>()
+            .AsQueryable()
+            .Where(p => p.ThemeId == theme.Id && p.Theme.UserId == userId)
+            .ToListAsync();
+
+        // Get UserTemplateDetail in ThemeUserTemplateDetail
+        IList<UserTemplateDetail> userTemplateDetail = await _unitOfWork.GetRepository<UserTemplateDetail>()
+            .AsQueryable()
+            .Where(p => themeUserTemplateDetails.Select(t => t.UserTemplateDetailId).Contains(p.Id))
+            .ToListAsync();
+
+        return _mapper.Map<IList<GetUserTemplateDetailInUserThemeResponse>>(userTemplateDetail);
+    }
+
+    public async Task RemoveUserTemplateDetailInUserTheme(Guid userId,
+        RemoveUserTemplateDetailInUserThemeRequest request)
+    {
+        Theme? theme = await _unitOfWork.GetRepository<Theme>()
+            .FindAsync(p => p.Id == request.ThemeId && p.UserId == userId);
+
+        if (theme == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Theme not found");
+        }
+
+        foreach (var templateDetailId in request.TemplateDetailIds)
+        {
+            UserTemplateDetail? userTemplateDetail = await _unitOfWork.GetRepository<UserTemplateDetail>()
+                .FindAsync(p => p.Id == templateDetailId);
+
+            if (userTemplateDetail == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "UserTemplateDetail not found");
+            }
+
+            // Check if userTemplateDetail belong to user
+            if (userTemplateDetail.UserTemplate.UserId != userId)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "UserTemplateDetail not belong to this user");
+            }
+
+            // Check if UserTemplateDetail exists in ThemeUserTemplateDetail
+            ThemeUserTemplateDetail? themeUserTemplateDetail = await _unitOfWork
+                .GetRepository<ThemeUserTemplateDetail>()
+                .FindAsync(p => p.ThemeId == request.ThemeId && p.UserTemplateDetailId == templateDetailId);
+            if (themeUserTemplateDetail == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, $"UserTemplateDetail: {templateDetailId} is not in this Theme");
+            }
+
+            _unitOfWork.GetRepository<ThemeUserTemplateDetail>().DeletePermanent(themeUserTemplateDetail);
+        }
+
         await _unitOfWork.SaveChangesAsync();
     }
 }

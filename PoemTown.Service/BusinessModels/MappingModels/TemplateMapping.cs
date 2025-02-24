@@ -14,10 +14,15 @@ public class TemplateMapping : Profile
             .ForMember(p => p.MasterTemplateDetails, opt => opt.Ignore());
         CreateMap<MasterTemplate, GetMasterTemplateResponse>().ReverseMap();
         CreateMap<UpdateMasterTemplateRequest, MasterTemplate>();
+        CreateMap<UserTemplate, GetUserTemplateResponse>().ReverseMap();
         
         // MasterTemplateDetail
         CreateMap<CreateMasterTemplateDetailRequest, MasterTemplateDetail>();
         CreateMap<MasterTemplateDetail, GetMasterTemplateDetailResponse>().ReverseMap();
         CreateMap<UpdateMasterTemplateDetailRequest, MasterTemplateDetail>();
+        CreateMap<UserTemplateDetail, GetUserTemplateDetailResponse>().ReverseMap();
+        CreateMap<GetUserTemplateResponse, GetUserTemplateDetailResponse>();
+
+        CreateMap<GetUserTemplateDetailInUserThemeResponse, UserTemplateDetail>().ReverseMap();
     }
 }

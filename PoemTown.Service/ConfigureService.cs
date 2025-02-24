@@ -12,6 +12,8 @@ using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
 using PoemTown.Service.BusinessModels.MappingModels;
 using PoemTown.Service.Consumers.CollectionConsumers;
 using PoemTown.Service.Consumers.EmailConsumers;
+using PoemTown.Service.Consumers.ThemeConsumers;
+using PoemTown.Service.Events.ThemeEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.Services;
 using PoemTown.Service.ThirdParties.Interfaces;
@@ -52,7 +54,7 @@ public static class ConfigureService
         services.AddScoped<IStatisticService, StatisticService>();
         services.AddScoped<ITemplateService, TemplateService>();
         services.AddScoped<IUserService, UserService>();
-        
+        services.AddScoped<IThemeService, ThemeService>();
         
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
@@ -71,6 +73,7 @@ public static class ConfigureService
             config.AddConsumer<EmailOtpConsumer>();
             config.AddConsumer<ForgotPasswordConsumer>();
             config.AddConsumer<CreateDefaultCollectionConsumer>();
+            config.AddConsumer<CreateDefaultUserThemeConsumer>();
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {

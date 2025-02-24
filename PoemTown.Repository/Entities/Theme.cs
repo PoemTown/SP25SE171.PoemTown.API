@@ -7,6 +7,7 @@ public class Theme : BaseEntity
     public Guid Id { get; set; }
     public string? Name { get; set; }
     public bool IsInUse { get; set; } = false;
+    public bool? IsDefault { get; set; } = false;
     
     public Guid UserId { get; set; }
     

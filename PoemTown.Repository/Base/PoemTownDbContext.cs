@@ -40,6 +40,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<UserLeaderBoard> UserLeaderBoards => Set<UserLeaderBoard>();
     public virtual DbSet<UserPoemRecordFile> UserPoemRecordFiles => Set<UserPoemRecordFile>();
     public virtual DbSet<UserTemplateDetail> UserTemplateDetails => Set<UserTemplateDetail>();
+    public virtual DbSet<ThemeUserTemplateDetail> ThemeUserTemplateDetails => Set<ThemeUserTemplateDetail>();
     public virtual DbSet<Theme> Themes => Set<Theme>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
@@ -86,11 +87,11 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
             .HasForeignKey(t => t.UserId)
             .OnDelete(DeleteBehavior.Restrict); // Thay Cascade bằng Restrict
 
-        builder.Entity<UserTemplateDetail>()
+        /*builder.Entity<UserTemplateDetail>()
             .HasOne(ut => ut.ParentTemplateDetail)
             .WithMany()
             .HasForeignKey(ut => ut.ParentTemplateDetailId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict);*/
         
         builder.Entity<ThemeUserTemplateDetail>()
             .HasOne(t => t.UserTemplateDetail)

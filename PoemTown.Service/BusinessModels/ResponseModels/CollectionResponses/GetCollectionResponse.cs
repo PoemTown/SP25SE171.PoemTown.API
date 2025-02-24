@@ -17,6 +17,9 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses
         public string? CollectionImage { get; set; } = default!;
         public bool? IsDefault { get; set; } = false;
         public int? TotalChapter { get; set; } = default!;
+        public int? TotalRecord { get; set; } = default!;
+        public DateTimeOffset? CreatedTime { get; set; }
+        public DateTimeOffset? LastUpdatedTime { get; set; }
         public GetTargetMarkResponse? TargetMark { get; set; }
         public GetBasicUserInformationResponse? User { get; set; }
 

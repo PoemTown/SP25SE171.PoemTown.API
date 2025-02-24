@@ -61,7 +61,7 @@ namespace PoemTown.Service.Services
             RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-            collectionQuery.Where(a => a.UserId == userId);
+            collectionQuery = collectionQuery.Where(a => a.UserId == userId);
             if (request.IsDelete == true)
             {
                 collectionQuery = collectionQuery.Where(p => p.DeletedTime != null);

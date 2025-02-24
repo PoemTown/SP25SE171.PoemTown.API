@@ -24,7 +24,7 @@ namespace PoemTown.API.Controllers
         private readonly ICollectionService _service;
         private readonly IMapper _mapper;
 
-        public CollectionsController (IMapper mapper, ICollectionService service)
+        public CollectionsController(IMapper mapper, ICollectionService service)
         {
             _mapper = mapper;
             _service = service;
@@ -80,10 +80,14 @@ namespace PoemTown.API.Controllers
         [HttpGet]
         [Route("v1")]
         [Authorize]
-        public async Task<ActionResult<BasePaginationResponse<GetCollectionResponse>>> GetCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        public async Task<ActionResult<BasePaginationResponse<GetCollectionResponse>>>
+        GetCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request, [FromQuery] Guid? targetUserId = null)
         {
-            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-            var result = await _service.GetCollections(userId ,request);
+            if (targetUserId == null)
+            {
+                targetUserId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            }
+            var result = await _service.GetCollections(targetUserId.Value, request);
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetCollectionResponse>>(result);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;
             basePaginationResponse.Message = "Get Collection successfully";

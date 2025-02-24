@@ -707,6 +707,12 @@ public class TemplateService : ITemplateService
                 throw new CoreException(StatusCodes.Status400BadRequest, "Cannot change UserTemplateDetail Type");
             }
             
+            // Check if newThemeUserTemplateDetail DesignType is the same as previousThemeUserTemplateDetail DesignType
+            if(newUserTemplateDetail.DesignType != previousUserTemplateDetail.DesignType)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Cannot change UserTemplateDetail DesignType");
+            }
+            
             // Check if newThemeUserTemplateDetail is colorCode, then assign colorCode
             if (newUserTemplateDetail.DesignType == TemplateDetailDesignType.ColorCode)
             {

@@ -8,10 +8,13 @@ using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.CollectionFilters;
+using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.CollectionSorts;
+using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
 using PoemTown.Service.Services;
 
 namespace PoemTown.API.Controllers
@@ -21,7 +24,7 @@ namespace PoemTown.API.Controllers
         private readonly ICollectionService _service;
         private readonly IMapper _mapper;
 
-        public CollectionsController (IMapper mapper, ICollectionService service)
+        public CollectionsController(IMapper mapper, ICollectionService service)
         {
             _mapper = mapper;
             _service = service;
@@ -77,10 +80,14 @@ namespace PoemTown.API.Controllers
         [HttpGet]
         [Route("v1")]
         [Authorize]
-        public async Task<ActionResult<BasePaginationResponse<GetCollectionResponse>>> GetCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        public async Task<ActionResult<BasePaginationResponse<GetCollectionResponse>>>
+        GetCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request, [FromQuery] Guid? targetUserId = null)
         {
-            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-            var result = await _service.GetCollections(userId ,request);
+            if (targetUserId == null)
+            {
+                targetUserId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            }
+            var result = await _service.GetCollections(targetUserId.Value, request);
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetCollectionResponse>>(result);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;
             basePaginationResponse.Message = "Get Collection successfully";
@@ -163,6 +170,28 @@ namespace PoemTown.API.Controllers
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;
             basePaginationResponse.Message = "Get Collection successfully";
             return Ok(basePaginationResponse);
+        }
+
+
+
+        /// <summary>
+        /// Lấy chi tiết của một bộ sưu tập, yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        ///
+        /// - collectionId: lấy từ request path
+        /// </remarks>
+        /// <param name="collectionId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/{collectionId}/detail")]
+        [Authorize]
+        public async Task<ActionResult<BaseResponse<GetPoemDetailResponse>>>
+            GetPoemDetail(Guid collectionId)
+        {
+            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            var response = await _service.GetCollectionDetail(collectionId, userId);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get collection detail successfully", response));
         }
     }
 }

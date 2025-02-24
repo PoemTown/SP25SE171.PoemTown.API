@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace PoemTown.Service.Services
 {
@@ -60,7 +61,7 @@ namespace PoemTown.Service.Services
             RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-            collectionQuery.Where(a => a.UserId == userId);
+            collectionQuery = collectionQuery.Where(a => a.UserId == userId);
             if (request.IsDelete == true)
             {
                 collectionQuery = collectionQuery.Where(p => p.DeletedTime != null);
@@ -97,6 +98,7 @@ namespace PoemTown.Service.Services
             var queryPaging = await _unitOfWork.GetRepository<Collection>()
                 .GetPagination(collectionQuery, request.PageNumber, request.PageSize);
 
+
             IList<GetCollectionResponse> collections = new List<GetCollectionResponse>();
             foreach (var collection in queryPaging.Data)
             {
@@ -116,32 +118,13 @@ namespace PoemTown.Service.Services
                     tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id &&
                     tm.Type == TargetMarkType.Collection));
             }
-            //var collections = _mapper.Map<IList<GetCollectionResponse>>(queryPaging.Data);
+       
 
             return new PaginationResponse<GetCollectionResponse>(collections, queryPaging.PageNumber,
                 queryPaging.PageSize,
                 queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 
-        /*  public async Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
-          {
-              var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-              collectionQuery.Where(a => a.Id == collectionId);
-
-              switch (request.SortOptions)
-              {
-                  case CollectionSortOptions.CreatedTimeAscending:
-                      collectionQuery = collectionQuery.OrderBy(p => p.CreatedTime);
-                      break;
-                  case CollectionSortOptions.CreatedTimeDescending:
-                      collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
-                      break;
-                  default:
-                      collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
-                      break;
-              }
-              return null;
-          }*/
 
         public async Task DeleteCollection(Guid collectionId)
         {
@@ -199,6 +182,22 @@ namespace PoemTown.Service.Services
             poem.CollectionId = collectionId;
             _unitOfWork.GetRepository<Poem>().Update(poem);
             await _unitOfWork.SaveChangesAsync();
+        }
+
+
+        public async Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid userId)
+        {
+            Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(c => c.Id == collectionId);
+            if(collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "collection not found");
+            }
+            var collectionDetail = _mapper.Map<GetCollectionResponse>(collection);
+            collectionDetail.User = _mapper.Map<GetBasicUserInformationResponse>(collection?.User);
+            collectionDetail.TargetMark = _mapper.Map<GetTargetMarkResponse>(collection.TargetMarks!.FirstOrDefault(tm =>
+                    tm.MarkByUserId == userId && tm.CollectionId == collectionDetail.Id &&
+                    tm.Type == TargetMarkType.Collection));
+            return collectionDetail;
         }
 
         public async Task<PaginationResponse<GetCollectionResponse>>

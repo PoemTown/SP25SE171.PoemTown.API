@@ -1,14 +1,18 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.TemplateDetails;
 using PoemTown.Repository.Enums.Templates;
+using PoemTown.Repository.Enums.Wallets;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
+using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.TemplateFilters;
@@ -583,4 +587,139 @@ public class TemplateService : ITemplateService
 
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task PurchaseMasterTemplate(Guid userId, Guid masterTemplateId)
+    {
+        UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>()
+            .FindAsync(p => p.UserId == userId);
+
+        // Check if userEWallet exists, if not then create new userEWallet
+        if (userEWallet == null)
+        {
+            userEWallet = new UserEWallet()
+            {
+                UserId = userId,
+                WalletBalance = 0,
+                WalletStatus = WalletStatus.Active
+            };
+            await _unitOfWork.GetRepository<UserEWallet>().InsertAsync(userEWallet);
+        }
+        
+        // Check if MasterTemplate exists
+        MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
+            .FindAsync(p => p.Id == masterTemplateId);
+
+        if (masterTemplate == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
+        }
+        
+        // Check if user already purchased this MasterTemplate
+        UserTemplate? userTemplate = await _unitOfWork.GetRepository<UserTemplate>()
+            .FindAsync(p => p.UserId == userId && p.MasterTemplateId == masterTemplateId);
+
+        if (userTemplate != null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User already purchased this MasterTemplate");
+        }
+        
+        // Check if userEWallet balance is enough
+        if (userEWallet.WalletBalance < masterTemplate.Price)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Insufficient balance");
+        }
+        
+        // Create new UserTemplate
+        UserTemplate newUserTemplate = new UserTemplate()
+        {
+            UserId = userId,
+            MasterTemplateId = masterTemplateId,
+            TemplateName = masterTemplate.TemplateName,
+            Status = TemplateStatus.Active,
+            TagName = masterTemplate.TagName,
+            Type = masterTemplate.Type,
+        };
+        
+        await _unitOfWork.GetRepository<UserTemplate>().InsertAsync(newUserTemplate);
+        
+        // Create new UserTemplateDetail
+        IList<UserTemplateDetail>? userTemplateDetail = await _unitOfWork.GetRepository<MasterTemplateDetail>()
+            .AsQueryable()
+            .Where(p => p.MasterTemplateId == masterTemplateId)
+            .Select(p => new UserTemplateDetail()
+            {
+                UserTemplateId = newUserTemplate.Id,
+                ColorCode = p.ColorCode,
+                Type = p.Type,
+                Image = p.Image,
+                DesignType = p.DesignType,
+            })
+            .ToListAsync();
+        await _unitOfWork.GetRepository<UserTemplateDetail>().InsertRangeAsync(userTemplateDetail);
+        
+        
+        // Deduct userEWallet balance and update userEWallet balance
+        userEWallet.WalletBalance -= masterTemplate.Price;
+        _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
+        
+        await _unitOfWork.SaveChangesAsync();
+        
+        // Create Transaction
+    }
+    
+    public async Task UpdateThemeUserTemplateDetail(Guid userId, Guid themeId, IList<UpdateThemeUserTemplateDetailRequest> request)
+    {
+        foreach (var themeUserTemplateDetailRequest in request)
+        {
+            // Check if previousThemeUserTemplateDetail exists
+            ThemeUserTemplateDetail? themeUserTemplateDetail = await _unitOfWork.GetRepository<ThemeUserTemplateDetail>()
+                .FindAsync(p => p.ThemeId == themeId
+                                && p.UserTemplateDetailId == themeUserTemplateDetailRequest.PreviousUserTemplateDetailId
+                                && p.Theme.UserId == userId);
+            
+            if(themeUserTemplateDetail == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "ThemeUserTemplateDetail not found");
+            }
+            
+            // Check if previousUserTemplateDetail exists
+            UserTemplateDetail? previousUserTemplateDetail = await _unitOfWork.GetRepository<UserTemplateDetail>()
+                .FindAsync(p => p.Id == themeUserTemplateDetailRequest.PreviousUserTemplateDetailId);
+            
+            if(previousUserTemplateDetail == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Previous UserTemplateDetail not found");
+            }
+            
+            // Check if newThemeUserTemplateDetail exists
+            UserTemplateDetail? newUserTemplateDetail = await _unitOfWork.GetRepository<UserTemplateDetail>()
+                .FindAsync(p => p.Id == themeUserTemplateDetailRequest.NewUserTemplateDetailId);
+
+
+            if (newUserTemplateDetail == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "New UserTemplateDetail not found");
+            }
+            
+            // Check if newThemeUserTemplateDetail type is the same as previousThemeUserTemplateDetail type
+            if(newUserTemplateDetail.Type != previousUserTemplateDetail.Type)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Cannot change UserTemplateDetail Type");
+            }
+            
+            // Check if newThemeUserTemplateDetail is colorCode, then assign colorCode
+            if (newUserTemplateDetail.DesignType == TemplateDetailDesignType.ColorCode)
+            {
+                newUserTemplateDetail.ColorCode = themeUserTemplateDetailRequest.NewUserTemplateDetailColorCode;
+            }
+
+            _unitOfWork.GetRepository<UserTemplateDetail>().Update(newUserTemplateDetail);
+            
+            themeUserTemplateDetail.UserTemplateDetailId = themeUserTemplateDetailRequest.NewUserTemplateDetailId;
+            _unitOfWork.GetRepository<ThemeUserTemplateDetail>().Update(themeUserTemplateDetail);
+
+            await _unitOfWork.SaveChangesAsync();
+        }
+    }
+    
 }

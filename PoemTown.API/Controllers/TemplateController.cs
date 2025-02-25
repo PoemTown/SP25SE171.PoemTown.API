@@ -462,7 +462,11 @@ public class TemplateController : BaseController
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Theme user template detail updated successfully"));
     }
     
-    //Buy master template
+    /// <summary>
+    /// Mua một master template, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="masterTemplateId">Lấy từ request path</param>
+    /// <returns></returns>
     [HttpPost]
     [Route("v1/master-template/{masterTemplateId}/purchase")]
     [Authorize]

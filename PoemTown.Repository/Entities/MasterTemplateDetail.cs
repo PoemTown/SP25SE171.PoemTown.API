@@ -17,7 +17,7 @@ namespace PoemTown.Repository.Entities
         [Key]
         public Guid Id { get; set; } 
         //public string? ColorCode { get; set; }
-        public string? FontColorCode { get; set; }
+        public string? ColorCode { get; set; }
         public TemplateDetailType? Type { get; set; }
         //public TemplateDetailDesignType? DesignType { get; set; }
         public string? Image { get; set; }

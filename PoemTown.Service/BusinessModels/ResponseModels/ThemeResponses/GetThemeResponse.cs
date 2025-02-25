@@ -1,4 +1,6 @@
-﻿namespace PoemTown.Service.BusinessModels.ResponseModels.ThemeResponses;
+﻿using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
+
+namespace PoemTown.Service.BusinessModels.ResponseModels.ThemeResponses;
 
 public class GetThemeResponse
 {
@@ -6,4 +8,5 @@ public class GetThemeResponse
     public bool IsInUse { get; set; }
     public bool IsDefault { get; set; }
     public string Name { get; set; }
+    public IList<GetUserTemplateDetailResponse> UserTemplateDetails { get; set; }
 }

@@ -461,4 +461,16 @@ public class TemplateController : BaseController
         await _templateService.UpdateThemeUserTemplateDetail(userId, themeId, request);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Theme user template detail updated successfully"));
     }
+    
+    //Buy master template
+    [HttpPost]
+    [Route("v1/master-template/{masterTemplateId}/purchase")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> PurchaseMasterTemplate(Guid masterTemplateId)
+    {
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value!);
+        
+        await _templateService.PurchaseMasterTemplate(userId, masterTemplateId);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "Master template purchased successfully"));
+    }
 }

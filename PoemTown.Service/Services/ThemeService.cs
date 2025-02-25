@@ -6,6 +6,7 @@ using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.RequestModels.ThemeRequests;
+using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.ThemeResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.ThemeFilters;
@@ -96,8 +97,22 @@ public class ThemeService : IThemeService
         var queryPaging = await _unitOfWork.GetRepository<Theme>()
             .GetPagination(themeQuery, request.PageNumber, request.PageSize);
         
-        var themes = _mapper.Map<List<GetThemeResponse>>(queryPaging.Data);
+        //var themes = _mapper.Map<List<GetThemeResponse>>(queryPaging.Data);
 
+        IList<GetThemeResponse> themes = new List<GetThemeResponse>();
+        foreach (var theme in queryPaging.Data)
+        {
+            var themeEntity = await _unitOfWork.GetRepository<Theme>().FindAsync(p => p.Id == theme.Id);
+            if (themeEntity == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Theme not found");
+            }
+            themes.Add(_mapper.Map<GetThemeResponse>(themeEntity));
+            // Assign author to poem by adding into the last element of the list
+            themes.Last().UserTemplateDetails = _mapper.Map<IList<GetUserTemplateDetailResponse>>
+                (themeEntity.ThemeUserTemplateDetails.Where(p => p.ThemeId == themeEntity.Id).Select(p => p.UserTemplateDetail).ToList());
+        }
+        
         return new PaginationResponse<GetThemeResponse>(themes, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }

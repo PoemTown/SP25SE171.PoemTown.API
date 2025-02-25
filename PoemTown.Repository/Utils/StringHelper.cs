@@ -69,4 +69,13 @@ public static class StringHelper
         // Capitalize the first letter and make the rest lowercase
         return char.ToUpper(input[0]) + input.Substring(1).ToLower();
     }
+    
+    public static string GenerateRandomString(int length)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        Random random = new Random();
+        return new string(Enumerable.Range(0, length)
+            .Select(_ => chars[random.Next(chars.Length)])
+            .ToArray());
+    }
 }

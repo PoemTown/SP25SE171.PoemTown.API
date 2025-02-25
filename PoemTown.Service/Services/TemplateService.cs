@@ -716,7 +716,7 @@ public class TemplateService : ITemplateService
             .Select(p => new UserTemplateDetail()
             {
                 UserTemplateId = newUserTemplate.Id,
-                FontColorCode = p.FontColorCode,
+                ColorCode = p.ColorCode,
                 Type = p.Type,
                 Image = p.Image
             })

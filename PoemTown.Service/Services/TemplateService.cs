@@ -39,6 +39,58 @@ public class TemplateService : ITemplateService
         _awsS3Service = awsS3Service;
     }
 
+    /*public async Task CreateMasterTemplate(CreateMasterTemplateRequest request)
+    {
+        var masterTemplate = _mapper.Map<MasterTemplate>(request);
+
+        // Check if MasterTemplateDetails is null then insert MasterTemplate only
+        if (request.MasterTemplateDetails == null)
+        {
+            await _unitOfWork.GetRepository<MasterTemplate>().InsertAsync(masterTemplate);
+            await _unitOfWork.SaveChangesAsync();
+            return;
+        }
+
+        /#1#/ Check if MasterTemplateDetails Type is duplicate
+        var duplicateMasterTemplateDetailType = request.MasterTemplateDetails
+            .GroupBy(x => x.Type)
+            .Where(x => x.Count() > 1)
+            .Select(x => x.Key)
+            .FirstOrDefault();
+
+        if (duplicateMasterTemplateDetailType != default)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, $"Duplicate MasterTemplateDetail Type: {duplicateMasterTemplateDetailType}");
+        }#1#
+
+        // Set MasterTemplate Type based on MasterTemplateDetails count: Single or Bundle (>1)
+        masterTemplate.Type = request.MasterTemplateDetails.Count > 1 ? TemplateType.Bundle : TemplateType.Single;
+        await _unitOfWork.GetRepository<MasterTemplate>().InsertAsync(masterTemplate);
+        foreach (var mtd in request.MasterTemplateDetails)
+        {
+            if (mtd is { Image: not null, FontColorCode: not null })
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Image and ColorCode cannot be together");
+            }
+
+            if (mtd is { Image: null, FontColorCode: null })
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Image or ColorCode is required");
+            }
+
+            MasterTemplateDetail masterTemplateDetail = _mapper.Map<MasterTemplateDetail>(mtd);
+
+            masterTemplateDetail.MasterTemplateId = masterTemplate.Id;
+            /#1#/ Set DesignType based on Image or ColorCode
+            masterTemplateDetail.DesignType =
+                mtd.Image != null ? TemplateDetailDesignType.Image : TemplateDetailDesignType.ColorCode;#1#
+
+            await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertAsync(masterTemplateDetail);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }*/
+    
     public async Task CreateMasterTemplate(CreateMasterTemplateRequest request)
     {
         var masterTemplate = _mapper.Map<MasterTemplate>(request);
@@ -51,40 +103,14 @@ public class TemplateService : ITemplateService
             return;
         }
 
-        /*// Check if MasterTemplateDetails Type is duplicate
-        var duplicateMasterTemplateDetailType = request.MasterTemplateDetails
-            .GroupBy(x => x.Type)
-            .Where(x => x.Count() > 1)
-            .Select(x => x.Key)
-            .FirstOrDefault();
-
-        if (duplicateMasterTemplateDetailType != default)
-        {
-            throw new CoreException(StatusCodes.Status400BadRequest, $"Duplicate MasterTemplateDetail Type: {duplicateMasterTemplateDetailType}");
-        }*/
-
         // Set MasterTemplate Type based on MasterTemplateDetails count: Single or Bundle (>1)
         masterTemplate.Type = request.MasterTemplateDetails.Count > 1 ? TemplateType.Bundle : TemplateType.Single;
         await _unitOfWork.GetRepository<MasterTemplate>().InsertAsync(masterTemplate);
         foreach (var mtd in request.MasterTemplateDetails)
         {
-            if (mtd is { Image: not null, ColorCode: not null })
-            {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Image and ColorCode cannot be together");
-            }
-
-            if (mtd is { Image: null, ColorCode: null })
-            {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Image or ColorCode is required");
-            }
-
             MasterTemplateDetail masterTemplateDetail = _mapper.Map<MasterTemplateDetail>(mtd);
 
             masterTemplateDetail.MasterTemplateId = masterTemplate.Id;
-            // Set DesignType based on Image or ColorCode
-            masterTemplateDetail.DesignType =
-                mtd.Image != null ? TemplateDetailDesignType.Image : TemplateDetailDesignType.ColorCode;
-
             await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertAsync(masterTemplateDetail);
         }
 
@@ -219,7 +245,7 @@ public class TemplateService : ITemplateService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateMasterTemplateDetail(UpdateMasterTemplateDetailRequest request)
+    /*public async Task UpdateMasterTemplateDetail(UpdateMasterTemplateDetailRequest request)
     {
         var masterTemplateDetail =
             await _unitOfWork.GetRepository<MasterTemplateDetail>().FindAsync(p => p.Id == request.Id);
@@ -254,6 +280,20 @@ public class TemplateService : ITemplateService
                 break;
         }
 
+        _mapper.Map(request, masterTemplateDetail);
+        _unitOfWork.GetRepository<MasterTemplateDetail>().Update(masterTemplateDetail);
+        await _unitOfWork.SaveChangesAsync();
+    }*/
+    
+    public async Task UpdateMasterTemplateDetail(UpdateMasterTemplateDetailRequest request)
+    {
+        var masterTemplateDetail =
+            await _unitOfWork.GetRepository<MasterTemplateDetail>().FindAsync(p => p.Id == request.Id);
+
+        if (masterTemplateDetail == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplateDetail not found");
+        }
         _mapper.Map(request, masterTemplateDetail);
         _unitOfWork.GetRepository<MasterTemplateDetail>().Update(masterTemplateDetail);
         await _unitOfWork.SaveChangesAsync();
@@ -342,7 +382,7 @@ public class TemplateService : ITemplateService
         return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
     }
 
-    public async Task AddMasterTemplateDetailIntoMasterTemplate(
+    /*public async Task AddMasterTemplateDetailIntoMasterTemplate(
         AddMasterTemplateDetailIntoMasterTemplateRequest request)
     {
         MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
@@ -371,6 +411,32 @@ public class TemplateService : ITemplateService
             // Set DesignType based on Image or ColorCode
             masterTemplateDetail.DesignType =
                 mtd.Image != null ? TemplateDetailDesignType.Image : TemplateDetailDesignType.ColorCode;
+
+            await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertAsync(masterTemplateDetail);
+        }
+
+        masterTemplate.Type =
+            masterTemplate.MasterTemplateDetails.Count > 1 ? TemplateType.Bundle : TemplateType.Single;
+        _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
+        await _unitOfWork.SaveChangesAsync();
+    }*/
+    
+    public async Task AddMasterTemplateDetailIntoMasterTemplate(
+        AddMasterTemplateDetailIntoMasterTemplateRequest request)
+    {
+        MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
+            .FindAsync(p => p.Id == request.MasterTemplateId);
+
+        if (masterTemplate == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
+        }
+
+        foreach (var mtd in request.MasterTemplateDetails)
+        {
+            MasterTemplateDetail masterTemplateDetail = _mapper.Map<MasterTemplateDetail>(mtd);
+
+            masterTemplateDetail.MasterTemplateId = masterTemplate.Id;
 
             await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertAsync(masterTemplateDetail);
         }
@@ -603,6 +669,7 @@ public class TemplateService : ITemplateService
                 WalletStatus = WalletStatus.Active
             };
             await _unitOfWork.GetRepository<UserEWallet>().InsertAsync(userEWallet);
+            await _unitOfWork.SaveChangesAsync();
         }
         
         // Check if MasterTemplate exists
@@ -649,14 +716,12 @@ public class TemplateService : ITemplateService
             .Select(p => new UserTemplateDetail()
             {
                 UserTemplateId = newUserTemplate.Id,
-                ColorCode = p.ColorCode,
+                FontColorCode = p.FontColorCode,
                 Type = p.Type,
-                Image = p.Image,
-                DesignType = p.DesignType,
+                Image = p.Image
             })
             .ToListAsync();
         await _unitOfWork.GetRepository<UserTemplateDetail>().InsertRangeAsync(userTemplateDetail);
-        
         
         // Deduct userEWallet balance and update userEWallet balance
         userEWallet.WalletBalance -= masterTemplate.Price;
@@ -707,7 +772,7 @@ public class TemplateService : ITemplateService
                 throw new CoreException(StatusCodes.Status400BadRequest, "Cannot change UserTemplateDetail Type");
             }
             
-            // Check if newThemeUserTemplateDetail DesignType is the same as previousThemeUserTemplateDetail DesignType
+            /*// Check if newThemeUserTemplateDetail DesignType is the same as previousThemeUserTemplateDetail DesignType
             if(newUserTemplateDetail.DesignType != previousUserTemplateDetail.DesignType)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Cannot change UserTemplateDetail DesignType");
@@ -717,7 +782,7 @@ public class TemplateService : ITemplateService
             if (newUserTemplateDetail.DesignType == TemplateDetailDesignType.ColorCode)
             {
                 newUserTemplateDetail.ColorCode = themeUserTemplateDetailRequest.NewUserTemplateDetailColorCode;
-            }
+            }*/
 
             _unitOfWork.GetRepository<UserTemplateDetail>().Update(newUserTemplateDetail);
             

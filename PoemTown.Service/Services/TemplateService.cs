@@ -788,8 +788,8 @@ public class TemplateService : ITemplateService
             {
                 newUserTemplateDetail.ColorCode = themeUserTemplateDetailRequest.NewUserTemplateDetailColorCode;
             }*/
-
-            _unitOfWork.GetRepository<UserTemplateDetail>().Update(newUserTemplateDetail);
+            
+            //_unitOfWork.GetRepository<UserTemplateDetail>().Update(newUserTemplateDetail);
             
             themeUserTemplateDetail.UserTemplateDetailId = themeUserTemplateDetailRequest.NewUserTemplateDetailId;
             _unitOfWork.GetRepository<ThemeUserTemplateDetail>().Update(themeUserTemplateDetail);

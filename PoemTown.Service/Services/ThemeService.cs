@@ -34,6 +34,58 @@ public class ThemeService : IThemeService
         _publishEndpoint = publishEndpoint;
     }
 
+    public static IList<MasterTemplateDetail> GetDefaultMasterTemplateDetailData(Guid masterTemplateId)
+    {
+        IList<MasterTemplateDetail> userTemplateDetails = new List<MasterTemplateDetail>()
+        {
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.Header,
+                Image =
+                    "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/default header-1740549085.jpg",
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.NavBackground
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.NavBorder,
+                ColorCode = "#cccccc"
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.MainBackground,
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.AchievementBackground,
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.AchievementBorder,
+                ColorCode = "#E4EF00"
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.StatisticBackground,
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.StatisticBorder,
+                ColorCode = "#cccccc"
+            },
+        };
+        return userTemplateDetails;
+    }
     public async Task CreateUserTheme(Guid userId, CreateUserThemeRequest request)
     {
         // If create theme as in use, then set all other user themes into not in use
@@ -353,56 +405,106 @@ public class ThemeService : IThemeService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public static IList<MasterTemplateDetail> GetDefaultMasterTemplateDetailData(Guid masterTemplateId)
+    
+    
+    public async Task<PaginationResponse<GetThemeResponseV2>>
+        GetUserThemeV2(Guid userId, RequestOptionsBase<GetUserThemeFilterOption, GetUserThemeSortOption> request)
     {
-        IList<MasterTemplateDetail> userTemplateDetails = new List<MasterTemplateDetail>()
+        // Check if default theme not exist, then create default theme
+        var defaultTheme = await _unitOfWork.GetRepository<Theme>()
+            .FindAsync(p => p.UserId == userId && p.IsDefault == true);
+
+        // If any theme is in use, create default theme with status IsInUse = false and vice versa
+        var existUsingTheme = await _unitOfWork.GetRepository<Theme>()
+            .AsQueryable()
+            .AnyAsync(p => p.UserId == userId && p.IsInUse == true);
+        if (defaultTheme == null)
         {
-            new()
+            await CreateDefaultThemeAndUserTemplate(userId, !existUsingTheme);
+        }
+
+        var themeQuery = _unitOfWork.GetRepository<Theme>().AsQueryable();
+
+        themeQuery = themeQuery.Where(p => p.UserId == userId);
+
+        // IsDelete
+        if (request.IsDelete == true)
+        {
+            themeQuery = themeQuery.Where(p => p.DeletedTime != null);
+        }
+        else
+        {
+            themeQuery = themeQuery.Where(p => p.DeletedTime == null);
+        }
+
+        // Filter
+        if (request.FilterOptions != null)
+        {
+            if (request.FilterOptions.IsInUse != null)
             {
-                MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.Header,
-                Image =
-                    "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/default header-1740549085.jpg",
-            },
-            new()
+                themeQuery = themeQuery.Where(p => p.IsInUse == request.FilterOptions.IsInUse);
+            }
+
+            if (request.FilterOptions.IsDefault != null)
             {
-                MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.NavBackground
-            },
-            new()
-            {
-                MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.NavBorder,
-                ColorCode = "#cccccc"
-            },
-            new()
-            {
-                MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.MainBackground,
-            },
-            new()
-            {
-                MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.AchievementBackground,
-            },
-            new()
-            {
-                MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.AchievementBorder,
-                ColorCode = "#E4EF00"
-            },
-            new()
-            {
-                MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.StatisticBackground,
-            },
-            new()
-            {
-                MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.StatisticBorder,
-                ColorCode = "#cccccc"
-            },
+                themeQuery = themeQuery.Where(p => p.IsDefault == request.FilterOptions.IsDefault);
+            }
+            
+        }
+
+        // Sort
+        themeQuery = request.SortOptions switch
+        {
+            GetUserThemeSortOption.CreatedTimeAscending => themeQuery.OrderBy(p => p.CreatedTime),
+            GetUserThemeSortOption.CreatedTimeDescending => themeQuery.OrderByDescending(p => p.CreatedTime),
+            _ => themeQuery.OrderByDescending(p => p.CreatedTime)
         };
-        return userTemplateDetails;
+
+        // Pagination
+        var queryPaging = await _unitOfWork.GetRepository<Theme>()
+            .GetPagination(themeQuery, request.PageNumber, request.PageSize);
+
+        //var themes = _mapper.Map<List<GetThemeResponse>>(queryPaging.Data);
+
+        IList<GetThemeResponseV2> themes = new List<GetThemeResponseV2>();
+        foreach (var theme in queryPaging.Data)
+        {
+            var themeEntity = await _unitOfWork.GetRepository<Theme>().FindAsync(p => p.Id == theme.Id);
+            if (themeEntity == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Theme not found");
+            }
+
+            themes.Add(_mapper.Map<GetThemeResponseV2>(themeEntity));
+            
+            // Get all user's template details
+            IList<UserTemplateDetail> userTemplateDetails = await _unitOfWork.GetRepository<UserTemplateDetail>()
+                .AsQueryable()
+                .Where(p => p.UserTemplate.User.Id == userId)
+                .OrderBy(p => p.Type)
+                .ToListAsync();
+
+            // Filter user template detail
+            if (request.FilterOptions != null)
+            {
+                if (request.FilterOptions.TemplateDetailType != default)
+                {
+                    userTemplateDetails = userTemplateDetails.Where(p => p.Type == request.FilterOptions.TemplateDetailType).ToList();
+                }
+            }
+
+            // Assign UserTemplateDetail to Theme
+            themes.Last().UserTemplateDetails = _mapper.Map<IList<GetUserTemplateDetailThemeDecorationResponse>>(userTemplateDetails);
+            
+            // Check if user template detail is in themetemplateuserdetail, then isInUse = true
+            foreach (var userTemplateDetail in themes.Last().UserTemplateDetails)
+            {
+                userTemplateDetail.IsInUse = themeEntity.ThemeUserTemplateDetails
+                    .Any(p => p.UserTemplateDetailId == userTemplateDetail.Id);
+            };
+        }
+
+        return new PaginationResponse<GetThemeResponseV2>(themes, queryPaging.PageNumber, queryPaging.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
 }

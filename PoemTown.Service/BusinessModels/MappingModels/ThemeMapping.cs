@@ -13,5 +13,6 @@ public class ThemeMapping : Profile
         CreateMap<CreateUserThemeRequest, Theme>();
         CreateMap<Theme, GetThemeResponse>().ReverseMap();
         CreateMap<UpdateUserThemeRequest, Theme>();
+        CreateMap<Theme, GetThemeResponseV2>().ReverseMap();
     }
 }

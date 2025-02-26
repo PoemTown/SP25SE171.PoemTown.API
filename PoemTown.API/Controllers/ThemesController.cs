@@ -68,6 +68,34 @@ public class ThemesController : BaseController
     }
     
     /// <summary>
+    /// Lấy danh sách themes của user (V2), yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// sortOptions:
+    ///
+    /// - CreatedTimeAscending = 1 (Sắp xếp theo thời gian tạo tăng dần)
+    /// - CreatedTimeDescending = 2 (Sắp xếp theo thời gian tạo giảm dần) (Mặc định)
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v2/user")]
+    [Authorize]
+    public async Task<ActionResult<BasePaginationResponse<GetThemeResponseV2>>>
+        GetUserThemeV2(RequestOptionsBase<GetUserThemeFilterOption, GetUserThemeSortOption> request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var paginationResponse = await _themeService.GetUserThemeV2(userId, request);
+        
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetThemeResponseV2>>(paginationResponse); 
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Theme retrieved successfully";
+        
+        return Ok(basePaginationResponse);
+    }
+    
+    
+    /// <summary>
     /// Cập nhật theme của user, yêu cầu đăng nhập
     /// </summary>
     /// <param name="request"></param>

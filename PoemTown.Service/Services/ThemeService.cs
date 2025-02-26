@@ -80,9 +80,14 @@ public class ThemeService : IThemeService
         // Check if default theme not exist, then create default theme
         var defaultTheme = await _unitOfWork.GetRepository<Theme>()
             .FindAsync(p => p.UserId == userId && p.IsDefault == true);
+        
+        // If any theme is in use, create default theme with status IsInUse = false and vice versa
+        var existUsingTheme = await _unitOfWork.GetRepository<Theme>()
+            .AsQueryable()
+            .AnyAsync(p => p.UserId == userId && p.IsInUse == true);
         if(defaultTheme == null)
         {
-            await CreateDefaultThemeAndUserTemplate(userId, true);
+            await CreateDefaultThemeAndUserTemplate(userId, !existUsingTheme);
         }
         
         

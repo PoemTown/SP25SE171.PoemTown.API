@@ -792,5 +792,68 @@ public class TemplateService : ITemplateService
             await _unitOfWork.SaveChangesAsync();
         }
     }
+
+
+    public async Task CreateDefaultMasterTemplate(CreateDefaultMasterTemplateRequest request)
+    {
+        // Check if Default MasterTemplate already exists
+        MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.TagName == "Default");
+        if(masterTemplate != null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Default MasterTemplate already exists");
+        }
+        
+        masterTemplate = _mapper.Map<MasterTemplate>(request);
+        masterTemplate.Price = 0;
+        masterTemplate.Status = TemplateStatus.Active;
+        masterTemplate.TagName = "Default";
+
+        // Check if MasterTemplateDetails is null then insert MasterTemplate only
+        if (request.MasterTemplateDetails == null)
+        {
+            await _unitOfWork.GetRepository<MasterTemplate>().InsertAsync(masterTemplate);
+            await _unitOfWork.SaveChangesAsync();
+            return;
+        }
+
+        // Set MasterTemplate Type based on MasterTemplateDetails count: Single or Bundle (>1)
+        masterTemplate.Type = request.MasterTemplateDetails.Count > 1 ? TemplateType.Bundle : TemplateType.Single;
+        await _unitOfWork.GetRepository<MasterTemplate>().InsertAsync(masterTemplate);
+        foreach (var mtd in request.MasterTemplateDetails)
+        {
+            MasterTemplateDetail masterTemplateDetail = _mapper.Map<MasterTemplateDetail>(mtd);
+
+            masterTemplateDetail.MasterTemplateId = masterTemplate.Id;
+            await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertAsync(masterTemplateDetail);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
     
+    
+    public async Task AddMasterTemplateDetailIntoDefaultMasterTemplate(
+        AddMasterTemplateDetailIntoDefaultMasterTemplateRequest request)
+    {
+        MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
+            .FindAsync(p => p.TagName == "Default");
+
+        if (masterTemplate == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Default MasterTemplate not found");
+        }
+
+        foreach (var mtd in request.MasterTemplateDetails)
+        {
+            MasterTemplateDetail masterTemplateDetail = _mapper.Map<MasterTemplateDetail>(mtd);
+
+            masterTemplateDetail.MasterTemplateId = masterTemplate.Id;
+
+            await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertAsync(masterTemplateDetail);
+        }
+
+        masterTemplate.Type =
+            masterTemplate.MasterTemplateDetails.Count > 1 ? TemplateType.Bundle : TemplateType.Single;
+        _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

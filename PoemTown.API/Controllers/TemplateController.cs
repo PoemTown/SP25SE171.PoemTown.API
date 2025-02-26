@@ -477,4 +477,58 @@ public class TemplateController : BaseController
         await _templateService.PurchaseMasterTemplate(userId, masterTemplateId);
         return Ok(new BaseResponse(StatusCodes.Status201Created, "Master template purchased successfully"));
     }
+    
+    /// <summary>
+    /// Tạo một default master template, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <remarks>
+    /// Template Detail Type:
+    ///
+    /// - Header = 1,
+    /// - NavBackground = 2,
+    /// - NavBorder = 3,
+    /// - MainBackground = 4,
+    /// - AchievementBorder = 5,
+    /// - AchievementBackground = 6,
+    /// - StatisticBorder = 7,
+    /// - StatisticBackground = 8,
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/master-templates/default")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> CreateDefaultMasterTemplate(
+        CreateDefaultMasterTemplateRequest request)
+    {
+        await _templateService.CreateDefaultMasterTemplate(request);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "Default master template created successfully"));
+    }
+    
+    /// <summary>
+    /// Thêm master template details vào default master template, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <remarks>
+    /// Template Detail Type:
+    ///
+    /// - Header = 1,
+    /// - NavBackground = 2,
+    /// - NavBorder = 3,
+    /// - MainBackground = 4,
+    /// - AchievementBorder = 5,
+    /// - AchievementBackground = 6,
+    /// - StatisticBorder = 7,
+    /// - StatisticBackground = 8,
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/master-templates/default/detail/addition")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> AddMasterTemplateDetailIntoDefaultMasterTemplate(
+        AddMasterTemplateDetailIntoDefaultMasterTemplateRequest request)
+    {
+        await _templateService.AddMasterTemplateDetailIntoDefaultMasterTemplate(request);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "Master template detail added into default master template successfully"));
+    }
 }

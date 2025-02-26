@@ -86,6 +86,7 @@ public class ThemeService : IThemeService
         };
         return userTemplateDetails;
     }
+
     public async Task CreateUserTheme(Guid userId, CreateUserThemeRequest request)
     {
         // If create theme as in use, then set all other user themes into not in use
@@ -107,9 +108,57 @@ public class ThemeService : IThemeService
         }*/
 
         var userTheme = _mapper.Map<Theme>(request);
-        userTheme.UserId = userId;
 
+        userTheme.UserId = userId;
+        
+        // Assign default user template details to user theme
+        IList<UserTemplateDetail> defaultUserTemplateDetails = await _unitOfWork
+            .GetRepository<UserTemplateDetail>()
+            .AsQueryable()
+            .Where(p => p.UserTemplate.TagName == "Default")
+            .ToListAsync();
+
+        // Check if default user template details exist, then create default user template details
+        if (defaultUserTemplateDetails.Count > 0)
+        {
+            userTheme.ThemeUserTemplateDetails = defaultUserTemplateDetails.Select(p => p.Id)
+                .Select(p => new ThemeUserTemplateDetail()
+                {
+                    UserTemplateDetailId = p
+                }).ToList();
+        }
+        
+        // Check if default user template details not exist, then create default user template details, finally assign to user theme
+        else
+        {
+            MasterTemplate? masterTemplate =
+                await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.TagName == "Default");
+
+            if (masterTemplate != null)
+            {
+                // Create default user template details
+                defaultUserTemplateDetails = await _unitOfWork.GetRepository<MasterTemplateDetail>()
+                    .AsQueryable()
+                    .Where(p => p.MasterTemplateId == masterTemplate.Id)
+                    .Select(p => new UserTemplateDetail()
+                    {
+                        ColorCode = p.ColorCode,
+                        Type = p.Type,
+                        Image = p.Image
+                    })
+                    .ToListAsync();
+                
+                await _unitOfWork.GetRepository<UserTemplateDetail>().InsertRangeAsync(defaultUserTemplateDetails);
+                // Assign default user template details to user theme
+                userTheme.ThemeUserTemplateDetails = defaultUserTemplateDetails.Select(p => p.Id)
+                    .Select(p => new ThemeUserTemplateDetail()
+                    {
+                        UserTemplateDetailId = p
+                    }).ToList();
+            }
+        }
         await _unitOfWork.GetRepository<Theme>().InsertAsync(userTheme);
+
         await _unitOfWork.SaveChangesAsync();
 
         // Check if default theme not exist, then create default theme
@@ -405,8 +454,7 @@ public class ThemeService : IThemeService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    
-    
+
     public async Task<PaginationResponse<GetThemeResponseV2>>
         GetUserThemeV2(Guid userId, RequestOptionsBase<GetUserThemeFilterOption, GetUserThemeSortOption> request)
     {
@@ -449,7 +497,6 @@ public class ThemeService : IThemeService
             {
                 themeQuery = themeQuery.Where(p => p.IsDefault == request.FilterOptions.IsDefault);
             }
-            
         }
 
         // Sort
@@ -476,7 +523,7 @@ public class ThemeService : IThemeService
             }
 
             themes.Add(_mapper.Map<GetThemeResponseV2>(themeEntity));
-            
+
             // Get all user's template details
             IList<UserTemplateDetail> userTemplateDetails = await _unitOfWork.GetRepository<UserTemplateDetail>()
                 .AsQueryable()
@@ -489,19 +536,23 @@ public class ThemeService : IThemeService
             {
                 if (request.FilterOptions.TemplateDetailType != default)
                 {
-                    userTemplateDetails = userTemplateDetails.Where(p => p.Type == request.FilterOptions.TemplateDetailType).ToList();
+                    userTemplateDetails = userTemplateDetails
+                        .Where(p => p.Type == request.FilterOptions.TemplateDetailType).ToList();
                 }
             }
 
             // Assign UserTemplateDetail to Theme
-            themes.Last().UserTemplateDetails = _mapper.Map<IList<GetUserTemplateDetailThemeDecorationResponse>>(userTemplateDetails);
-            
+            themes.Last().UserTemplateDetails =
+                _mapper.Map<IList<GetUserTemplateDetailThemeDecorationResponse>>(userTemplateDetails);
+
             // Check if user template detail is in themetemplateuserdetail, then isInUse = true
             foreach (var userTemplateDetail in themes.Last().UserTemplateDetails)
             {
                 userTemplateDetail.IsInUse = themeEntity.ThemeUserTemplateDetails
                     .Any(p => p.UserTemplateDetailId == userTemplateDetail.Id);
-            };
+            }
+
+            ;
         }
 
         return new PaginationResponse<GetThemeResponseV2>(themes, queryPaging.PageNumber, queryPaging.PageSize,

@@ -612,6 +612,7 @@ public class TemplateService : ITemplateService
         IList<UserTemplateDetail> userTemplateDetail = await _unitOfWork.GetRepository<UserTemplateDetail>()
             .AsQueryable()
             .Where(p => themeUserTemplateDetails.Select(t => t.UserTemplateDetailId).Contains(p.Id))
+            .OrderBy(p => p.Type)
             .ToListAsync();
 
         return _mapper.Map<IList<GetUserTemplateDetailInUserThemeResponse>>(userTemplateDetail);
@@ -739,6 +740,22 @@ public class TemplateService : ITemplateService
     
     public async Task UpdateThemeUserTemplateDetail(Guid userId, Guid themeId, IList<UpdateThemeUserTemplateDetailRequest> request)
     {
+        Theme? theme = await _unitOfWork.GetRepository<Theme>()
+            .FindAsync(p => p.Id == themeId && p.UserId == userId);
+        
+        // Check if Theme exists
+        if (theme == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Theme not found");
+        }
+        
+        // Check if Theme is Default, then cannot update
+        if(theme.IsDefault == true)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Cannot update Default Theme");
+        }
+        
+        
         foreach (var themeUserTemplateDetailRequest in request)
         {
             // Check if previousThemeUserTemplateDetail exists

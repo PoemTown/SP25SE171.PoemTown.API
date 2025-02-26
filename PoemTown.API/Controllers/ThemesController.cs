@@ -75,6 +75,17 @@ public class ThemesController : BaseController
     ///
     /// - CreatedTimeAscending = 1 (Sắp xếp theo thời gian tạo tăng dần)
     /// - CreatedTimeDescending = 2 (Sắp xếp theo thời gian tạo giảm dần) (Mặc định)
+    ///
+    /// TemplateDetailType:
+    ///
+    /// - Header = 1,
+    /// - NavBackground = 2,
+    /// - NavBorder = 3,
+    /// - MainBackground = 4,
+    /// - AchievementBorder = 5,
+    /// - AchievementBackground = 6,
+    /// - StatisticBorder = 7,
+    /// - StatisticBackground = 8
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>

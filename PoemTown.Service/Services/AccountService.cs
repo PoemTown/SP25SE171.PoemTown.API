@@ -92,7 +92,8 @@ public class AccountService : IAccountService
         //Create default theme for user
         CreateDefaultUserThemeEvent themeMessage = new CreateDefaultUserThemeEvent()
         {
-            UserId = user.Id
+            UserId = user.Id,
+            IsInUse = true,
         };
         await _publishEndpoint.Publish(themeMessage);
         

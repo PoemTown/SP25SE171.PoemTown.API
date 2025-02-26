@@ -89,6 +89,15 @@ public class ThemeService : IThemeService
 
     public async Task CreateUserTheme(Guid userId, CreateUserThemeRequest request)
     {
+        // Limit user theme = 5
+        int userThemeCount = await _unitOfWork.GetRepository<Theme>()
+            .AsQueryable()
+            .CountAsync(p => p.UserId == userId && p.Name == request.Name);
+        if (userThemeCount >= 5)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User theme count is limited to 5");
+        }
+        
         // If create theme as in use, then set all other user themes into not in use
         if (request.IsInUse == true)
         {

@@ -12,6 +12,7 @@ using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
 using PoemTown.Service.BusinessModels.MappingModels;
 using PoemTown.Service.Consumers.CollectionConsumers;
 using PoemTown.Service.Consumers.EmailConsumers;
+using PoemTown.Service.Consumers.TemplateConsumers;
 using PoemTown.Service.Consumers.ThemeConsumers;
 using PoemTown.Service.Consumers.UserEWalletConsumers;
 using PoemTown.Service.Events.ThemeEvents;
@@ -83,6 +84,8 @@ public static class ConfigureService
             config.AddConsumer<CreateDefaultCollectionConsumer>();
             config.AddConsumer<CreateDefaultUserThemeConsumer>();
             config.AddConsumer<InitialUserEWalletConsumer>();
+            config.AddConsumer<AddUserTemplateDetailConsumer>();
+            
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {

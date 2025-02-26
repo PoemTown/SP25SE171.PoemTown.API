@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MassTransit;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +15,7 @@ using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
+using PoemTown.Service.Events.TemplateEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.TemplateFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -28,15 +30,18 @@ public class TemplateService : ITemplateService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IAwsS3Service _awsS3Service;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public TemplateService(IUnitOfWork unitOfWork,
         IMapper mapper,
-        IAwsS3Service awsS3Service
+        IAwsS3Service awsS3Service,
+        IPublishEndpoint publishEndpoint
     )
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _awsS3Service = awsS3Service;
+        _publishEndpoint = publishEndpoint;
     }
 
     /*public async Task CreateMasterTemplate(CreateMasterTemplateRequest request)
@@ -837,11 +842,15 @@ public class TemplateService : ITemplateService
         MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
             .FindAsync(p => p.TagName == "Default");
 
+        // Check if Default MasterTemplate exists
         if (masterTemplate == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Default MasterTemplate not found");
         }
 
+        IList<MasterTemplateDetail> masterTemplateDetails = new List<MasterTemplateDetail>();
+        
+        // Add MasterTemplateDetail into Default MasterTemplate
         foreach (var mtd in request.MasterTemplateDetails)
         {
             MasterTemplateDetail masterTemplateDetail = _mapper.Map<MasterTemplateDetail>(mtd);
@@ -849,11 +858,21 @@ public class TemplateService : ITemplateService
             masterTemplateDetail.MasterTemplateId = masterTemplate.Id;
 
             await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertAsync(masterTemplateDetail);
+            masterTemplateDetails.Add(masterTemplateDetail);
         }
 
+        // Set MasterTemplate Type based on MasterTemplateDetails count: Single or Bundle (>1)
         masterTemplate.Type =
             masterTemplate.MasterTemplateDetails.Count > 1 ? TemplateType.Bundle : TemplateType.Single;
         _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
         await _unitOfWork.SaveChangesAsync();
+
+        // Add MasterTemplateDetail into UserTemplateDetail for all users
+        var message = new AddUserTemplateDetailEvent()
+        {
+            MasterTemplateId = masterTemplate.Id,
+            MasterTemplateDetailIds = masterTemplateDetails.Select(p => p.Id).ToList()
+        };
+        await _publishEndpoint.Publish(message);
     }
 }

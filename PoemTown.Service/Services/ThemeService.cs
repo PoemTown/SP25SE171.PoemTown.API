@@ -80,17 +80,17 @@ public class ThemeService : IThemeService
         // Check if default theme not exist, then create default theme
         var defaultTheme = await _unitOfWork.GetRepository<Theme>()
             .FindAsync(p => p.UserId == userId && p.IsDefault == true);
-        
+
         // If any theme is in use, create default theme with status IsInUse = false and vice versa
         var existUsingTheme = await _unitOfWork.GetRepository<Theme>()
             .AsQueryable()
             .AnyAsync(p => p.UserId == userId && p.IsInUse == true);
-        if(defaultTheme == null)
+        if (defaultTheme == null)
         {
             await CreateDefaultThemeAndUserTemplate(userId, !existUsingTheme);
         }
-        
-        
+
+
         var themeQuery = _unitOfWork.GetRepository<Theme>().AsQueryable();
 
         themeQuery = themeQuery.Where(p => p.UserId == userId);
@@ -293,55 +293,53 @@ public class ThemeService : IThemeService
                 await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.TagName == "Default");
 
             IList<UserTemplateDetail> userTemplateDetails;
-            // Create default user template with existing master template
-            if (masterTemplate != null)
+            // Create master template and master template detail if not exist
+            if (masterTemplate == null)
             {
-                // Create user template
-                userTemplate = new UserTemplate()
-                {
-                    UserId = userId,
-                    MasterTemplateId = masterTemplate.Id,
-                    TemplateName = masterTemplate.TemplateName,
-                    Type = masterTemplate.Type,
-                    Status = masterTemplate.Status,
-                    TagName = masterTemplate.TagName
-                };
-                await _unitOfWork.GetRepository<UserTemplate>().InsertAsync(userTemplate);
-
-                // Create user template details
-                userTemplateDetails = await _unitOfWork.GetRepository<MasterTemplateDetail>()
-                    .AsQueryable()
-                    .Where(p => p.MasterTemplateId == masterTemplate.Id)
-                    .Select(p => new UserTemplateDetail()
-                    {
-                        UserTemplateId = userTemplate.Id,
-                        ColorCode = p.ColorCode,
-                        Type = p.Type,
-                        Image = p.Image
-                    })
-                    .ToListAsync();
-                await _unitOfWork.GetRepository<UserTemplateDetail>().InsertRangeAsync(userTemplateDetails);
-            }
-
-            // Create default user template with default data (when master template not exist)
-            else
-            {
-                // Create user template
-                userTemplate = new UserTemplate()
+                masterTemplate = new MasterTemplate()
                 {
                     TemplateName = "Template mặc định",
-                    UserId = userId,
-                    Type = TemplateType.Bundle,
                     Status = TemplateStatus.Active,
+                    Price = 0,
                     TagName = "Default",
+                    Type = TemplateType.Bundle,
                 };
-                await _unitOfWork.GetRepository<UserTemplate>().InsertAsync(userTemplate);
+                await _unitOfWork.GetRepository<MasterTemplate>().InsertAsync(masterTemplate);
 
-                // Create user template details
-                userTemplateDetails = GetDefaultUserTemplateDetailData(userTemplate.Id);
-                await _unitOfWork.GetRepository<UserTemplateDetail>().InsertRangeAsync(userTemplateDetails);
+                // Create master template details
+                var masterTemplateDetails = GetDefaultMasterTemplateDetailData(masterTemplate.Id);
+                await _unitOfWork.GetRepository<MasterTemplateDetail>().InsertRangeAsync(masterTemplateDetails);
+                await _unitOfWork.SaveChangesAsync();
             }
 
+            // Then assign MasterTemplate and MasterTemplateDetail to UserTemplate and UserTemplateDetail 
+            // Create user template
+            userTemplate = new UserTemplate()
+            {
+                UserId = userId,
+                MasterTemplateId = masterTemplate.Id,
+                TemplateName = masterTemplate.TemplateName,
+                Type = masterTemplate.Type,
+                Status = masterTemplate.Status,
+                TagName = masterTemplate.TagName
+            };
+            await _unitOfWork.GetRepository<UserTemplate>().InsertAsync(userTemplate);
+
+            // Create user template details
+            userTemplateDetails = await _unitOfWork.GetRepository<MasterTemplateDetail>()
+                .AsQueryable()
+                .Where(p => p.MasterTemplateId == masterTemplate.Id)
+                .Select(p => new UserTemplateDetail()
+                {
+                    UserTemplateId = userTemplate.Id,
+                    ColorCode = p.ColorCode,
+                    Type = p.Type,
+                    Image = p.Image
+                })
+                .ToListAsync();
+            await _unitOfWork.GetRepository<UserTemplateDetail>().InsertRangeAsync(userTemplateDetails);
+
+            // Finally assign UserTemplateDetail ThemeUserTemplateDetail
             // Create theme user template
             var themeUserTemplateDetails = userTemplateDetails.Select(p => new ThemeUserTemplateDetail()
             {
@@ -355,52 +353,52 @@ public class ThemeService : IThemeService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public static IList<UserTemplateDetail> GetDefaultUserTemplateDetailData(Guid userTemplateId)
+    public static IList<MasterTemplateDetail> GetDefaultMasterTemplateDetailData(Guid masterTemplateId)
     {
-        IList<UserTemplateDetail> userTemplateDetails = new List<UserTemplateDetail>()
+        IList<MasterTemplateDetail> userTemplateDetails = new List<MasterTemplateDetail>()
         {
             new()
             {
-                UserTemplateId = userTemplateId,
+                MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.Header,
                 Image =
                     "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/default header-1740549085.jpg",
             },
             new()
             {
-                UserTemplateId = userTemplateId,
+                MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.NavBackground
             },
             new()
             {
-                UserTemplateId = userTemplateId,
+                MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.NavBorder,
                 ColorCode = "#cccccc"
             },
             new()
             {
-                UserTemplateId = userTemplateId,
+                MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.MainBackground,
             },
             new()
             {
-                UserTemplateId = userTemplateId,
+                MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.AchievementBackground,
             },
             new()
             {
-                UserTemplateId = userTemplateId,
+                MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.AchievementBorder,
                 ColorCode = "#E4EF00"
             },
             new()
             {
-                UserTemplateId = userTemplateId,
+                MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.StatisticBackground,
             },
             new()
             {
-                UserTemplateId = userTemplateId,
+                MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.StatisticBorder,
                 ColorCode = "#cccccc"
             },

@@ -1,4 +1,5 @@
-﻿using PoemTown.Repository.Base;
+﻿using Microsoft.AspNetCore.Http;
+using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.CollectionRequest;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.QueryOptions.FilterOptions.CollectionFilters;
@@ -23,5 +24,6 @@ namespace PoemTown.Service.Interfaces
         Task<PaginationResponse<GetCollectionResponse>>
             GetTrendingCollections(Guid? userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
         Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid userId);
+        Task<string> UploadProfileImage(Guid userId, IFormFile file);
     }
 }

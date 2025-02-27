@@ -8,7 +8,7 @@ public class GetUserTemplateDetailResponse
     public string? ColorCode { get; set; }
     public TemplateDetailType? Type { get; set; }
     public string? Image { get; set; }
-    public TemplateDetailDesignType? DesignType { get; set; }
-    public Guid? ParentTemplateDetailId { get; set; }
+    //public TemplateDetailDesignType? DesignType { get; set; }
+    //public Guid? ParentTemplateDetailId { get; set; }
     public GetUserTemplateResponse UserTemplate { get; set; }
 }

@@ -15,6 +15,8 @@ public class TemplateMapping : Profile
         CreateMap<MasterTemplate, GetMasterTemplateResponse>().ReverseMap();
         CreateMap<UpdateMasterTemplateRequest, MasterTemplate>();
         CreateMap<UserTemplate, GetUserTemplateResponse>().ReverseMap();
+        CreateMap<CreateDefaultMasterTemplateRequest, MasterTemplate>()
+            .ForMember(dest => dest.MasterTemplateDetails, opt => opt.Ignore());
         
         // MasterTemplateDetail
         CreateMap<CreateMasterTemplateDetailRequest, MasterTemplateDetail>();
@@ -24,5 +26,6 @@ public class TemplateMapping : Profile
         CreateMap<GetUserTemplateResponse, GetUserTemplateDetailResponse>();
 
         CreateMap<GetUserTemplateDetailInUserThemeResponse, UserTemplateDetail>().ReverseMap();
+        CreateMap<GetUserTemplateDetailThemeDecorationResponse, UserTemplateDetail>().ReverseMap();
     }
 }

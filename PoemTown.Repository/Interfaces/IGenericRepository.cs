@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using PoemTown.Repository.Base;
+using PoemTown.Repository.Entities;
 
 namespace PoemTown.Repository.Interfaces;
 

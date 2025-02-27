@@ -17,4 +17,8 @@ public interface IThemeService
     Task UpdateUserTheme(Guid userId, UpdateUserThemeRequest request);
     Task DeleteUserTheme(Guid userId, Guid themeId);
     Task DeleteUserThemePermanent(Guid userId, Guid themeId);
+    Task CreateDefaultThemeAndUserTemplate(Guid userId, bool isInUse);
+
+    Task<PaginationResponse<GetThemeResponseV2>>
+        GetUserThemeV2(Guid userId, RequestOptionsBase<GetUserThemeFilterOption, GetUserThemeSortOption> request);
 }

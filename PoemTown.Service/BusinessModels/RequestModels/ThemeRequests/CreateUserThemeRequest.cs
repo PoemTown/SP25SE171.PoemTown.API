@@ -7,7 +7,4 @@ public class CreateUserThemeRequest
     public string Name { get; set; }
     [DefaultValue(false)]
     public bool? IsInUse { get; set; } = false;
-    
-    [DefaultValue(false)]
-    public bool? IsDefault { get; set; } = false;
 }

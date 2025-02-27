@@ -40,4 +40,12 @@ public interface ITemplateService
 
     Task RemoveUserTemplateDetailInUserTheme(Guid userId,
         RemoveUserTemplateDetailInUserThemeRequest request);
+
+    Task PurchaseMasterTemplate(Guid userId, Guid masterTemplateId);
+    Task UpdateThemeUserTemplateDetail(Guid userId, Guid themeId, IList<UpdateThemeUserTemplateDetailRequest> request);
+
+    Task AddMasterTemplateDetailIntoDefaultMasterTemplate(
+        AddMasterTemplateDetailIntoDefaultMasterTemplateRequest request);
+
+    Task CreateDefaultMasterTemplate(CreateDefaultMasterTemplateRequest request);
 }

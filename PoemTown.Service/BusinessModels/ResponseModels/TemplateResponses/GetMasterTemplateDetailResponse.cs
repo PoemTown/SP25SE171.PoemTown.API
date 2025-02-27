@@ -8,5 +8,5 @@ public class GetMasterTemplateDetailResponse
     public string? ColorCode { get; set; }
     public TemplateDetailType? Type { get; set; }
     public string? Image { get; set; }
-    public TemplateDetailDesignType? DesignType { get; set; }
+    //public TemplateDetailDesignType? DesignType { get; set; }
 }

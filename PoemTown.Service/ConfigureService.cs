@@ -12,13 +12,16 @@ using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
 using PoemTown.Service.BusinessModels.MappingModels;
 using PoemTown.Service.Consumers.CollectionConsumers;
 using PoemTown.Service.Consumers.EmailConsumers;
+using PoemTown.Service.Consumers.TemplateConsumers;
 using PoemTown.Service.Consumers.ThemeConsumers;
+using PoemTown.Service.Consumers.UserEWalletConsumers;
 using PoemTown.Service.Events.ThemeEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.Services;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Service.ThirdParties.Services;
 using PoemTown.Service.ThirdParties.Settings.AwsS3;
+using PoemTown.Service.ThirdParties.Settings.ZaloPay;
 using RazorLight;
 
 namespace PoemTown.Service;
@@ -35,6 +38,7 @@ public static class ConfigureService
         services.AddRazorLightEngine(env);
         services.AddSmtpClient();
         services.AddAwsS3Configuration(configuration);
+        services.AddZaloPayConfig(configuration);
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -55,9 +59,14 @@ public static class ConfigureService
         services.AddScoped<ITemplateService, TemplateService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IThemeService, ThemeService>();
+        services.AddScoped<IPaymentGatewayService, PaymentGatewayService>();
+        services.AddScoped<IUserEWalletService, UserEWalletService>();
+        services.AddScoped<PaymentMethodFactory>();
         
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
+        services.AddScoped<IZaloPayService, ZaloPayService>();
+        services.AddScoped<ZaloPayService>();
     }
     
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)
@@ -74,6 +83,9 @@ public static class ConfigureService
             config.AddConsumer<ForgotPasswordConsumer>();
             config.AddConsumer<CreateDefaultCollectionConsumer>();
             config.AddConsumer<CreateDefaultUserThemeConsumer>();
+            config.AddConsumer<InitialUserEWalletConsumer>();
+            config.AddConsumer<AddUserTemplateDetailConsumer>();
+            
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {
@@ -172,6 +184,24 @@ public static class ConfigureService
                 ForcePathStyle = true,
             };
             return new AmazonS3Client(config.AccessKey, config.SecretKey, amazonConfig);
+        });
+    }
+    
+    public static void AddZaloPayConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        var zaloPayConfig = configuration.GetSection("ZaloPay");
+        services.AddSingleton<ZaloPaySettings>(options =>
+        {
+            var zaloPaySettings = new ZaloPaySettings
+            {
+                AppId = zaloPayConfig.GetSection("AppId").Value,
+                Key1 = zaloPayConfig.GetSection("Key1").Value,
+                Key2 = zaloPayConfig.GetSection("Key2").Value,
+                CallbackUrl = zaloPayConfig.GetSection("CallbackUrl").Value,
+                RedirectUrl = zaloPayConfig.GetSection("RedirectUrl").Value
+            };
+            zaloPaySettings.IsValid();
+            return zaloPaySettings;
         });
     }
 }

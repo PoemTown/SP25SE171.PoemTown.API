@@ -444,4 +444,91 @@ public class TemplateController : BaseController
         await _templateService.RemoveUserTemplateDetailInUserTheme(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "User template detail removed in user theme successfully"));
     }
+    
+    /// <summary>
+    /// Thay đổi các user templates trong user theme, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="themeId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/theme/{themeId}/user-template-detail")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> UpdateThemeUserTemplateDetail(Guid themeId, IList<UpdateThemeUserTemplateDetailRequest> request)
+    {
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value!);
+        
+        await _templateService.UpdateThemeUserTemplateDetail(userId, themeId, request);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Theme user template detail updated successfully"));
+    }
+    
+    /// <summary>
+    /// Mua một master template, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="masterTemplateId">Lấy từ request path</param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/master-template/{masterTemplateId}/purchase")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> PurchaseMasterTemplate(Guid masterTemplateId)
+    {
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value!);
+        
+        await _templateService.PurchaseMasterTemplate(userId, masterTemplateId);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "Master template purchased successfully"));
+    }
+    
+    /// <summary>
+    /// Tạo một default master template, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <remarks>
+    /// Template Detail Type:
+    ///
+    /// - Header = 1,
+    /// - NavBackground = 2,
+    /// - NavBorder = 3,
+    /// - MainBackground = 4,
+    /// - AchievementBorder = 5,
+    /// - AchievementBackground = 6,
+    /// - StatisticBorder = 7,
+    /// - StatisticBackground = 8,
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/master-templates/default")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> CreateDefaultMasterTemplate(
+        CreateDefaultMasterTemplateRequest request)
+    {
+        await _templateService.CreateDefaultMasterTemplate(request);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "Default master template created successfully"));
+    }
+    
+    /// <summary>
+    /// Thêm master template details vào default master template, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <remarks>
+    /// Template Detail Type:
+    ///
+    /// - Header = 1,
+    /// - NavBackground = 2,
+    /// - NavBorder = 3,
+    /// - MainBackground = 4,
+    /// - AchievementBorder = 5,
+    /// - AchievementBackground = 6,
+    /// - StatisticBorder = 7,
+    /// - StatisticBackground = 8,
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/master-templates/default/detail/addition")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> AddMasterTemplateDetailIntoDefaultMasterTemplate(
+        AddMasterTemplateDetailIntoDefaultMasterTemplateRequest request)
+    {
+        await _templateService.AddMasterTemplateDetailIntoDefaultMasterTemplate(request);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "Master template detail added into default master template successfully"));
+    }
 }

@@ -15,6 +15,7 @@ using PoemTown.Service.Consumers.ThemeConsumers;
 using PoemTown.Service.Events.CollectionEvents;
 using PoemTown.Service.Events.EmailEvents;
 using PoemTown.Service.Events.ThemeEvents;
+using PoemTown.Service.Events.UserEWalletEvents;
 using PoemTown.Service.Interfaces;
 
 namespace PoemTown.Service.Services;
@@ -91,9 +92,17 @@ public class AccountService : IAccountService
         //Create default theme for user
         CreateDefaultUserThemeEvent themeMessage = new CreateDefaultUserThemeEvent()
         {
-            UserId = user.Id
+            UserId = user.Id,
+            IsInUse = true,
         };
         await _publishEndpoint.Publish(themeMessage);
+        
+        //Initial user e-wallet
+        InitialUserEWalletEvent initialUserEWalletEvent = new InitialUserEWalletEvent()
+        {
+            UserId = user.Id
+        };
+        await _publishEndpoint.Publish(initialUserEWalletEvent);
     }
 
     public async Task SendEmailOtp(ResendEmailConfirmationRequest request)

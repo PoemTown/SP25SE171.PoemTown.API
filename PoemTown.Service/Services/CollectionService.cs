@@ -42,7 +42,7 @@ namespace PoemTown.Service.Services
         public async Task CreateCollection(Guid userId, CreateCollectionRequest request, string role)
         {
             Collection collection = _mapper.Map<Collection>(request);
-            if(role == "ADMIN")
+            if (role == "ADMIN" || role == "MOD")
             {
                 collection.IsCommunity = true;
             }
@@ -53,22 +53,43 @@ namespace PoemTown.Service.Services
         }
         public async Task UpdateCollection(UpdateCollectionRequest request)
         {
-            Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == request.Id);
-            if (collection == null)
+            try
             {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == request.Id);
+                if(collection == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                }
+                if (request.RowVersion != null && !collection.RowVersion.SequenceEqual(request.RowVersion))
+                {
+                    throw new CoreException(StatusCodes.Status409Conflict, "Collection has been modified by another user. Please refresh and try again.");
+                }
+                _mapper.Map(request, collection);
+                _unitOfWork.GetRepository<Collection>().Update(collection);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                throw new CoreException(StatusCodes.Status409Conflict, "Collection has been modified by another user. Please refresh and try again.");
+
             }
 
-            _mapper.Map(request, collection);
-            _unitOfWork.GetRepository<Collection>().Update(collection);
-            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<PaginationResponse<GetCollectionResponse>> GetCollections(Guid userId,
             RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-            collectionQuery = collectionQuery.Where(a => a.UserId == userId);
+
+            if (request?.FilterOptions?.IsCommunity == true)
+            {
+                collectionQuery = collectionQuery.Where(a => a.IsCommunity == true);
+            }
+            else
+            {
+                collectionQuery = collectionQuery.Where(a => a.UserId == userId );
+            }
+
             if (request.IsDelete == true)
             {
                 collectionQuery = collectionQuery.Where(p => p.DeletedTime != null);
@@ -125,7 +146,7 @@ namespace PoemTown.Service.Services
                     tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id &&
                     tm.Type == TargetMarkType.Collection));
             }
-       
+
 
             return new PaginationResponse<GetCollectionResponse>(collections, queryPaging.PageNumber,
                 queryPaging.PageSize,
@@ -133,18 +154,28 @@ namespace PoemTown.Service.Services
         }
 
 
-        public async Task DeleteCollection(Guid collectionId)
+        public async Task DeleteCollection(Guid collectionId, byte[] rowVersion)
         {
-            Collection? collection = await _unitOfWork.GetRepository<Collection>()
-                .FindAsync(a => a.Id == collectionId);
-
-            if (collection == null)
+            try
             {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
+                if (collection == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                }
+                if (!collection.RowVersion.SequenceEqual(rowVersion))
+                {
+                    throw new CoreException(StatusCodes.Status409Conflict,
+                        "Collection has been modified by another user. Please refresh and try again.");
+                }
+                _unitOfWork.GetRepository<Collection>().Delete(collection);
+                await _unitOfWork.SaveChangesAsync();
             }
-
-            _unitOfWork.GetRepository<Collection>().Delete(collection);
-            await _unitOfWork.SaveChangesAsync();
+            catch(DbUpdateConcurrencyException) 
+            {
+                throw new CoreException(StatusCodes.Status409Conflict, "Collection has been modified by another user. Please refresh and try again.");
+            }
+            
         }
 
         public async Task DeleteCollectionPermanent(Guid collectionId)
@@ -195,7 +226,7 @@ namespace PoemTown.Service.Services
         public async Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid userId)
         {
             Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(c => c.Id == collectionId);
-            if(collection == null)
+            if (collection == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "collection not found");
             }
@@ -292,10 +323,13 @@ namespace PoemTown.Service.Services
             UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
             {
                 File = file,
+                Height = 260,
+                Width = 140,
                 Quality = 80,
                 FolderName = fileName
             };
             return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
         }
+
     }
 }

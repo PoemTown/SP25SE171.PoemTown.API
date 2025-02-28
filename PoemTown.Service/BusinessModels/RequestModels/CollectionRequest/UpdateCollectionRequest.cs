@@ -17,5 +17,6 @@ namespace PoemTown.Service.BusinessModels.RequestModels.CollectionRequest
         [MaxLength(500, ErrorMessage = "Description must be at most 500 characters.")]
         public string CollectionDescription { get; set; } = "";
         public string CollectionImage { get; set; } = null;
+        public byte[] RowVersion { get; set; }
     }
 }

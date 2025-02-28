@@ -18,6 +18,7 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses
         public bool? IsDefault { get; set; } = false;
         public int? TotalChapter { get; set; } = default!;
         public int? TotalRecord { get; set; } = default!;
+        public byte[]? RowVersion { get; set; }
         public DateTimeOffset? CreatedTime { get; set; }
         public DateTimeOffset? LastUpdatedTime { get; set; }
         public GetTargetMarkResponse? TargetMark { get; set; }

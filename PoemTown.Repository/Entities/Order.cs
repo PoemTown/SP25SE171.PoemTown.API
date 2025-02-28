@@ -16,15 +16,19 @@ namespace PoemTown.Repository.Entities
     {
         [Key]
         public Guid Id { get; set; }
-
+        public string? OrderCode { get; set; }
         public OrderType? Type { get; set; } = default!;
         public decimal? Amount { get; set; } = 0;
         public DateTimeOffset? OrderDate { get; set; } = DateTimeHelper.SystemTimeNow;
         public string? OrderDescription { get; set; } = null;
         public OrderStatus? Status { get; set; }
-
+        public DateTimeOffset? PaidDate { get; set; }
+        public DateTimeOffset? CancelledDate { get; set; }
+        public string? OrderToken { get; set; }
         public Guid UserId { get; set; }
         public virtual User User { get; set; }
+        public Guid? PaymentGatewayId { get; set; }
+        public virtual PaymentGateway? PaymentGateway { get; set; }
         public virtual Transaction? Transaction { get; set; }
         public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
     }

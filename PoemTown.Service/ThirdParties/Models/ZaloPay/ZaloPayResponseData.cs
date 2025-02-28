@@ -11,4 +11,6 @@ public class ZaloPayResponseData
     public string? ZpTransToken { get; set; }
     public string? OrderToken { get; set; }
     public string? QrCode { get; set; }
+    public decimal? Amount { get; set; }
+    public string? AppId { get; set; }
 }

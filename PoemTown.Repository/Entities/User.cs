@@ -53,7 +53,7 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public virtual ICollection<UserTemplate>? UserTemplates { get; set; }
     */
     public virtual ICollection<UserTemplate> UserTemplates { get; set; }
-    public virtual ICollection<Transaction>? Transactions { get; set; }
+    //public virtual ICollection<Transaction>? Transactions { get; set; }
 
     public virtual ICollection<Like> Likes { get; set; }
 

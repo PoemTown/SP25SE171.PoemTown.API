@@ -75,17 +75,17 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
         
         // Transactions -> UserEWallets
         builder.Entity<Transaction>()
-            .HasOne(t => t.EWallet)
+            .HasOne(t => t.UserEWallet)
             .WithMany(ew => ew.Transactions)
             .HasForeignKey(t => t.UserEWalletId)
             .OnDelete(DeleteBehavior.Restrict); // Thay Cascade bằng Restrict
 
-        // Transactions -> Users
+        /*// Transactions -> Users
         builder.Entity<Transaction>()
             .HasOne(t => t.User)
             .WithMany(u => u.Transactions)
             .HasForeignKey(t => t.UserId)
-            .OnDelete(DeleteBehavior.Restrict); // Thay Cascade bằng Restrict
+            .OnDelete(DeleteBehavior.Restrict); // Thay Cascade bằng Restrict*/
 
         /*builder.Entity<UserTemplateDetail>()
             .HasOne(ut => ut.ParentTemplateDetail)

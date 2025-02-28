@@ -1,4 +1,6 @@
-﻿namespace PoemTown.Service.BusinessModels.ResponseModels.UserEWalletResponses;
+﻿using System.Text.Json.Serialization;
+
+namespace PoemTown.Service.BusinessModels.ResponseModels.UserEWalletResponses;
 
 public class DepositUserEWalletResponse
 {
@@ -7,5 +9,7 @@ public class DepositUserEWalletResponse
     public string? Token { get; set; }
     public int? Code { get; set; }
     public bool IsSuccess { get; set; }
+    
+    [JsonIgnore]
     public string? OrderCode { get; set; }
 }

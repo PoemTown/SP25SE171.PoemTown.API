@@ -7,11 +7,11 @@ using PoemTown.Service.Interfaces;
 
 namespace PoemTown.API.Controllers;
 
-public class UserEWalletController : BaseController
+public class UserEWalletsController : BaseController
 {
     private readonly IUserEWalletService _userEWalletService;
     
-    public UserEWalletController(IUserEWalletService userEWalletService)
+    public UserEWalletsController(IUserEWalletService userEWalletService)
     {
         _userEWalletService = userEWalletService;
     }

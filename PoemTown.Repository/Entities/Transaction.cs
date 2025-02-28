@@ -15,21 +15,24 @@ namespace PoemTown.Repository.Entities
         [Key]
         public Guid Id { get; set; }
 
-        public string? Name { get; set; } = "";
+        //public string? Name { get; set; } = "";
         public string? Description { get; set; } = "";
-        public string? Status { get; set; } = "";
-        public decimal? BalanceBefore { get; set; } = default;
-        public decimal? BalanceAfter { get; set; } = default;
+        //public string? Status { get; set; } = "";
+        public decimal? Balance { get; set; } = default;
         public decimal Amount { get; set; }
-
-        public Guid? UserId { get; set; }
-        public Guid? PaymentGatewayId { get; set; }
+        public string? Token { get; set; }
+        public string? AppId { get; set; }
+        public string? BankCode { get; set; }
+        public string? Checksum { get; set; }
+        public decimal? DiscountAmount { get; set; }
+        //public Guid? UserId { get; set; }
+        //public Guid? PaymentGatewayId { get; set; }
         public Guid? UserEWalletId { get; set; }
         public Guid? OrderId {  get; set; }
 
-        public virtual User? User { get; set; }
-        public virtual PaymentGateway? PaymentGateway { get; set; }
-        public virtual UserEWallet? EWallet { get; set; }
+        //public virtual User? User { get; set; }
+        //public virtual PaymentGateway? PaymentGateway { get; set; }
+        public virtual UserEWallet? UserEWallet { get; set; }
         public virtual Order? Order { get; set; }
     }
 }

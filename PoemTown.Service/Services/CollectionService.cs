@@ -20,6 +20,10 @@ using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using PoemTown.Repository.Utils;
+using PoemTown.Service.ThirdParties.Models.AwsS3;
+using PoemTown.Service.ThirdParties.Interfaces;
+using PoemTown.Repository.Enums.Accounts;
 
 namespace PoemTown.Service.Services
 {
@@ -27,23 +31,26 @@ namespace PoemTown.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public CollectionService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IAwsS3Service _awsS3Service;
+        public CollectionService(IUnitOfWork unitOfWork, IMapper mapper, IAwsS3Service awsS3Service)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _awsS3Service = awsS3Service;
         }
 
-        public async Task CreateCollection(Guid userId, CreateCollectionRequest request)
+        public async Task CreateCollection(Guid userId, CreateCollectionRequest request, string role)
         {
             Collection collection = _mapper.Map<Collection>(request);
-            collection.TotalChapter = 0;
+            if(role == "ADMIN")
+            {
+                collection.IsCommunity = true;
+            }
             collection.IsDefault = false;
             collection.UserId = userId;
             await _unitOfWork.GetRepository<Collection>().InsertAsync(collection);
             await _unitOfWork.SaveChangesAsync();
         }
-
         public async Task UpdateCollection(UpdateCollectionRequest request)
         {
             Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == request.Id);
@@ -270,6 +277,25 @@ namespace PoemTown.Service.Services
                 queryPaging.TotalRecords,
                 queryPaging.CurrentPageRecords
             );
+        }
+
+        public async Task<string> UploadProfileImage(Guid userId, IFormFile file)
+        {
+            var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+            if (user == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+            }
+            ImageHelper.ValidateImage(file);
+            //format file name to avoid duplicate file name with userId, unixTimeStamp
+            var fileName = $"collections/{StringHelper.CapitalizeString(userId.ToString())}";
+            UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
+            {
+                File = file,
+                Quality = 80,
+                FolderName = fileName
+            };
+            return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
         }
     }
 }

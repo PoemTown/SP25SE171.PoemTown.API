@@ -19,7 +19,7 @@ namespace PoemTown.Repository.Entities
         public string? CollectionImage { get; set; } = default!;
         public bool? IsDefault { get; set; } = false;
         public int? TotalChapter { get; set; } = default!;
-
+        public bool IsCommunity { get; set; } = false;
         public Guid UserId { get; set; } = default;
         public virtual User User { get; set; } = default!;
 

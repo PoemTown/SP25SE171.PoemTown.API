@@ -16,6 +16,7 @@ using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.CollectionSorts;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
 using PoemTown.Service.Services;
+using System.Security.Claims;
 
 namespace PoemTown.API.Controllers
 {
@@ -44,8 +45,9 @@ namespace PoemTown.API.Controllers
         [Authorize]
         public async Task<ActionResult<BaseResponse>> CreateCollection(CreateCollectionRequest request)
         {
+            string role = User.Claims.FirstOrDefault(p => p.Type == ClaimTypes.Role)?.Value;
             Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-            await _service.CreateCollection(userId, request);
+            await _service.CreateCollection(userId, request, role);
             return Ok(new BaseResponse(StatusCodes.Status201Created, "Collection created successfully"));
         }
         /// <summary>
@@ -66,7 +68,7 @@ namespace PoemTown.API.Controllers
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Collection updated successfully"));
         }
         /// <summary>
-        /// Lấy danh sách tất cả bộ sưu tập, yêu cầu đăng nhập
+        /// Lấy danh sách tất cả bộ sưu tập
         /// </summary>
         /// <remarks>
         /// SortOptions: Sắp xếp bộ sưu tập theo thứ tự
@@ -192,6 +194,24 @@ namespace PoemTown.API.Controllers
             Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
             var response = await _service.GetCollectionDetail(collectionId, userId);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get collection detail successfully", response));
+        }
+
+
+        /// <summary>
+        /// Upload ảnh của bộ sưu tập, yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="file">lấy từ form data</param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("v1/image")]
+        [Authorize]
+        public async Task<ActionResult<BaseResponse<string>>> UploadCollectionImage(IFormFile file)
+        {
+            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            var response = await _service.UploadProfileImage(userId, file);
+            return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Profile image uploaded successfully", response));
         }
     }
 }

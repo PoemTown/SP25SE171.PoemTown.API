@@ -27,7 +27,6 @@ public class PaymentsController : BaseController
 
     [HttpGet]
     [Route("v1/zalopay/callback")]
-    [Consumes("application/json")] // Ensure JSON format is accepted
     public async Task<RedirectResult> ZaloPayCallbackAsync(ZaloPayCallBackRequest request)
     {
         string redirectUrl = _paymentRedirectSettings.RedirectFailureUrl;

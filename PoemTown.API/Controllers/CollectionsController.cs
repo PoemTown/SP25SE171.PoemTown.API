@@ -16,6 +16,7 @@ using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.CollectionSorts;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
 using PoemTown.Service.Services;
+using System.Security.Claims;
 
 namespace PoemTown.API.Controllers
 {
@@ -44,8 +45,9 @@ namespace PoemTown.API.Controllers
         [Authorize]
         public async Task<ActionResult<BaseResponse>> CreateCollection(CreateCollectionRequest request)
         {
+            string role = User.Claims.FirstOrDefault(p => p.Type == ClaimTypes.Role)?.Value;
             Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-            await _service.CreateCollection(userId, request);
+            await _service.CreateCollection(userId, request, role);
             return Ok(new BaseResponse(StatusCodes.Status201Created, "Collection created successfully"));
         }
         /// <summary>

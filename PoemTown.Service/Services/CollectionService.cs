@@ -39,16 +39,18 @@ namespace PoemTown.Service.Services
             _awsS3Service = awsS3Service;
         }
 
-        public async Task CreateCollection(Guid userId, CreateCollectionRequest request)
+        public async Task CreateCollection(Guid userId, CreateCollectionRequest request, string role)
         {
             Collection collection = _mapper.Map<Collection>(request);
-            collection.TotalChapter = 0;
+            if(role == "ADMIN")
+            {
+                collection.IsCommunity = true;
+            }
             collection.IsDefault = false;
             collection.UserId = userId;
             await _unitOfWork.GetRepository<Collection>().InsertAsync(collection);
             await _unitOfWork.SaveChangesAsync();
         }
-
         public async Task UpdateCollection(UpdateCollectionRequest request)
         {
             Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == request.Id);

@@ -8,10 +8,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Email;
+using PoemTown.Service.BusinessModels.ConfigurationModels.Payment;
 using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
 using PoemTown.Service.BusinessModels.MappingModels;
 using PoemTown.Service.Consumers.CollectionConsumers;
 using PoemTown.Service.Consumers.EmailConsumers;
+using PoemTown.Service.Consumers.OrderConsumers;
 using PoemTown.Service.Consumers.TemplateConsumers;
 using PoemTown.Service.Consumers.ThemeConsumers;
 using PoemTown.Service.Consumers.UserEWalletConsumers;
@@ -39,6 +41,7 @@ public static class ConfigureService
         services.AddSmtpClient();
         services.AddAwsS3Configuration(configuration);
         services.AddZaloPayConfig(configuration);
+        services.AddPaymentRedirectConfig(configuration);
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -62,6 +65,7 @@ public static class ConfigureService
         services.AddScoped<IPaymentGatewayService, PaymentGatewayService>();
         services.AddScoped<IUserEWalletService, UserEWalletService>();
         services.AddScoped<PaymentMethodFactory>();
+        services.AddScoped<IPaymentService, PaymentService>();
         
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
@@ -85,7 +89,8 @@ public static class ConfigureService
             config.AddConsumer<CreateDefaultUserThemeConsumer>();
             config.AddConsumer<InitialUserEWalletConsumer>();
             config.AddConsumer<AddUserTemplateDetailConsumer>();
-            
+            config.AddConsumer<UpdatePaidOrderAndCreateTransactionConsumer>();
+            config.AddConsumer<UpdateCancelledOrderConsumer>();
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {
@@ -197,11 +202,24 @@ public static class ConfigureService
                 AppId = zaloPayConfig.GetSection("AppId").Value,
                 Key1 = zaloPayConfig.GetSection("Key1").Value,
                 Key2 = zaloPayConfig.GetSection("Key2").Value,
-                CallbackUrl = zaloPayConfig.GetSection("CallbackUrl").Value,
-                RedirectUrl = zaloPayConfig.GetSection("RedirectUrl").Value
+                CallbackUrl = zaloPayConfig.GetSection("CallbackUrl").Value
             };
             zaloPaySettings.IsValid();
             return zaloPaySettings;
+        });
+    }
+
+    public static void AddPaymentRedirectConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        var paymentRedirectConfig = configuration.GetSection("PaymentRedirect");
+        services.AddSingleton<PaymentRedirectSettings>(options =>
+        {
+            var paymentRedirectSettings = new PaymentRedirectSettings
+            {
+                RedirectSuccessUrl = paymentRedirectConfig.GetSection("RedirectSuccessUrl").Value,
+                RedirectFailureUrl = paymentRedirectConfig.GetSection("RedirectFailureUrl").Value
+            };
+            return paymentRedirectSettings;
         });
     }
 }

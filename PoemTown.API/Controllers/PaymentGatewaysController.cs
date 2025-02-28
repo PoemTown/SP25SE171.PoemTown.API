@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
 using PoemTown.Service.BusinessModels.RequestModels.PaymentGatewayRequests;
@@ -22,6 +23,11 @@ public class PaymentGatewaysController : BaseController
         _mapper = mapper;
     }
     
+    /// <summary>
+    /// Lấy danh sách payment gateways, không yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpGet]
     [Route("v1")]
     public async Task<ActionResult<BasePaginationResponse<GetPaymentGatewayResponse>>> GetPaymentGateways(
@@ -36,8 +42,14 @@ public class PaymentGatewaysController : BaseController
         return Ok(basePaginationResponse);
     }
     
+    /// <summary>
+    /// Tạo mới payment gateway, yêu cầu đăng nhập với quyền ADMIN
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost]
     [Route("v1")]
+    [Authorize(Roles = "ADMIN")]
     public async Task<ActionResult<BaseResponse>> CreatePaymentGateway(CreatePaymentGatewayRequest request)
     {
         await _paymentGatewayService.CreatePaymentGateway(request);

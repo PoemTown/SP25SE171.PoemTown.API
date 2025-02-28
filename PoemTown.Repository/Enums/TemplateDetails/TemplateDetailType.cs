@@ -10,4 +10,6 @@ public enum TemplateDetailType
     AchievementBackground = 6,
     StatisticBorder = 7,
     StatisticBackground = 8,
+    AchievementTitleBackground = 9,
+    StatisticTitleBackground = 10,
 }

@@ -75,7 +75,6 @@ public class UserEWalletService : IUserEWalletService
             Token = response.Token,
             Code = (int)response.Code!,
             IsSuccess = response.IsSuccess,
-            OrderCode = response.OrderCode
         });
     }
 }

@@ -18,6 +18,8 @@ namespace PoemTown.Repository.Entities
         public string? ImageIcon {  get; set; }
         public bool? IsSuspended { get; set; }
 
-        public virtual ICollection<Transaction>? Transactions { get; set; }  
+        //public virtual ICollection<Transaction>? Transactions { get; set; }  
+        public virtual ICollection<Order>? Orders { get; set; }  
+
     }
 }

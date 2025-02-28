@@ -46,6 +46,8 @@ public class TemplateController : BaseController
     /// - AchievementBackground = 6,
     /// - vStatisticBorder = 7,
     /// - StatisticBackground = 8,
+    /// - AchievementTitleBackground = 9,
+    /// - StatisticTitleBackground = 10,
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -114,7 +116,9 @@ public class TemplateController : BaseController
     /// - AchievementBackground = 6,
     /// - StatisticBorder = 7,
     /// - StatisticBackground = 8,
-    ///
+    /// - AchievementTitleBackground = 9,
+    /// - StatisticTitleBackground = 10,
+    /// 
     /// DesignType:
     ///
     /// - 1: Image,
@@ -188,6 +192,8 @@ public class TemplateController : BaseController
     /// - AchievementBackground = 6,
     /// - StatisticBorder = 7,
     /// - StatisticBackground = 8,
+    /// - AchievementTitleBackground = 9,
+    /// - StatisticTitleBackground = 10,
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -301,7 +307,9 @@ public class TemplateController : BaseController
     /// - AchievementBackground = 6,
     /// - StatisticBorder = 7,
     /// - StatisticBackground = 8,
-    ///
+    /// - AchievementTitleBackground = 9,
+    /// - StatisticTitleBackground = 10,
+    /// 
     /// templateType (user template):
     ///
     /// - Bundle = 1,
@@ -366,7 +374,9 @@ public class TemplateController : BaseController
     /// - AchievementBackground = 6,
     /// - StatisticBorder = 7,
     /// - StatisticBackground = 8,
-    ///
+    /// - AchievementTitleBackground = 9,
+    /// - StatisticTitleBackground = 10,
+    /// 
     /// templateType (user template):
     ///
     /// - Bundle = 1,
@@ -405,7 +415,9 @@ public class TemplateController : BaseController
     /// - AchievementBackground = 6,
     /// - StatisticBorder = 7,
     /// - StatisticBackground = 8,
-    ///
+    /// - AchievementTitleBackground = 9,
+    /// - StatisticTitleBackground = 10,
+    /// 
     /// templateType (user template):
     ///
     /// - Bundle = 1,
@@ -492,6 +504,8 @@ public class TemplateController : BaseController
     /// - AchievementBackground = 6,
     /// - StatisticBorder = 7,
     /// - StatisticBackground = 8,
+    /// - AchievementTitleBackground = 9,
+    /// - StatisticTitleBackground = 10,
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -519,6 +533,8 @@ public class TemplateController : BaseController
     /// - AchievementBackground = 6,
     /// - StatisticBorder = 7,
     /// - StatisticBackground = 8,
+    /// - AchievementTitleBackground = 9,
+    /// - StatisticTitleBackground = 10,
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>

@@ -12,7 +12,6 @@ namespace PoemTown.Service.QueryOptions.FilterOptions.CollectionFilters
     {
         [FromQuery(Name = "collectionName")]
         public string? CollectionName { get; set; }
-        [FromQuery(Name = "isCommunity")]
-        public bool? IsCommunity { get; set; }  
+    
     }
 }

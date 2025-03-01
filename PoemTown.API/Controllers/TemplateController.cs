@@ -91,7 +91,14 @@ public class TemplateController : BaseController
     public async Task<ActionResult<BasePaginationResponse<GetMasterTemplateResponse>>> GetMasterTemplate
         (RequestOptionsBase<GetMasterTemplateFilterOption, GetMasterTemplateSortOption> request)
     {
-        var paginationResponse = await _templateService.GetMasterTemplate(request);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }
+        
+        var paginationResponse = await _templateService.GetMasterTemplate(userId, request);
 
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetMasterTemplateResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;

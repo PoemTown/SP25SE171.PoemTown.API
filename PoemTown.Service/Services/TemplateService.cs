@@ -123,7 +123,7 @@ public class TemplateService : ITemplateService
     }
 
     public async Task<PaginationResponse<GetMasterTemplateResponse>> GetMasterTemplate
-        (RequestOptionsBase<GetMasterTemplateFilterOption, GetMasterTemplateSortOption> request)
+        (Guid? userId, RequestOptionsBase<GetMasterTemplateFilterOption, GetMasterTemplateSortOption> request)
     {
         var masterTemplateQuery = _unitOfWork.GetRepository<MasterTemplate>().AsQueryable();
 
@@ -182,6 +182,22 @@ public class TemplateService : ITemplateService
 
         var masterTemplateResponse = _mapper.Map<IList<GetMasterTemplateResponse>>(queryPaging.Data);
 
+        IList<GetMasterTemplateResponse> masterTemplates = new List<GetMasterTemplateResponse>();
+        foreach (var masterTemplate in queryPaging.Data)
+        {
+            var masterTemplateEntity = await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.Id == masterTemplate.Id);
+            if (masterTemplateEntity == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
+            }
+            masterTemplates.Add(_mapper.Map<GetMasterTemplateResponse>(masterTemplateEntity));
+            
+            // Check if user already purchased this MasterTemplate
+            masterTemplates.Last().IsBought = await _unitOfWork.GetRepository<UserTemplate>()
+                .AsQueryable()
+                .AnyAsync(p => p.UserId == userId && p.MasterTemplateId == masterTemplateEntity.Id);
+        }
+        
         return new PaginationResponse<GetMasterTemplateResponse>(masterTemplateResponse, queryPaging.PageNumber,
             queryPaging.PageSize, queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }

@@ -80,16 +80,7 @@ namespace PoemTown.Service.Services
             RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-
-            if (request?.FilterOptions?.IsCommunity == true)
-            {
-                collectionQuery = collectionQuery.Where(a => a.IsCommunity == true);
-            }
-            else
-            {
-                collectionQuery = collectionQuery.Where(a => a.UserId == userId );
-            }
-
+            collectionQuery = collectionQuery.Where(a => a.UserId == userId );
             if (request.IsDelete == true)
             {
                 collectionQuery = collectionQuery.Where(p => p.DeletedTime != null);
@@ -330,6 +321,75 @@ namespace PoemTown.Service.Services
             };
             return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
         }
+
+        public async Task<PaginationResponse<GetCollectionResponse>> GetCollectionsCommunity(
+           RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        {
+            var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
+            collectionQuery = collectionQuery.Where(a => a.IsCommunity == true);
+            if (request.IsDelete == true)
+            {
+                collectionQuery = collectionQuery.Where(p => p.DeletedTime != null);
+            }
+            else
+            {
+                collectionQuery = collectionQuery.Where(p => p.DeletedTime == null);
+            }
+
+            // Apply filter
+            if (request.FilterOptions != null)
+            {
+                if (!String.IsNullOrWhiteSpace(request.FilterOptions.CollectionName))
+                {
+                    collectionQuery = collectionQuery.Where(p =>
+                        p.CollectionName!.Contains(request.FilterOptions.CollectionName.ToLower()));
+                }
+            }
+
+            // Apply sort
+            switch (request.SortOptions)
+            {
+                case CollectionSortOptions.CreatedTimeAscending:
+                    collectionQuery = collectionQuery.OrderBy(p => p.CreatedTime);
+                    break;
+                case CollectionSortOptions.CreatedTimeDescending:
+                    collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
+                    break;
+                default:
+                    collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
+                    break;
+            }
+
+            var queryPaging = await _unitOfWork.GetRepository<Collection>()
+                .GetPagination(collectionQuery, request.PageNumber, request.PageSize);
+
+
+            IList<GetCollectionResponse> collections = new List<GetCollectionResponse>();
+            foreach (var collection in queryPaging.Data)
+            {
+                var collectionEntity =
+                    await _unitOfWork.GetRepository<Collection>().FindAsync(p => p.Id == collection.Id);
+                if (collectionEntity == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+                }
+
+                collections.Add(_mapper.Map<GetCollectionResponse>(collectionEntity));
+                // Assign author to poem by adding into the last element of the list
+                collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
+
+                collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (collection.TargetMarks!.FirstOrDefault(tm =>
+                    tm.MarkByUserId == collection.UserId && tm.CollectionId == collectionEntity.Id &&
+                    tm.Type == TargetMarkType.Collection));
+            }
+
+
+            return new PaginationResponse<GetCollectionResponse>(collections, queryPaging.PageNumber,
+                queryPaging.PageSize,
+                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+        }
+
 
     }
 }

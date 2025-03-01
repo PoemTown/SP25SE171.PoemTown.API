@@ -180,7 +180,7 @@ public class TemplateService : ITemplateService
         var queryPaging = await _unitOfWork.GetRepository<MasterTemplate>()
             .GetPagination(masterTemplateQuery, request.PageNumber, request.PageSize);
 
-        var masterTemplateResponse = _mapper.Map<IList<GetMasterTemplateResponse>>(queryPaging.Data);
+        //var masterTemplateResponse = _mapper.Map<IList<GetMasterTemplateResponse>>(queryPaging.Data);
 
         IList<GetMasterTemplateResponse> masterTemplates = new List<GetMasterTemplateResponse>();
         foreach (var masterTemplate in queryPaging.Data)
@@ -198,7 +198,7 @@ public class TemplateService : ITemplateService
                 .AnyAsync(p => p.UserId == userId && p.MasterTemplateId == masterTemplateEntity.Id);
         }
         
-        return new PaginationResponse<GetMasterTemplateResponse>(masterTemplateResponse, queryPaging.PageNumber,
+        return new PaginationResponse<GetMasterTemplateResponse>(masterTemplates, queryPaging.PageNumber,
             queryPaging.PageSize, queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
 

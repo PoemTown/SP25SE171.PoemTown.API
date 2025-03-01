@@ -78,6 +78,7 @@ namespace PoemTown.API.Controllers
         ///
         /// </remarks>
         /// <param name="request"></param>
+        /// <param name="targetUserId"></param>
         /// <returns></returns>
         [HttpGet]
         [Route("v1")]
@@ -103,13 +104,14 @@ namespace PoemTown.API.Controllers
         ///
         /// </remarks>
         /// <param name="collectionId"></param>
+        /// <param name="rowVersion"></param>
         /// <returns></returns>
         [HttpDelete]
         [Route("v1/{collectionId}")]
         [Authorize]
-        public async Task<ActionResult<BaseResponse>> DeletePoem(Guid collectionId)
+        public async Task<ActionResult<BaseResponse>> DeletePoem(Guid collectionId, [FromQuery] byte[] rowVersion)
         {
-            await _service.DeleteCollection(collectionId);
+            await _service.DeleteCollection(collectionId, rowVersion);
             return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Collection deleted successfully"));
         }
         /// <summary>
@@ -166,7 +168,6 @@ namespace PoemTown.API.Controllers
             {
                 userId = Guid.Parse(userClaim.Value);
             }        
-            
             var result = await _service.GetTrendingCollections(userId, request);
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetCollectionResponse>>(result);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;

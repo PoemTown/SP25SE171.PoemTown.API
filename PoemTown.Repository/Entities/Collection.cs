@@ -25,7 +25,8 @@ namespace PoemTown.Repository.Entities
 
         public virtual ICollection<Poem>? Poems { get; set; } = null;
         public virtual ICollection<TargetMark>? TargetMarks { get; set; } = null;
-
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
 
     }
 }

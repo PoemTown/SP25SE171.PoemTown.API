@@ -314,8 +314,6 @@ namespace PoemTown.Service.Services
             UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
             {
                 File = file,
-                Height = 260,
-                Width = 140,
                 Quality = 80,
                 FolderName = fileName
             };

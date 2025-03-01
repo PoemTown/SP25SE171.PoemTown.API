@@ -7,6 +7,7 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -17,6 +18,8 @@ using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
+using PoemTown.Service.ThirdParties.Interfaces;
+using PoemTown.Service.ThirdParties.Models.AwsS3;
 
 namespace PoemTown.Service.Services;
 
@@ -24,11 +27,14 @@ public class PoemService : IPoemService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-
-    public PoemService(IUnitOfWork unitOfWork, IMapper mapper)
+    private readonly IAwsS3Service _awsS3Service;
+    public PoemService(IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IAwsS3Service awsS3Service)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _awsS3Service = awsS3Service;
     }
 
     public async Task CreateNewPoem(Guid userId, CreateNewPoemRequest request)
@@ -697,5 +703,25 @@ public class PoemService : IPoemService
         
         return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+    }
+    
+    public async Task<string> UploadPoemImage(Guid userId, IFormFile file)
+    {
+        var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+        // If user not found then throw exception
+        if (user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        ImageHelper.ValidateImage(file);
+
+        // Upload image to AWS S3
+        var fileName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
+        UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
+        {
+            File = file,
+            FolderName = fileName
+        };
+        return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
     }
 }

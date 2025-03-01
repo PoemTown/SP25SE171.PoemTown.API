@@ -328,4 +328,19 @@ public class PoemsController : BaseController
 
         return Ok(basePaginationResponse);
     }
+    
+    /// <summary>
+    /// Upload hình ảnh cho bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/image")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<string>>> UploadPoemImage(IFormFile file)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _poemService.UploadPoemImage(userId, file);
+        return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Upload image successfully", response));
+    }
 }

@@ -908,4 +908,18 @@ public class TemplateService : ITemplateService
         };
         await _publishEndpoint.Publish(message);
     }
+    
+    public async Task<string> UploadMasterTemplateCoverImage(IFormFile file)
+    {
+        ImageHelper.ValidateImage(file);
+
+        // Upload image to AWS S3
+        var fileName = $"master-templates/covers";
+        UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
+        {
+            File = file,
+            FolderName = fileName
+        };
+        return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
+    }
 }

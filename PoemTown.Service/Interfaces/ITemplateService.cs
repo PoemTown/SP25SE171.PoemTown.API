@@ -48,4 +48,5 @@ public interface ITemplateService
         AddMasterTemplateDetailIntoDefaultMasterTemplateRequest request);
 
     Task CreateDefaultMasterTemplate(CreateDefaultMasterTemplateRequest request);
+    Task<string> UploadMasterTemplateCoverImage(IFormFile file);
 }

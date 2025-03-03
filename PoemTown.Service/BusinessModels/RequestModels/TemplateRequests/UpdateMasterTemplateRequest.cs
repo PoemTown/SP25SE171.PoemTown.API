@@ -8,5 +8,6 @@ public class UpdateMasterTemplateRequest
     public string? TemplateName { get; set; }
     public decimal? Price { get; set; }
     public string? TagName { get; set; }
+    public string? CoverImage { get; set; }
     public TemplateStatus? Status { get; set; }
 }

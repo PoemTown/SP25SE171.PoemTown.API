@@ -51,6 +51,15 @@ namespace PoemTown.Service.Services
             await _unitOfWork.GetRepository<Collection>().InsertAsync(collection);
             await _unitOfWork.SaveChangesAsync();
         }
+        public async Task CreateCollectionCommunity(Guid userId, CreateCollectionRequest request)
+        {
+            Collection collection = _mapper.Map<Collection>(request);
+            collection.IsCommunity = true;
+            collection.IsDefault = false;
+            collection.UserId = userId;
+            await _unitOfWork.GetRepository<Collection>().InsertAsync(collection);
+            await _unitOfWork.SaveChangesAsync();
+        }
         public async Task UpdateCollection(UpdateCollectionRequest request)
         {
             try
@@ -301,7 +310,7 @@ namespace PoemTown.Service.Services
             );
         }
 
-        public async Task<string> UploadProfileImage(Guid userId, IFormFile file)
+        public async Task<string> UploadCollectionImage(Guid userId, IFormFile file)
         {
             var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
             if (user == null)

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using PoemTown.Repository.Entities;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
+using PoemTown.Service.BusinessModels.ResponseModels.OrderResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 
 namespace PoemTown.Service.BusinessModels.MappingModels;
@@ -17,6 +18,7 @@ public class TemplateMapping : Profile
         CreateMap<UserTemplate, GetUserTemplateResponse>().ReverseMap();
         CreateMap<CreateDefaultMasterTemplateRequest, MasterTemplate>()
             .ForMember(dest => dest.MasterTemplateDetails, opt => opt.Ignore());
+        CreateMap<MasterTemplate, GetMasterTemplateInOrderDetailResponse>().ReverseMap();
         
         // MasterTemplateDetail
         CreateMap<CreateMasterTemplateDetailRequest, MasterTemplateDetail>();

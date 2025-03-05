@@ -68,6 +68,7 @@ public static class ConfigureService
         services.AddScoped<PaymentMethodFactory>();
         services.AddScoped<IPaymentService, PaymentService>();
         services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<IOrderService, OrderService>();
         
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();

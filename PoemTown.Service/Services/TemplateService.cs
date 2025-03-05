@@ -761,7 +761,7 @@ public class TemplateService : ITemplateService
             Type = OrderType.MasterTemplates,
             OrderDescription = $"Mua template {masterTemplate.TemplateName}",
             Status = OrderStatus.Paid,
-            ItemId = masterTemplate.Id,
+            MasterTemplateId = masterTemplate.Id,
             PaidDate = DateTimeHelper.SystemTimeNow,
             DiscountAmount = 0,
             UserId = userId

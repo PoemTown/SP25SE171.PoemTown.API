@@ -25,6 +25,7 @@ namespace PoemTown.Repository.Entities
         public DateTimeOffset? PaidDate { get; set; }
         public DateTimeOffset? CancelledDate { get; set; }
         public string? OrderToken { get; set; }
+        public string? PaymentUrl { get; set; }
         public Guid UserId { get; set; }
         public virtual User User { get; set; }
         public Guid? PaymentGatewayId { get; set; }

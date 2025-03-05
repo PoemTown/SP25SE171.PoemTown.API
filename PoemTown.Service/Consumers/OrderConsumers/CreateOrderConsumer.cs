@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
@@ -22,16 +23,7 @@ public class CreateOrderConsumer : IConsumer<CreateOrderEvent>
     public async Task Consume(ConsumeContext<CreateOrderEvent> context)
     {
         var message = context.Message;
-        
-        var masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
-            .FindAsync(p => p.Id == message.ItemId);
 
-        // Check if master template exists
-        if (masterTemplate == null)
-        {
-            throw new Exception("Master template not found");
-        }
-        
         // Create order
         var order = new Order()
         {
@@ -46,16 +38,65 @@ public class CreateOrderConsumer : IConsumer<CreateOrderEvent>
         };
         await _unitOfWork.GetRepository<Order>().InsertAsync(order);
         
-        // Create order details
         var orderDetails = new List<OrderDetail>();
-        orderDetails.Add(
-            new()
+        switch (message.Type)
         {
-            Order = order,
-            ItemPrice = masterTemplate.Price,
-            ItemQuantity = 1,
-            MasterTemplate = masterTemplate
-        });
+            // Create order details as poems
+            case OrderType.Poems:
+                var poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == message.PoemId);
+                
+                // Check if poem is null
+                if (poem == null)
+                {
+                    throw new Exception("Poem not found");
+                }
+                orderDetails.Add(new()
+                {
+                    Order = order,
+                    ItemPrice = poem.Price,
+                    ItemQuantity = 1,
+                    Poem = poem
+                });
+                break;
+            // Create order details as record files
+            case OrderType.RecordFiles:
+                var recordFile = await _unitOfWork.GetRepository<RecordFile>().FindAsync(p => p.Id == message.RecordFileId);
+                
+                // Check if record file is null
+                if (recordFile == null)
+                {
+                    throw new Exception("Record file not found");
+                }
+                orderDetails.Add(new()
+                {
+                    Order = order,
+                    ItemPrice = recordFile.Price,
+                    ItemQuantity = 1,
+                    RecordFile = recordFile
+                });
+                break;
+            // Create order details as master templates
+            case OrderType.MasterTemplates:
+                var masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.Id == message.MasterTemplateId);
+                
+                // Check if master template is null
+                if (masterTemplate == null)
+                {
+                    throw new Exception("Master template not found");
+                }
+                orderDetails.Add(new()
+                {
+                    Order = order,
+                    ItemPrice = masterTemplate.Price,
+                    ItemQuantity = 1,
+                    MasterTemplate = masterTemplate
+                });
+                break;
+            case OrderType.EWalletDeposit:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
         
         await _unitOfWork.GetRepository<OrderDetail>().InsertRangeAsync(orderDetails);
         await _unitOfWork.SaveChangesAsync();

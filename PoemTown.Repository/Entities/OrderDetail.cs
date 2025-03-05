@@ -18,7 +18,7 @@ namespace PoemTown.Repository.Entities
         public Guid Id { get; set; }
 
         public decimal ItemPrice { get; set; } = default;
-        public decimal ItemQuantity { get; set; } = default;
+        public int ItemQuantity { get; set; } = default;
         public Guid OrderId { get; set; }
         public Guid? PoemId { get; set; }
         public Guid? MasterTemplateId { get; set; }

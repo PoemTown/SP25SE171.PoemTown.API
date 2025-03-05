@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.TemplateDetails;
 using PoemTown.Repository.Enums.Templates;
 using PoemTown.Repository.Enums.Wallets;
@@ -15,6 +16,7 @@ using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
+using PoemTown.Service.Events.OrderEvents;
 using PoemTown.Service.Events.TemplateEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.TemplateFilters;
@@ -751,8 +753,23 @@ public class TemplateService : ITemplateService
         
         await _unitOfWork.SaveChangesAsync();
         
-        // Create Transaction
+        // Create Order
+        CreateOrderEvent message = new CreateOrderEvent()
+        {
+            OrderCode = OrderCodeGenerator.Generate(),
+            Amount = masterTemplate.Price,
+            Type = OrderType.MasterTemplates,
+            OrderDescription = $"Mua template {masterTemplate.TemplateName}",
+            Status = OrderStatus.Paid,
+            ItemId = masterTemplate.Id,
+            PaidDate = DateTimeHelper.SystemTimeNow,
+            DiscountAmount = 0,
+            UserId = userId
+        };
+        await _publishEndpoint.Publish(message);
     }
+    
+
     
     public async Task UpdateThemeUserTemplateDetail(Guid userId, Guid themeId, IList<UpdateThemeUserTemplateDetailRequest> request)
     {

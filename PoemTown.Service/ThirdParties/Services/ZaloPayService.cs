@@ -81,7 +81,7 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
         var orderCreationSettings = new OrderCreationSettings<UserEWalletData>()
         {
             AppUser = request.UserId.ToString(),
-            ApptransId = DateTimeHelper.SystemTimeNow.ToString("yyMMdd") + "-" + "PT" + StringHelper.GenerateRandomString(9),
+            ApptransId = OrderCodeGenerator.Generate(),
             Amount = (long)request.Amount,
             Description = $"Nạp: {request.Amount}VNĐ vào ví điện tử",
             Items = new List<UserEWalletData>

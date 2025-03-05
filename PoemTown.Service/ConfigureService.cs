@@ -16,6 +16,7 @@ using PoemTown.Service.Consumers.EmailConsumers;
 using PoemTown.Service.Consumers.OrderConsumers;
 using PoemTown.Service.Consumers.TemplateConsumers;
 using PoemTown.Service.Consumers.ThemeConsumers;
+using PoemTown.Service.Consumers.TransactionConsumers;
 using PoemTown.Service.Consumers.UserEWalletConsumers;
 using PoemTown.Service.Events.ThemeEvents;
 using PoemTown.Service.Interfaces;
@@ -66,6 +67,7 @@ public static class ConfigureService
         services.AddScoped<IUserEWalletService, UserEWalletService>();
         services.AddScoped<PaymentMethodFactory>();
         services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<ITransactionService, TransactionService>();
         
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
@@ -91,6 +93,9 @@ public static class ConfigureService
             config.AddConsumer<AddUserTemplateDetailConsumer>();
             config.AddConsumer<UpdatePaidOrderAndCreateTransactionConsumer>();
             config.AddConsumer<UpdateCancelledOrderConsumer>();
+            config.AddConsumer<CreateDonateTransactionConsumer>();
+            config.AddConsumer<CreateOrderConsumer>();
+            config.AddConsumer<CreateTransactionConsumer>();
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {

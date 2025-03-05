@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Orders;
+using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.Events.OrderEvents;
@@ -52,7 +53,8 @@ public class UpdatePaidOrderAndCreateTransactionConsumer : IConsumer<UpdatePaidO
             DiscountAmount = message.DiscountAmount,
             UserEWallet = userEWallet,
             Checksum = message.Checksum,
-            Balance = userEWallet.WalletBalance
+            Balance = userEWallet.WalletBalance,
+            Type = (TransactionType)order.Type!
         };
         
         await _unitOfWork.GetRepository<Transaction>().InsertAsync(order.Transaction);

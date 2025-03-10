@@ -70,16 +70,19 @@ public class OrderService : IOrderService
     public async Task<GetDetailsOfOrderResponse> GetOrderDetail(Guid orderId)
     {
         var order = await _unitOfWork.GetRepository<Order>().FindAsync(p => p.Id == orderId);
+        
+        // Check if order is null
         if (order == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Order not found");
         }
-
         
         var orderDetails = _unitOfWork.GetRepository<OrderDetail>().AsQueryable()
             .Where(p => p.OrderId == orderId).ToList();
 
         var response = _mapper.Map<GetDetailsOfOrderResponse>(order);
+        
+        // Map details of order
         response.OrderDetails = _mapper.Map<IList<GetOrderDetailResponse>>(orderDetails);
 
         return response;

@@ -28,4 +28,5 @@ public interface IPoemService
         GetTrendingPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 
     Task<string> UploadPoemImage(Guid userId, IFormFile file);
+    Task EnableSellingPoem(Guid userId, EnableSellingPoemRequest request);
 }

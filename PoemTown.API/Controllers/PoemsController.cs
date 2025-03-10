@@ -343,4 +343,19 @@ public class PoemsController : BaseController
         var response = await _poemService.UploadPoemImage(userId, file);
         return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Upload image successfully", response));
     }
+    
+    /// <summary>
+    /// Kích hoạt bán bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/enable-selling")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> EnableSellingPoem(EnableSellingPoemRequest request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.EnableSellingPoem(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Enable selling poem successfully"));
+    }
 }

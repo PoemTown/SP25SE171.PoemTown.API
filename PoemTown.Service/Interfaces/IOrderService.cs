@@ -12,4 +12,7 @@ public interface IOrderService
         GetOrders(Guid userId, RequestOptionsBase<GetOrderFilterOption, GetOrderSortOption> request);
 
     Task<GetDetailsOfOrderResponse> GetOrderDetail(Guid orderId);
+
+    Task<PaginationResponse<AdminGetOrderResponse>>
+        AdminGetOrders(RequestOptionsBase<AdminGetOrderFilterOption, AdminGetOrderSortOption> request);
 }

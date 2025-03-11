@@ -82,4 +82,49 @@ public class OrdersController : BaseController
 
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Get order detail successfully", orderDetail));
     }
+    
+    /// <summary>
+    /// Lấy danh sách đơn hàng của tất cả khách hàng, yêu cầu đăng nhập với quyền ADMIN
+    /// </summary>
+    /// <remarks>
+    /// orderType:
+    ///
+    /// - EWalletDeposit = 1,
+    /// - MasterTemplates = 2,
+    /// - RecordFiles = 3,
+    /// - Poems = 4,
+    ///
+    /// orderStatus:
+    ///
+    /// - Pending = 1,
+    /// - Paid = 2,
+    /// - Cancelled = 3
+    /// 
+    /// SortOptions:
+    ///
+    /// - OrderDateAscending = 1,
+    /// - OrderDateDescending = 2,
+    /// - PaidDateAscending = 3,
+    /// - PaidDateDescending = 4,
+    /// - CancelledDateAscending = 5,
+    /// - CancelledDateDescending = 6,
+    /// - AmountAscending = 7,
+    /// - AmountDescending = 8,
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/admin")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BasePaginationResponse<AdminGetOrderResponse>>>
+        AdminGetOrders(RequestOptionsBase<AdminGetOrderFilterOption, AdminGetOrderSortOption> request)
+    {
+        var paginationResponse = await _orderService.AdminGetOrders(request);
+
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<AdminGetOrderResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get orders successfully";
+        
+        return Ok(basePaginationResponse);
+    }
 }

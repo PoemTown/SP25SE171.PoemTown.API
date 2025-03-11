@@ -13,6 +13,7 @@ public class Role : IdentityRole<Guid>, IBaseEntity
     public DateTimeOffset CreatedTime { get; set; }
     public DateTimeOffset LastUpdatedTime { get; set; }
     public DateTimeOffset? DeletedTime { get; set; }
+    public virtual ICollection<UserRole> UserRoles { get; set; }
     
     public Role ()
     {

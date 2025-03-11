@@ -3,6 +3,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums;
@@ -11,12 +12,16 @@ using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AccountRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AccountResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.RoleResponse;
 using PoemTown.Service.Consumers.ThemeConsumers;
 using PoemTown.Service.Events.CollectionEvents;
 using PoemTown.Service.Events.EmailEvents;
 using PoemTown.Service.Events.ThemeEvents;
 using PoemTown.Service.Events.UserEWalletEvents;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.QueryOptions.FilterOptions.AccountFilters;
+using PoemTown.Service.QueryOptions.RequestOptions;
+using PoemTown.Service.QueryOptions.SortOptions.AccountSorts;
 
 namespace PoemTown.Service.Services;
 
@@ -236,5 +241,205 @@ public class AccountService : IAccountService
         
         user.Salt = newSalt;
         await _userManager.UpdateAsync(user);
+    }
+
+    public async Task<PaginationResponse<GetAccountResponse>>
+        GetAccounts(RequestOptionsBase<GetAccountFilterOption, GetAccountSortOption> request)
+    {
+        var accountQuery = _unitOfWork.GetRepository<User>().AsQueryable();
+
+        // IsDeleted
+        if (request.IsDelete == true)
+        {
+            accountQuery = accountQuery.Where(p => p.DeletedTime != null);
+        }
+        else
+        {
+            accountQuery = accountQuery.Where(p => p.DeletedTime == null);
+        }
+        
+        // Filter
+        if (request.FilterOptions != null)
+        {
+            if (!string.IsNullOrEmpty(request.FilterOptions.UserName))
+            {
+                accountQuery = accountQuery.Where(p => p.UserName!.ToLower().Trim()
+                    .Contains(request.FilterOptions.UserName.ToLower().Trim()));
+            }
+            
+            if (!string.IsNullOrEmpty(request.FilterOptions.Email))
+            {
+                accountQuery = accountQuery.Where(p => p.Email!.ToLower().Trim()
+                    .Contains(request.FilterOptions.Email.ToLower().Trim()));
+            }
+            
+            if (!string.IsNullOrEmpty(request.FilterOptions.PhoneNumner))
+            {
+                accountQuery = accountQuery.Where(p => p.PhoneNumber!.ToLower().Trim()
+                    .Contains(request.FilterOptions.PhoneNumner.ToLower().Trim()));
+            }
+            
+            if (request.FilterOptions.Status != null)
+            {
+                accountQuery = accountQuery.Where(p => p.Status == request.FilterOptions.Status);
+            }
+            
+            if (request.FilterOptions.RoleId != null)
+            {
+                accountQuery = accountQuery.Where(p => p.UserRoles.Any(r => r.Role.Id == request.FilterOptions.RoleId));
+            }
+        }
+
+        // Sort
+        accountQuery = request.SortOptions switch
+        {
+            GetAccountSortOption.CreatedTimeAscending => accountQuery.OrderBy(p => p.CreatedTime),
+            GetAccountSortOption.CreatedTimeDescending => accountQuery.OrderByDescending(p => p.CreatedTime),
+            GetAccountSortOption.LastUpdatedTimeAscending => accountQuery.OrderBy(p => p.LastUpdatedTime),
+            GetAccountSortOption.LastUpdatedTimeDescending => accountQuery.OrderByDescending(p => p.LastUpdatedTime),
+            GetAccountSortOption.DeletedTimeAscending => accountQuery.OrderBy(p => p.DeletedTime),
+            GetAccountSortOption.DeletedTimeDescending => accountQuery.OrderByDescending(p => p.DeletedTime),
+            _ => accountQuery.OrderBy(p => p.CreatedTime)
+        };
+        
+        // Pagination
+        var queryPaging = await _unitOfWork.GetRepository<User>()
+            .GetPagination(accountQuery, request.PageNumber, request.PageSize);
+
+        IList<GetAccountResponse> accounts = new List<GetAccountResponse>();
+        foreach (var account in queryPaging.Data)
+        {
+            var accountEntity = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == account.Id);
+            
+            // Skip if account is null
+            if(accountEntity == null)
+            {
+                continue;
+            }
+            
+            accounts.Add(_mapper.Map<GetAccountResponse>(accountEntity));
+            
+            // Map roles
+            accounts.Last().Roles = accountEntity.UserRoles.Select(p => new GetRoleResponse()
+            {
+                Id = p.Role.Id,
+                Name = p.Role.Name!
+            }).ToList();
+        }
+
+        return new PaginationResponse<GetAccountResponse>(accounts, queryPaging.PageNumber, queryPaging.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+    }
+    
+    public async Task<GetAccountDetailResponse> GetAccountDetail(Guid userId)
+    {
+        User? user = await _userManager.FindByIdAsync(userId.ToString());
+        
+        // Check if user is null
+        if(user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        
+        // Map user to response
+        GetAccountDetailResponse account = _mapper.Map<GetAccountDetailResponse>(user);
+        account.Roles = user.UserRoles.Select(p => new GetRoleResponse()
+        {
+            Id = p.Role.Id,
+            Name = p.Role.Name!
+        }).ToList();
+        
+        return account;
+    }
+
+    public async Task UpdateAccountStatus(Guid userId, AccountStatus status)
+    {
+        User? user = await _userManager.FindByIdAsync(userId.ToString());
+
+        // Check if user is null
+        if (user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+
+        /*// Check if user is admin
+        if(user.UserRoles.Any(p => p.Role.Name == "ADMIN"))
+        {
+            throw new CoreException(StatusCodes.Status401Unauthorized, "Cannot update status of admin account");
+        }*/
+
+        if (status != AccountStatus.Active)
+        {
+            await _tokenService.RemoveUserRefreshToken(userId);
+        }
+        
+        user.Status = status;
+        await _userManager.UpdateAsync(user);
+    }
+    
+    public async Task AddAccountRole(Guid userId, Guid roleId)
+    {
+        User? user = await _userManager.FindByIdAsync(userId.ToString());
+        
+        // Check if user is null
+        if(user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        
+        Role? role = await _unitOfWork.GetRepository<Role>().FindAsync(p => p.Id == roleId);
+        // Check if role is null
+        if(role == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Role not found");
+        }
+        
+        /*// Check if user is admin
+        if(user.UserRoles.Any(p => p.Role.Name == "ADMIN"))
+        {
+            throw new CoreException(StatusCodes.Status401Unauthorized, "Cannot update role of admin account");
+        }*/
+        
+        // Check if user already has this role
+        if(user.UserRoles.Any(p => p.Role.Id == roleId))
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User already has this role");
+        }
+        
+        // Add role to user
+        await _userManager.AddToRoleAsync(user, role.Name!);
+    }
+    
+    public async Task RemoveAccountRole(Guid userId, Guid roleId)
+    {
+        User? user = await _userManager.FindByIdAsync(userId.ToString());
+        
+        // Check if user is null
+        if(user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        
+        Role? role = await _unitOfWork.GetRepository<Role>().FindAsync(p => p.Id == roleId);
+        // Check if role is null
+        if(role == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Role not found");
+        }
+        
+        /*// Check if user is admin
+        if(user.UserRoles.Any(p => p.Role.Name == "ADMIN"))
+        {
+            throw new CoreException(StatusCodes.Status401Unauthorized, "Cannot update role of admin account");
+        }*/
+        
+        // Check if user has not own this role
+        if(user.UserRoles.All(p => p.Role.Id != roleId))
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User does not have this role");
+        }
+        
+        // Remove role from user
+        await _userManager.RemoveFromRoleAsync(user, role.Name!);
     }
 }

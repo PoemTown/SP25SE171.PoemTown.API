@@ -135,6 +135,20 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
             .OnDelete(DeleteBehavior.Restrict);
 
 
+        // Quan hệ giữa Role và UserRole
+        builder.Entity<UserRole>()
+            .HasOne(r => r.Role)
+            .WithMany(ur => ur.UserRoles)
+            .HasForeignKey(r => r.RoleId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        // Quan hệ giữa User và UserRole
+        builder.Entity<UserRole>()
+            .HasOne(u => u.User)
+            .WithMany(ur => ur.UserRoles)
+            .HasForeignKey(u => u.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
         /*builder.Entity<UserCopyRight>()
        .HasOne(uc => uc.Poem) // Một UserCopyRight liên kết với một CopyRight
        .WithMany(c => c.UserCopyRights) // Một CopyRight có nhiều UserCopyRight

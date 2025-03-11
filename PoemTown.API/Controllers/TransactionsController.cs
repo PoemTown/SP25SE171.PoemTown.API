@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
+using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TransactionResponses;
 using PoemTown.Service.Interfaces;
@@ -38,13 +40,16 @@ public class TransactionsController : BaseController
     ///
     /// - CreatedTimeAscending = 1,
     /// - CreatedTimeDescending = 2,
+    /// - AmountAscending = 3,
+    /// - AmountDescending = 4,
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
     [Route("v1/mine")]
+    [Authorize]
     public async Task<BasePaginationResponse<UserGetTransactionResponse>> GetMyTransaction
-        (RequestOptionsBase<GetTransactionFilterOption, GetTransactionSortOption> request)
+        (RequestOptionsBase<UserGetTransactionFilterOption, UserGetTransactionSortOption> request)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
 
@@ -57,5 +62,61 @@ public class TransactionsController : BaseController
         basePaginationResponse.Message = "Get my transactions successfully";
         
         return basePaginationResponse;
+    }
+    
+    /// <summary>
+    /// Admin lấy lịch sử giao dịch của tất cả người dùng, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// TransactionType:
+    ///
+    /// - EWalletDeposit = 1,
+    /// - MasterTemplates = 2,
+    /// - RecordFiles = 3,
+    /// - Poems = 4,
+    /// - Withdraw = 5,
+    /// - Donate = 6,
+    /// 
+    /// SortOptions:
+    ///
+    /// - CreatedTimeAscending = 1,
+    /// - CreatedTimeDescending = 2,
+    /// - AmountAscending = 3,
+    /// - AmountDescending = 4,
+    /// - TransactionTypeAscending = 5,
+    /// - TransactionTypeDescending = 6,
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/admin")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<BasePaginationResponse<GetTransactionResponse>> GetTransactions
+        (RequestOptionsBase<GetTransactionFilterOption, GetTransactionSortOption> request)
+    {
+        var paginationResponse = await _transactionService.GetTransactions(request);
+
+        var basePaginationResponse =
+            _mapper.Map<BasePaginationResponse<GetTransactionResponse>>(paginationResponse);
+
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get transactions successfully";
+        
+        return basePaginationResponse;
+    }
+    
+    /// <summary>
+    /// Admin lấy chi tiết giao dịch, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="transactionId"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/admin/{transactionId}")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<BaseResponse<GetTransactionDetailResponse>> GetTransactionDetail(Guid transactionId)
+    {
+        var transactionDetail = await _transactionService.GetTransactionDetail(transactionId);
+        
+        return new BaseResponse<GetTransactionDetailResponse>(StatusCodes.Status200OK, "Get transaction detail successfully", transactionDetail);
     }
 }

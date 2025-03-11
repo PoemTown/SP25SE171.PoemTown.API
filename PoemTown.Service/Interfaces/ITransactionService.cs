@@ -9,5 +9,10 @@ namespace PoemTown.Service.Interfaces;
 public interface ITransactionService
 {
     Task<PaginationResponse<UserGetTransactionResponse>> UserGetTransactions(Guid userId,
-        RequestOptionsBase<GetTransactionFilterOption, GetTransactionSortOption> request);
+        RequestOptionsBase<UserGetTransactionFilterOption, UserGetTransactionSortOption> request);
+
+    Task<PaginationResponse<GetTransactionResponse>>
+        GetTransactions(RequestOptionsBase<GetTransactionFilterOption, GetTransactionSortOption> request);
+
+    Task<GetTransactionDetailResponse> GetTransactionDetail(Guid transactionId);
 }

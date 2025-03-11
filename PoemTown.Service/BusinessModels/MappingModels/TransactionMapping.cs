@@ -9,6 +9,7 @@ public class TransactionMapping : Profile
     public TransactionMapping()
     {
         CreateMap<Transaction, UserGetTransactionResponse>().ReverseMap();
-        
+        CreateMap<Transaction, GetTransactionResponse>().ReverseMap();
+        CreateMap<Transaction, GetTransactionDetailResponse>().ReverseMap();
     }
 }

@@ -108,6 +108,16 @@ public class TransactionsController : BaseController
     /// <summary>
     /// Admin lấy chi tiết giao dịch, yêu cầu đăng nhập
     /// </summary>
+    /// <remarks>
+    /// TransactionType:
+    ///
+    /// - EWalletDeposit = 1,
+    /// - MasterTemplates = 2,
+    /// - RecordFiles = 3,
+    /// - Poems = 4,
+    /// - Withdraw = 5,
+    /// - Donate = 6,
+    /// </remarks>
     /// <param name="transactionId"></param>
     /// <returns></returns>
     [HttpGet]

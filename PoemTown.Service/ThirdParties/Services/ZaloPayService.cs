@@ -145,6 +145,7 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
         {
             Message = "Deposit EWallet success",
             PaymentUrl = response.OrderUrl.ToString(),
+            orderCode = orderCreationSettings.ApptransId,
             Token = response.ZpTransToken,
             Code = (int)response.ReturnCode!,
             IsSuccess = true,

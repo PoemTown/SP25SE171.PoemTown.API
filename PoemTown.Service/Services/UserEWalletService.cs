@@ -6,11 +6,14 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Enums.Wallets;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.UserEWalletRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.UserEWalletResponses;
 using PoemTown.Service.Events.TransactionEvents;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.Scheduler.PaymentJobs;
 using PoemTown.Service.ThirdParties.Interfaces;
+using Quartz;
 
 namespace PoemTown.Service.Services;
 
@@ -21,17 +24,20 @@ public class UserEWalletService : IUserEWalletService
     private readonly IZaloPayService _zaloPayService;
     private readonly PaymentMethodFactory _paymentMethodFactory;
     private readonly IPublishEndpoint _publishEndpoint;
+    private readonly ISchedulerFactory _schedulerFactory;
     public UserEWalletService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IZaloPayService zaloPayService,
         PaymentMethodFactory paymentMethodFactory,
-        IPublishEndpoint publishEndpoint)
+        IPublishEndpoint publishEndpoint,
+        ISchedulerFactory schedulerFactory)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _zaloPayService = zaloPayService;
         _paymentMethodFactory = paymentMethodFactory;
         _publishEndpoint = publishEndpoint;
+        _schedulerFactory = schedulerFactory;
     }
 
     
@@ -74,6 +80,9 @@ public class UserEWalletService : IUserEWalletService
             });
         }
 
+        // Schedule payment timeout job
+        await SchedulePaymentTimeOutJob(response.orderCode);
+        
         // Return deposit data is successful
         return (new DepositUserEWalletResponse()
         {
@@ -83,6 +92,30 @@ public class UserEWalletService : IUserEWalletService
             Code = (int)response.Code!,
             IsSuccess = response.IsSuccess,
         });
+    }
+    
+    private async Task SchedulePaymentTimeOutJob(string orderCode, int minutes = 15, int seconds = 30)
+    {
+        var scheduler = await _schedulerFactory.GetScheduler();
+        await scheduler.Start();
+
+        // Create job data map
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.Put("orderCode", orderCode);
+        
+        // Create job
+        IJobDetail job = JobBuilder.Create<PaymentTimeOutJob>()
+            .WithIdentity(orderCode, "PaymentTimeOutJob")
+            .UsingJobData(jobDataMap)
+            .Build();
+
+        // Create trigger
+        ITrigger trigger = TriggerBuilder.Create()
+            .WithIdentity(orderCode, "PaymentTimeOutJob")
+            .StartAt(DateTimeHelper.SystemTimeNow.AddMinutes(minutes).AddSeconds(seconds))
+            .Build();
+        
+        await scheduler.ScheduleJob(job, trigger);
     }
     
     public async Task DonateUserEWalletAsync(Guid userId, DonateUserEWalletRequest request)

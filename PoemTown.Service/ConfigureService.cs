@@ -20,11 +20,13 @@ using PoemTown.Service.Consumers.TransactionConsumers;
 using PoemTown.Service.Consumers.UserEWalletConsumers;
 using PoemTown.Service.Events.ThemeEvents;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.Scheduler.PaymentJobs;
 using PoemTown.Service.Services;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Service.ThirdParties.Services;
 using PoemTown.Service.ThirdParties.Settings.AwsS3;
 using PoemTown.Service.ThirdParties.Settings.ZaloPay;
+using Quartz;
 using RazorLight;
 
 namespace PoemTown.Service;
@@ -43,6 +45,7 @@ public static class ConfigureService
         services.AddAwsS3Configuration(configuration);
         services.AddZaloPayConfig(configuration);
         services.AddPaymentRedirectConfig(configuration);
+        services.AddQuartzConfig();
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -170,7 +173,7 @@ public static class ConfigureService
         });
     }
     
-    public static void AddAwsS3Configuration(this IServiceCollection services, IConfiguration configuration)
+    private static void AddAwsS3Configuration(this IServiceCollection services, IConfiguration configuration)
     {
         var s3Config = configuration.GetSection("AwsS3Settings");
         services.AddSingleton<AwsS3Settings>(options =>
@@ -198,7 +201,7 @@ public static class ConfigureService
         });
     }
     
-    public static void AddZaloPayConfig(this IServiceCollection services, IConfiguration configuration)
+    private static void AddZaloPayConfig(this IServiceCollection services, IConfiguration configuration)
     {
         var zaloPayConfig = configuration.GetSection("ZaloPay");
         services.AddSingleton<ZaloPaySettings>(options =>
@@ -215,7 +218,7 @@ public static class ConfigureService
         });
     }
 
-    public static void AddPaymentRedirectConfig(this IServiceCollection services, IConfiguration configuration)
+    private static void AddPaymentRedirectConfig(this IServiceCollection services, IConfiguration configuration)
     {
         var paymentRedirectConfig = configuration.GetSection("PaymentRedirect");
         services.AddSingleton<PaymentRedirectSettings>(options =>
@@ -227,5 +230,13 @@ public static class ConfigureService
             };
             return paymentRedirectSettings;
         });
+    }
+    
+    private static void AddQuartzConfig(this IServiceCollection services)
+    {
+        services.AddQuartz(p => p.UseMicrosoftDependencyInjectionJobFactory());
+        services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
+        
+        services.AddScoped<PaymentTimeOutJob>();
     }
 }

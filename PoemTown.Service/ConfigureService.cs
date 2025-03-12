@@ -245,15 +245,9 @@ public static class ConfigureService
 
     private static void AddBetalgoOpenAI(this IServiceCollection services, IConfiguration configuration)
     {
-        var apiKey = configuration.GetSection("OpenAIService:ApiKey").Value;
-        if (string.IsNullOrEmpty(apiKey))
-        {
-            apiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY", EnvironmentVariableTarget.Machine);
-        }
         services.AddOpenAIService(options =>
         {
             options.ApiKey = configuration.GetSection("OpenAIService:ApiKey").Value 
-                             ?? Environment.GetEnvironmentVariable("OPENAI_API_KEY") 
                              ?? throw new ArgumentNullException();
         });
     }

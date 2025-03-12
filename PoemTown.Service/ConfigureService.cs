@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Amazon.S3;
+using Betalgo.Ranul.OpenAI.Extensions;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MassTransit;
@@ -46,6 +47,7 @@ public static class ConfigureService
         services.AddZaloPayConfig(configuration);
         services.AddPaymentRedirectConfig(configuration);
         services.AddQuartzConfig();
+        services.AddBetalgoOpenAI(configuration);
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -239,5 +241,14 @@ public static class ConfigureService
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
         
         services.AddScoped<PaymentTimeOutJob>();
+    }
+
+    private static void AddBetalgoOpenAI(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOpenAIService(options =>
+        {
+            options.ApiKey = configuration.GetSection("OpenAIService:ApiKey").Value 
+                             ?? throw new ArgumentNullException();
+        });
     }
 }

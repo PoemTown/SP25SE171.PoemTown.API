@@ -14,6 +14,7 @@
     <ItemGroup>
       <PackageReference Include="AutoMapper" Version="13.0.1" />
       <PackageReference Include="AWSSDK.S3" Version="3.7.404.5" />
+      <PackageReference Include="Betalgo.Ranul.OpenAI" Version="9.0.1" />
       <PackageReference Include="MailKit" Version="4.9.0" />
       <PackageReference Include="MassTransit" Version="8.3.4" />
       <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.4" />

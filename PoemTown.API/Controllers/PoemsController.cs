@@ -63,7 +63,19 @@ public class PoemsController : BaseController
     /// - 1: Posted
     /// - 2: Suspended
     ///
-    /// Type: Loại bài thơ, thể thơ:
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
     ///
     /// SortOptions: Sắp xếp bài thơ theo thứ tự
     ///
@@ -182,7 +194,19 @@ public class PoemsController : BaseController
     /// - 1: Posted
     /// - 2: Suspended
     ///
-    /// Type: Loại bài thơ, thể thơ:
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
     ///
     /// SortOptions: Sắp xếp bài thơ theo thứ tự:
     ///
@@ -218,7 +242,19 @@ public class PoemsController : BaseController
     /// - 1: Posted
     /// - 2: Suspended
     ///
-    /// Type: Loại bài thơ, thể thơ:
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
     ///
     /// SortOptions: Sắp xếp bài thơ theo thứ tự
     ///
@@ -293,7 +329,19 @@ public class PoemsController : BaseController
     ///
     /// - tất cả lấy từ request query
     ///
-    /// Type: Loại bài thơ, thể thơ:
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
     ///
     /// SortOptions: Sắp xếp bài thơ theo thứ tự
     ///
@@ -358,4 +406,36 @@ public class PoemsController : BaseController
         await _poemService.EnableSellingPoem(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Enable selling poem successfully"));
     }
+    
+    /// <summary>
+    /// AI gợi ý hoàn thiện bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
+    ///
+    /// maxToken: Số lượng token tối đa mà AI sẽ hoàn thiện (100 token xấp xỉ 750 chữ)
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/ai-chat-completion")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<string>>> PoemAiChatCompletion(PoemAiChatCompletionRequest request)
+    {
+        var response = await _poemService.PoemAiChatCompletion(request);
+        return Ok(new BaseResponse<string>(StatusCodes.Status200OK, "Poem completion successfully", response));
+    }
+
 }

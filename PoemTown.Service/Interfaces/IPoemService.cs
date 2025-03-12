@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Betalgo.Ranul.OpenAI.ObjectModels.ResponseModels;
+using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -29,4 +30,5 @@ public interface IPoemService
 
     Task<string> UploadPoemImage(Guid userId, IFormFile file);
     Task EnableSellingPoem(Guid userId, EnableSellingPoemRequest request);
+    Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request);
 }

@@ -13,7 +13,7 @@ public interface ITemplateService
     Task CreateMasterTemplate(CreateMasterTemplateRequest request);
 
     Task<PaginationResponse<GetMasterTemplateResponse>> GetMasterTemplate
-        (RequestOptionsBase<GetMasterTemplateFilterOption, GetMasterTemplateSortOption> request);
+        (Guid? userId, RequestOptionsBase<GetMasterTemplateFilterOption, GetMasterTemplateSortOption> request);
 
     Task<PaginationResponse<GetMasterTemplateDetailResponse>> GetMasterTemplateDetail
     (Guid masterTemplateId,
@@ -48,4 +48,5 @@ public interface ITemplateService
         AddMasterTemplateDetailIntoDefaultMasterTemplateRequest request);
 
     Task CreateDefaultMasterTemplate(CreateDefaultMasterTemplateRequest request);
+    Task<string> UploadMasterTemplateCoverImage(IFormFile file);
 }

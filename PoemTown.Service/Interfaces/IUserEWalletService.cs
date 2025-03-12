@@ -6,4 +6,5 @@ namespace PoemTown.Service.Interfaces;
 public interface IUserEWalletService
 {
     Task<DepositUserEWalletResponse> DepositUserEWalletAsync(Guid userId, DepositUserEWalletRequest request);
+    Task DonateUserEWalletAsync(Guid userId, DonateUserEWalletRequest request);
 }

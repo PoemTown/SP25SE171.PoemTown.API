@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.AspNetCore.Identity;
 using PoemTown.Repository.Base.Interfaces;
 using PoemTown.Repository.Utils;
 
@@ -12,6 +13,10 @@ public class UserRole : IdentityUserRole<Guid>, IBaseEntity
     public DateTimeOffset CreatedTime { get; set; }
     public DateTimeOffset LastUpdatedTime { get; set; }
     public DateTimeOffset? DeletedTime { get; set; }
+    
+    
+    public virtual User User { get; set; }
+    public virtual Role Role { get; set; }
     
     public UserRole()
     {

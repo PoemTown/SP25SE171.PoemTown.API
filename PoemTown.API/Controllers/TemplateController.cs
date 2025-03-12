@@ -91,7 +91,14 @@ public class TemplateController : BaseController
     public async Task<ActionResult<BasePaginationResponse<GetMasterTemplateResponse>>> GetMasterTemplate
         (RequestOptionsBase<GetMasterTemplateFilterOption, GetMasterTemplateSortOption> request)
     {
-        var paginationResponse = await _templateService.GetMasterTemplate(request);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }
+        
+        var paginationResponse = await _templateService.GetMasterTemplate(userId, request);
 
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetMasterTemplateResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;
@@ -546,5 +553,20 @@ public class TemplateController : BaseController
     {
         await _templateService.AddMasterTemplateDetailIntoDefaultMasterTemplate(request);
         return Ok(new BaseResponse(StatusCodes.Status201Created, "Master template detail added into default master template successfully"));
+    }
+    
+    /// <summary>
+    /// Upload ảnh nền cho master template, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/master-templates/cover-image")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse<string>>> UploadMasterTemplateCoverImage(IFormFile file)
+    {
+        var response = await _templateService.UploadMasterTemplateCoverImage(file);
+        return Ok(new BaseResponse<string>(StatusCodes.Status201Created,
+            "Master template cover image uploaded successfully", response));
     }
 }

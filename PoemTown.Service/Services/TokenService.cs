@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Service.BusinessModels.ResponseModels.TokenResponses;
 
 namespace PoemTown.Service.Services
@@ -69,8 +70,8 @@ namespace PoemTown.Service.Services
         {
             new Claim("UserId", user.Id.ToString()),
             new Claim("TokenHash", hashJwtToken),
-            new Claim(ClaimTypes.Role, string.Join(",", userRoles))
         };
+            claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
@@ -195,6 +196,18 @@ namespace PoemTown.Service.Services
         {
             string tokenHash = HashJwtStringToken(inputString);
             return tokenHash == token;
+        }
+
+        public async Task RemoveUserRefreshToken(Guid userId)
+        {
+            IEnumerable<UserToken> userTokens = await _unitOfWork.GetRepository<UserToken>()
+                .AsQueryable()
+                .Where(p => p.UserId == userId)
+                .ToListAsync();
+         
+            // Delete all user's refresh tokens
+            _unitOfWork.GetRepository<UserToken>().DeletePermanentRange(userTokens);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

@@ -6,7 +6,9 @@ using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.TargetMarks;
+using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -17,6 +19,8 @@ using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
+using PoemTown.Service.ThirdParties.Interfaces;
+using PoemTown.Service.ThirdParties.Models.AwsS3;
 
 namespace PoemTown.Service.Services;
 
@@ -24,11 +28,14 @@ public class PoemService : IPoemService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-
-    public PoemService(IUnitOfWork unitOfWork, IMapper mapper)
+    private readonly IAwsS3Service _awsS3Service;
+    public PoemService(IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IAwsS3Service awsS3Service)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _awsS3Service = awsS3Service;
     }
 
     public async Task CreateNewPoem(Guid userId, CreateNewPoemRequest request)
@@ -697,5 +704,113 @@ public class PoemService : IPoemService
         
         return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+    }
+    
+    public async Task<string> UploadPoemImage(Guid userId, IFormFile file)
+    {
+        var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+        // If user not found then throw exception
+        if (user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        ImageHelper.ValidateImage(file);
+
+        // Upload image to AWS S3
+        var fileName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
+        UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
+        {
+            File = file,
+            FolderName = fileName
+        };
+        return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
+    }
+    
+    public async Task EnableSellingPoem(Guid userId, EnableSellingPoemRequest request)
+    {
+        // Find poem by id
+        Poem? poem = await _unitOfWork.GetRepository<Poem>()
+            .FindAsync(p => p.Id == request.PoemId);
+
+        // If poem not found then throw exception
+        if (poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+
+        // Check if user own this poem
+        if(poem.Collection!.UserId != userId)
+        {
+            throw new CoreException(StatusCodes.Status403Forbidden, "User does not own this poem");
+        }
+        
+        // If poem is not posted then throw exception
+        if (poem.Status != PoemStatus.Posted)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not posted, cannot enable selling");
+        }
+
+        // If poem is already selling then throw exception
+        if (poem.Price > 0)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is already selling");
+        }
+
+        poem.Price = request.Price;
+        poem.IsPublic = false;
+        
+        _unitOfWork.GetRepository<Poem>().Update(poem);
+
+        UserPoemRecordFile? userPoemRecordFile = new UserPoemRecordFile()
+        {
+            UserId = userId,
+            PoemId = poem.Id,
+            Type = UserPoemType.CopyRightHolder,
+        };
+        
+        await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecordFile);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task PurchasePoemCopyRight(Guid userId, Guid poemId)
+    {
+        // Find poem by id
+        Poem? poem = await _unitOfWork.GetRepository<Poem>()
+            .FindAsync(p => p.Id == poemId);
+
+        // If poem not found then throw exception
+        if (poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+
+        // If poem is public then throw exception
+        if (poem.IsPublic == true)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is public, cannot purchase");
+        }
+
+        // Find user by id
+        UserPoemRecordFile? userPoemRecordFile = await _unitOfWork.GetRepository<UserPoemRecordFile>()
+            .FindAsync(p => p.UserId == userId && p.PoemId == poemId);
+
+        // If user already purchased this poem then throw exception
+        if (userPoemRecordFile != null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User already purchased this poem");
+        }
+
+        // Create new user poem record file for buyer with 2 years valid copy right
+        userPoemRecordFile = new UserPoemRecordFile
+        {
+            UserId = userId,
+            PoemId = poemId,
+            Type = UserPoemType.Buyer,
+            CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
+            CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(2).DateTime
+        };
+        
+        await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecordFile);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

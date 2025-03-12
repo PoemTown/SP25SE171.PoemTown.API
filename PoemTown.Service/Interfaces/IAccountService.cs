@@ -1,5 +1,11 @@
-﻿using PoemTown.Repository.CustomException;
+﻿using PoemTown.Repository.Base;
+using PoemTown.Repository.CustomException;
+using PoemTown.Repository.Enums.Accounts;
 using PoemTown.Service.BusinessModels.RequestModels.AccountRequests;
+using PoemTown.Service.BusinessModels.ResponseModels.AccountResponses;
+using PoemTown.Service.QueryOptions.FilterOptions.AccountFilters;
+using PoemTown.Service.QueryOptions.RequestOptions;
+using PoemTown.Service.QueryOptions.SortOptions.AccountSorts;
 
 namespace PoemTown.Service.Interfaces;
 
@@ -45,4 +51,12 @@ public interface IAccountService
         /// <returns>A Task representing the asynchronous operation.</returns>
         /// <exception cref="CoreException">Thrown if the user is not found, email is not confirmed, or the reset token is expired or invalid.</exception>
         Task NewPasswordForgot(NewPasswordForgotRequest request);
+
+        Task<PaginationResponse<GetAccountResponse>>
+            GetAccounts(RequestOptionsBase<GetAccountFilterOption, GetAccountSortOption> request);
+
+        Task<GetAccountDetailResponse> GetAccountDetail(Guid userId);
+        Task UpdateAccountStatus(Guid userId, AccountStatus status);
+        Task AddAccountRole(Guid userId, Guid roleId);
+        Task RemoveAccountRole(Guid userId, Guid roleId);
     }

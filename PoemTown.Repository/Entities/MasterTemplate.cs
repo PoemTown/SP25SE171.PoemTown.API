@@ -12,6 +12,7 @@ public class MasterTemplate : BaseEntity
     public TemplateStatus? Status { get; set; }
     public decimal Price { get; set; }
     public string? TagName { get; set; } = null;
+    public string? CoverImage { get; set; } 
     public TemplateType? Type { get; set; } = null;
     
     public virtual ICollection<MasterTemplateDetail>? MasterTemplateDetails { get; set; }

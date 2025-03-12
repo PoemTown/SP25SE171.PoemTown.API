@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -158,6 +159,7 @@ public static class ConfigureService
         {
             options.TokenValidationParameters = new TokenValidationParameters()
             {
+                RoleClaimType = ClaimTypes.Role,
                 ValidateIssuer = true,
                 ValidateAudience = true,    
                 ValidateLifetime = true,

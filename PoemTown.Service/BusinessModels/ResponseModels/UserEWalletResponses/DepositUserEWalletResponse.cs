@@ -9,6 +9,7 @@ public class DepositUserEWalletResponse
     public string? Token { get; set; }
     public int? Code { get; set; }
     public bool IsSuccess { get; set; }
+    public string orderCode { get; set; }
     
     [JsonIgnore]
     public string? OrderCode { get; set; }

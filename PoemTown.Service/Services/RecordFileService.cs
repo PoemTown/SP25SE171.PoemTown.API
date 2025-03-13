@@ -7,13 +7,16 @@ using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.RecordFile;
+using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.RequestModels.RecordFileRequests;
+using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Events.OrderEvents;
 using PoemTown.Service.Interfaces;
@@ -56,7 +59,7 @@ namespace PoemTown.Service.Services
 
             // Check if user does not own the poem, user can not create record file
             UserPoemRecordFile userPoemRecord = await _unitOfWork.GetRepository<UserPoemRecordFile>().FindAsync(u => u.PoemId == poemID && u.UserId == userId);
-            if(userPoemRecord == null)
+            if (userPoemRecord == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "User not own this poem");
             }
@@ -79,6 +82,8 @@ namespace PoemTown.Service.Services
             }
             await _unitOfWork.SaveChangesAsync();
         }
+
+
 
         public async Task UpdateNewRecord(Guid userId, UpdateRecordRequest request)
         {
@@ -129,11 +134,11 @@ namespace PoemTown.Service.Services
         }
 
 
-        public async  Task AssigntToPrivate(Guid userId, AssignPrivateRequest request)
+        public async Task AssigntToPrivate(Guid userId, AssignPrivateRequest request)
         {
             RecordFile? recordFile = await _unitOfWork.GetRepository<RecordFile>().FindAsync(r => r.Id == request.RecordId);
             //Check if record file not found
-            if(recordFile == null)
+            if (recordFile == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file not found");
             }
@@ -166,7 +171,7 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file not found");
             }
-            
+
             // If recordFile is public then throw exception
             if (recordFile.IsPublic == true)
             {
@@ -231,7 +236,7 @@ namespace PoemTown.Service.Services
                             .Where(u => u.RecordFileId == s.RecordFileId && u.Type == UserPoemType.RecordBuyer && u.DeletedTime == null)
                             .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
                             .ToList()
-                }).ToList();
+            }).ToList();
 
             var queryPaging = await _unitOfWork.GetRepository<UserPoemRecordFile>()
                 .GetPagination(records, request.PageNumber, request.PageSize);
@@ -260,12 +265,139 @@ namespace PoemTown.Service.Services
         .Where(u => u.RecordFileId == s.RecordFileId && u.Type == UserPoemType.CopyRightHolder && u.DeletedTime == null)
         .Select(u => u.User) // Lấy trực tiếp User từ UserPoemRecordFile
         .FirstOrDefault() // Chỉ lấy 1 user
-)}).ToList();
+)
+            }).ToList();
             var queryPaging = await _unitOfWork.GetRepository<UserPoemRecordFile>()
                 .GetPagination(records, request.PageNumber, request.PageSize);
 
             return new PaginationResponse<GetBoughtRecordResponse>(result, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+        }
+
+
+        public async Task<PaginationResponse<GetRecordFileResponse>>
+      GetAllRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+        {
+            //Get all records that user have
+            var recordFileIds = _unitOfWork.GetRepository<UserPoemRecordFile>()
+                .AsQueryable()
+                .Where(p => p.UserId == userId && p.RecordFileId != null && p.DeletedTime == null)
+                .Select(p => p.RecordFileId)
+                .Distinct()
+                .ToList();
+            var recordsQuery = _unitOfWork.GetRepository<RecordFile>()
+                    .AsQueryable()
+                    .Where(r => recordFileIds.Contains(r.Id) && r.IsPublic == true);
+
+            if (request.IsDelete == true)
+            {
+                recordsQuery = recordsQuery.Where(p => p.DeletedTime != null);
+            }
+            else
+            {
+                recordsQuery = recordsQuery.Where(p => p.DeletedTime == null);
+            }
+            // Apply filter
+            if (request.FilterOptions != null)
+            {
+                if (!String.IsNullOrWhiteSpace(request.FilterOptions.FileName))
+                {
+                    recordsQuery = recordsQuery.Where(p =>
+                        p.FileName!.Contains(request.FilterOptions.FileName, StringComparison.OrdinalIgnoreCase));
+                }
+
+            }
+
+            switch (request.SortOptions)
+            {
+                case GetPoemRecordFileDetailSortOption.CreatedTimeDescending:
+                    recordsQuery = recordsQuery.OrderByDescending(p => p.CreatedTime);
+                    break;
+                case GetPoemRecordFileDetailSortOption.CreatedTimeAscending:
+                    recordsQuery = recordsQuery.OrderBy(p => p.CreatedTime);
+                    break;
+                default:
+                    recordsQuery = recordsQuery.OrderByDescending(p => p.CreatedTime);
+                    break;
+            }
+
+            var queryPaging = await _unitOfWork.GetRepository<RecordFile>()
+                .GetPagination(recordsQuery, request.PageNumber, request.PageSize);
+            IList<GetRecordFileResponse> records = new List<GetRecordFileResponse>();
+            foreach (var record in queryPaging.Data)
+            {
+                var poemEntity = await _unitOfWork.GetRepository<RecordFile>().FindAsync(p => p.Id == record.Id);
+                if (poemEntity == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+                }
+                records.Add(_mapper.Map<GetRecordFileResponse>(poemEntity));
+            }
+            return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,
+                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+        }
+
+
+        public async Task<PaginationResponse<GetRecordFileResponse>>
+      GetMyRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+        {
+            //Get all records that user have
+            var recordFileIds = _unitOfWork.GetRepository<UserPoemRecordFile>()
+                .AsQueryable()
+                .Where(p => p.UserId == userId && p.RecordFileId !=null && p.DeletedTime == null)
+                .Select(p => p.RecordFileId)
+                .Distinct()
+                .ToList();
+            var recordsQuery = _unitOfWork.GetRepository<RecordFile>()
+                    .AsQueryable()
+                    .Where(r => recordFileIds.Contains(r.Id));
+
+            if (request.IsDelete == true)
+            {
+                recordsQuery = recordsQuery.Where(p => p.DeletedTime != null);
+            }
+            else
+            {
+                recordsQuery = recordsQuery.Where(p => p.DeletedTime == null);
+            }
+            // Apply filter
+            if (request.FilterOptions != null)
+            {
+                if (!String.IsNullOrWhiteSpace(request.FilterOptions.FileName))
+                {
+                    recordsQuery = recordsQuery.Where(p =>
+                        p.FileName!.Contains(request.FilterOptions.FileName, StringComparison.OrdinalIgnoreCase));
+                }
+
+            }
+
+            switch (request.SortOptions)
+            {
+                case GetPoemRecordFileDetailSortOption.CreatedTimeDescending:
+                    recordsQuery = recordsQuery.OrderByDescending(p => p.CreatedTime);
+                    break;
+                case GetPoemRecordFileDetailSortOption.CreatedTimeAscending:
+                    recordsQuery = recordsQuery.OrderBy(p => p.CreatedTime);
+                    break;
+                default:
+                    recordsQuery = recordsQuery.OrderByDescending(p => p.CreatedTime);
+                    break;
+            }
+
+            var queryPaging = await _unitOfWork.GetRepository<RecordFile>()
+                .GetPagination(recordsQuery, request.PageNumber, request.PageSize);
+            IList<GetRecordFileResponse> records = new List<GetRecordFileResponse>();
+            foreach (var record in queryPaging.Data)
+            {
+                var poemEntity = await _unitOfWork.GetRepository<RecordFile>().FindAsync(p => p.Id == record.Id);
+                if (poemEntity == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+                }
+                records.Add(_mapper.Map<GetRecordFileResponse>(poemEntity));
+            }
+            return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,
+                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
     }
 }

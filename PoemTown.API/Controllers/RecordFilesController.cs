@@ -138,8 +138,55 @@ namespace PoemTown.API.Controllers
 
             return Ok(basePaginationResponse);
         }
+        /// <summary>
+        /// Lấy danh sách bản ngâm thơ cua toi, yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/mine")]
+        [Authorize]
+        public async Task<ActionResult<BaseResponse<GetRecordFileResponse>>> GetMyRecord(RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+        {
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }
+            var paginationResponse = await _service.GetMyRecord(userId, request);
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetRecordFileResponse>>(paginationResponse);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get my record successfully";
 
+            return Ok(basePaginationResponse);
+        }
+        /// <summary>
+        /// Lấy danh sách bản ngâm thơ cua toi, yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/all")]
+        public async Task<ActionResult<BaseResponse<GetRecordFileResponse>>> GetAllRecord(RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+        {
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }
+            var paginationResponse = await _service.GetAllRecord(userId, request);
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetRecordFileResponse>>(paginationResponse);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get all record successfully";
 
+            return Ok(basePaginationResponse);
+        }
         /// <summary>
         /// Chuyển bản ngâm thơ thành riêng tư, yêu cầu đăng nhập
         /// </summary>

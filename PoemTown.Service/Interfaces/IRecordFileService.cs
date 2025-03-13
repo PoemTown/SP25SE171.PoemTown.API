@@ -21,5 +21,8 @@ namespace PoemTown.Service.Interfaces
         Task PurchaseRecordFile(Guid userId, Guid recordId);
         Task<PaginationResponse<GetSoldRecordResponse>>GetSoldRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
         Task<PaginationResponse<GetBoughtRecordResponse>> GetBoughtRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
+        Task<PaginationResponse<GetRecordFileResponse>> GetAllRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
+
+        Task<PaginationResponse<GetRecordFileResponse>> GetMyRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
     }
 }

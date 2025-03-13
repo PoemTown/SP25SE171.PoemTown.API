@@ -73,7 +73,9 @@ public static class ConfigureService
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IRoleService, RoleService>();
-        
+        services.AddScoped<IRecordFileService, RecordFileService>();
+
+
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
         services.AddScoped<IZaloPayService, ZaloPayService>();

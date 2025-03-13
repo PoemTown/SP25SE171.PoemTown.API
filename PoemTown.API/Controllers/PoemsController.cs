@@ -358,4 +358,19 @@ public class PoemsController : BaseController
         await _poemService.EnableSellingPoem(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Enable selling poem successfully"));
     }
+
+    /// <summary>
+    /// Mua bản quyền của một bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/purchase")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> PurchasePoem([FromQuery]Guid poemId)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.PurchasePoemCopyRight(userId, poemId);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Purchase poem successfully"));
+    }
 }

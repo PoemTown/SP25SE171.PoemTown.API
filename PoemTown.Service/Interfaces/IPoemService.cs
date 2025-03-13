@@ -29,4 +29,5 @@ public interface IPoemService
 
     Task<string> UploadPoemImage(Guid userId, IFormFile file);
     Task EnableSellingPoem(Guid userId, EnableSellingPoemRequest request);
+    Task PurchasePoemCopyRight(Guid userId, Guid poemId);
 }

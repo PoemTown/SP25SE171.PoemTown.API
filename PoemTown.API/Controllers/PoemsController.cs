@@ -164,6 +164,26 @@ public class PoemsController : BaseController
     }
 
     /// <summary>
+    /// Xóa một bài thơ trong bộ sưu tập cộng đồng, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// CHÚ Ý REQUEST PARAMETER:
+    ///
+    /// - poemId: lấy từ request path
+    /// </remarks>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/{poemId}/community")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> DeletePoemInCommunity(Guid poemId)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.DeletePoemInCommunity(userId, poemId);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem deleted in community successfully"));
+    }
+
+    /// <summary>
     /// Lấy chi tiết của một bài thơ (Không bao gồm lịch sử chỉnh sửa), yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
@@ -372,5 +392,31 @@ public class PoemsController : BaseController
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
         await _poemService.PurchasePoemCopyRight(userId, poemId);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Purchase poem successfully"));
+    }
+
+    /// <summary>
+    /// Tạo mới một bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Tất cả thuộc tính đều có thể NULL
+    ///
+    /// Status: Trạng thái của bài thơ, mặc định là Draft
+    /// 
+    /// - 0: Draft (Nháp)
+    /// - 1: Posted (Đã đăng)
+    /// - 2: Suspended (Không sử dụng)
+    ///
+    /// Type: Loại bài thơ, thể thơ:
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/community")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> CreatePoemInCommunity(CreateNewPoemRequest request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.CreatePoemInCommunity(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Create poem in community successfully"));
     }
 }

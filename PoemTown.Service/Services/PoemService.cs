@@ -160,7 +160,6 @@ public class PoemService : IPoemService
 
 
 
-
     public async Task<GetPoemDetailResponse> 
         GetPoemDetail(Guid userId, Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
     {

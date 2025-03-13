@@ -205,7 +205,7 @@ namespace PoemTown.Service.Services
             {
                 OrderCode = OrderCodeGenerator.Generate(),
                 Amount = recordFile.Price,
-                Type = OrderType.MasterTemplates,
+                Type = OrderType.RecordFiles,
                 OrderDescription = $"Mua bản quyền bài ngâm thơ {recordFile.FileName}",
                 Status = OrderStatus.Paid,
                 RecordFileId = recordFile.Id,

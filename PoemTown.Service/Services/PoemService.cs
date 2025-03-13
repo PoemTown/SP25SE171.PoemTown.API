@@ -891,7 +891,7 @@ public class PoemService : IPoemService
         {
             OrderCode = OrderCodeGenerator.Generate(),
             Amount = poem.Price,
-            Type = OrderType.MasterTemplates,
+            Type = OrderType.Poems,
             OrderDescription = $"Mua bản quyền bài thơ {poem.Title}",
             Status = OrderStatus.Paid,
             PoemId = poem.Id,

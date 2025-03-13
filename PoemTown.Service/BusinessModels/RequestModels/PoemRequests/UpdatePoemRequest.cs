@@ -21,7 +21,7 @@ public class UpdatePoemRequest
     
     public Guid? SourceCopyRightId { get; set; }
     
-    public string? PoemImageUrl { get; set; }
+    public string? PoemImage { get; set; }
     
     public ICollection<CreateNewRecordFileRequest>? RecordFiles { get; set; }
 

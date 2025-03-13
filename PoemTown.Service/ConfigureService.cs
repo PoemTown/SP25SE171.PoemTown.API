@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Amazon.S3;
+using Betalgo.Ranul.OpenAI.Extensions;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MassTransit;
@@ -16,14 +17,17 @@ using PoemTown.Service.Consumers.EmailConsumers;
 using PoemTown.Service.Consumers.OrderConsumers;
 using PoemTown.Service.Consumers.TemplateConsumers;
 using PoemTown.Service.Consumers.ThemeConsumers;
+using PoemTown.Service.Consumers.TransactionConsumers;
 using PoemTown.Service.Consumers.UserEWalletConsumers;
 using PoemTown.Service.Events.ThemeEvents;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.Scheduler.PaymentJobs;
 using PoemTown.Service.Services;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Service.ThirdParties.Services;
 using PoemTown.Service.ThirdParties.Settings.AwsS3;
 using PoemTown.Service.ThirdParties.Settings.ZaloPay;
+using Quartz;
 using RazorLight;
 
 namespace PoemTown.Service;
@@ -42,6 +46,8 @@ public static class ConfigureService
         services.AddAwsS3Configuration(configuration);
         services.AddZaloPayConfig(configuration);
         services.AddPaymentRedirectConfig(configuration);
+        services.AddQuartzConfig();
+        services.AddBetalgoOpenAI(configuration);
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -66,6 +72,9 @@ public static class ConfigureService
         services.AddScoped<IUserEWalletService, UserEWalletService>();
         services.AddScoped<PaymentMethodFactory>();
         services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<ITransactionService, TransactionService>();
+        services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<IRoleService, RoleService>();
         
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
@@ -91,6 +100,9 @@ public static class ConfigureService
             config.AddConsumer<AddUserTemplateDetailConsumer>();
             config.AddConsumer<UpdatePaidOrderAndCreateTransactionConsumer>();
             config.AddConsumer<UpdateCancelledOrderConsumer>();
+            config.AddConsumer<CreateDonateTransactionConsumer>();
+            config.AddConsumer<CreateOrderConsumer>();
+            config.AddConsumer<CreateTransactionConsumer>();
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {
@@ -164,7 +176,7 @@ public static class ConfigureService
         });
     }
     
-    public static void AddAwsS3Configuration(this IServiceCollection services, IConfiguration configuration)
+    private static void AddAwsS3Configuration(this IServiceCollection services, IConfiguration configuration)
     {
         var s3Config = configuration.GetSection("AwsS3Settings");
         services.AddSingleton<AwsS3Settings>(options =>
@@ -192,7 +204,7 @@ public static class ConfigureService
         });
     }
     
-    public static void AddZaloPayConfig(this IServiceCollection services, IConfiguration configuration)
+    private static void AddZaloPayConfig(this IServiceCollection services, IConfiguration configuration)
     {
         var zaloPayConfig = configuration.GetSection("ZaloPay");
         services.AddSingleton<ZaloPaySettings>(options =>
@@ -209,7 +221,7 @@ public static class ConfigureService
         });
     }
 
-    public static void AddPaymentRedirectConfig(this IServiceCollection services, IConfiguration configuration)
+    private static void AddPaymentRedirectConfig(this IServiceCollection services, IConfiguration configuration)
     {
         var paymentRedirectConfig = configuration.GetSection("PaymentRedirect");
         services.AddSingleton<PaymentRedirectSettings>(options =>
@@ -220,6 +232,23 @@ public static class ConfigureService
                 RedirectFailureUrl = paymentRedirectConfig.GetSection("RedirectFailureUrl").Value
             };
             return paymentRedirectSettings;
+        });
+    }
+    
+    private static void AddQuartzConfig(this IServiceCollection services)
+    {
+        services.AddQuartz(p => p.UseMicrosoftDependencyInjectionJobFactory());
+        services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
+        
+        services.AddScoped<PaymentTimeOutJob>();
+    }
+
+    private static void AddBetalgoOpenAI(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOpenAIService(options =>
+        {
+            options.ApiKey = configuration.GetSection("OpenAIService:ApiKey").Value 
+                             ?? throw new ArgumentNullException();
         });
     }
 }

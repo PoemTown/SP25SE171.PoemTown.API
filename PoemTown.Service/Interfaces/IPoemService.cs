@@ -1,4 +1,6 @@
-﻿using PoemTown.Repository.Base;
+﻿using Betalgo.Ranul.OpenAI.ObjectModels.ResponseModels;
+using Microsoft.AspNetCore.Http;
+using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
@@ -25,4 +27,8 @@ public interface IPoemService
         GetPostedPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
     Task<PaginationResponse<GetPostedPoemResponse>>
         GetTrendingPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
+
+    Task<string> UploadPoemImage(Guid userId, IFormFile file);
+    Task EnableSellingPoem(Guid userId, EnableSellingPoemRequest request);
+    Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request);
 }

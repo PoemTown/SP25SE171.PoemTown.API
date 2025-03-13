@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.TemplateDetails;
 using PoemTown.Repository.Enums.Templates;
 using PoemTown.Repository.Enums.Wallets;
@@ -15,6 +16,7 @@ using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
+using PoemTown.Service.Events.OrderEvents;
 using PoemTown.Service.Events.TemplateEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.TemplateFilters;
@@ -123,7 +125,7 @@ public class TemplateService : ITemplateService
     }
 
     public async Task<PaginationResponse<GetMasterTemplateResponse>> GetMasterTemplate
-        (RequestOptionsBase<GetMasterTemplateFilterOption, GetMasterTemplateSortOption> request)
+        (Guid? userId, RequestOptionsBase<GetMasterTemplateFilterOption, GetMasterTemplateSortOption> request)
     {
         var masterTemplateQuery = _unitOfWork.GetRepository<MasterTemplate>().AsQueryable();
 
@@ -180,9 +182,25 @@ public class TemplateService : ITemplateService
         var queryPaging = await _unitOfWork.GetRepository<MasterTemplate>()
             .GetPagination(masterTemplateQuery, request.PageNumber, request.PageSize);
 
-        var masterTemplateResponse = _mapper.Map<IList<GetMasterTemplateResponse>>(queryPaging.Data);
+        //var masterTemplateResponse = _mapper.Map<IList<GetMasterTemplateResponse>>(queryPaging.Data);
 
-        return new PaginationResponse<GetMasterTemplateResponse>(masterTemplateResponse, queryPaging.PageNumber,
+        IList<GetMasterTemplateResponse> masterTemplates = new List<GetMasterTemplateResponse>();
+        foreach (var masterTemplate in queryPaging.Data)
+        {
+            var masterTemplateEntity = await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.Id == masterTemplate.Id);
+            if (masterTemplateEntity == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
+            }
+            masterTemplates.Add(_mapper.Map<GetMasterTemplateResponse>(masterTemplateEntity));
+            
+            // Check if user already purchased this MasterTemplate
+            masterTemplates.Last().IsBought = await _unitOfWork.GetRepository<UserTemplate>()
+                .AsQueryable()
+                .AnyAsync(p => p.UserId == userId && p.MasterTemplateId == masterTemplateEntity.Id);
+        }
+        
+        return new PaginationResponse<GetMasterTemplateResponse>(masterTemplates, queryPaging.PageNumber,
             queryPaging.PageSize, queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
 
@@ -735,8 +753,23 @@ public class TemplateService : ITemplateService
         
         await _unitOfWork.SaveChangesAsync();
         
-        // Create Transaction
+        // Create Order
+        CreateOrderEvent message = new CreateOrderEvent()
+        {
+            OrderCode = OrderCodeGenerator.Generate(),
+            Amount = masterTemplate.Price,
+            Type = OrderType.MasterTemplates,
+            OrderDescription = $"Mua template {masterTemplate.TemplateName}",
+            Status = OrderStatus.Paid,
+            MasterTemplateId = masterTemplate.Id,
+            PaidDate = DateTimeHelper.SystemTimeNow,
+            DiscountAmount = 0,
+            UserId = userId
+        };
+        await _publishEndpoint.Publish(message);
     }
+    
+
     
     public async Task UpdateThemeUserTemplateDetail(Guid userId, Guid themeId, IList<UpdateThemeUserTemplateDetailRequest> request)
     {
@@ -891,5 +924,19 @@ public class TemplateService : ITemplateService
             MasterTemplateDetailIds = masterTemplateDetails.Select(p => p.Id).ToList()
         };
         await _publishEndpoint.Publish(message);
+    }
+    
+    public async Task<string> UploadMasterTemplateCoverImage(IFormFile file)
+    {
+        ImageHelper.ValidateImage(file);
+
+        // Upload image to AWS S3
+        var fileName = $"master-templates/covers";
+        UploadImageToAwsS3Model s3Model = new UploadImageToAwsS3Model()
+        {
+            File = file,
+            FolderName = fileName
+        };
+        return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
     }
 }

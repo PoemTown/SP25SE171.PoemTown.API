@@ -18,6 +18,7 @@ namespace PoemTown.Repository.Entities
         public string? FileName { get; set; }
         public string? FileUrl { get; set; }
         public bool? IsPublic { get; set; } = true;
+        public decimal Price { get; set; }
         public Guid PoemId { get; set; } 
         /*public Guid UserId { get; set; }*/
         [ForeignKey("PoemId")]

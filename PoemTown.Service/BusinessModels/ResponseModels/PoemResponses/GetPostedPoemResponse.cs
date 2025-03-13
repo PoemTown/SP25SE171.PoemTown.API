@@ -18,7 +18,7 @@ public class GetPostedPoemResponse
     public int CommentCount { get; set; }
     public int? ChapterNumber { get; set; }
     public string ChapterName { get; set; }
-    //public string PoemImage { get; set; }
+    public string? PoemImage { get; set; }
     public decimal Price { get; set; }
     public bool IsPublic { get; set; }
     public Guid? SourceCopyRightId { get; set; }

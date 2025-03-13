@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PoemTown.Repository.Base;
+using PoemTown.Repository.Enums.Transactions;
 
 namespace PoemTown.Repository.Entities
 {
@@ -24,15 +25,18 @@ namespace PoemTown.Repository.Entities
         public string? AppId { get; set; }
         public string? BankCode { get; set; }
         public string? Checksum { get; set; }
+        public TransactionType Type { get; set; }
         public decimal? DiscountAmount { get; set; }
         //public Guid? UserId { get; set; }
         //public Guid? PaymentGatewayId { get; set; }
         public Guid? UserEWalletId { get; set; }
+        public Guid? ReceiveUserEWalletId { get; set; }
         public Guid? OrderId {  get; set; }
 
         //public virtual User? User { get; set; }
         //public virtual PaymentGateway? PaymentGateway { get; set; }
         public virtual UserEWallet? UserEWallet { get; set; }
+        public virtual UserEWallet? ReceiveUserEWallet { get; set; }
         public virtual Order? Order { get; set; }
     }
 }

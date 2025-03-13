@@ -38,5 +38,12 @@ namespace PoemTown.Service.Interfaces
         Task<string> GenerateRefreshToken(User user, string userAgent, string ipAddress);
         bool ValidateTokenExpired(string token);
         bool ValidTokenHash(string token, string inputString);
+
+        /// <summary>
+        /// Delete refresh tokens of the user
+        /// </summary>
+        /// <param name="userId">userId as GUID</param>
+        /// <returns></returns>
+        Task RemoveUserRefreshToken(Guid userId);
     }
 }

@@ -25,6 +25,11 @@ using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Service.ThirdParties.Models.AwsS3;
+using PoemTown.Service.ThirdParties.Models.TheHiveAi;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace PoemTown.Service.Services;
 
@@ -34,16 +39,19 @@ public class PoemService : IPoemService
     private readonly IMapper _mapper;
     private readonly IAwsS3Service _awsS3Service;
     private readonly IOpenAIService _openAiService;
+    private readonly ITheHiveAiService _theHiveAiService;
 
     public PoemService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IAwsS3Service awsS3Service,
-        IOpenAIService openAiService)
+        IOpenAIService openAiService,
+        ITheHiveAiService theHiveAiService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _awsS3Service = awsS3Service;
         _openAiService = openAiService;
+        _theHiveAiService = theHiveAiService;
     }
 
     public async Task CreateNewPoem(Guid userId, CreateNewPoemRequest request)
@@ -873,10 +881,106 @@ public class PoemService : IPoemService
         // If response is not successful then throw exception
         if (response.Successful == false)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.ToString());
+            throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
 
         }
         
         return response.Choices.FirstOrDefault()?.Message.Content ?? "";
+    }
+    
+    public async Task<string> ConvertPoemTextToImage(ConvertPoemTextToImageRequest request)
+    {
+        // Create image with OpenAI model DALL-E 3
+        ImageCreateRequest imageCreateRequest = new ImageCreateRequest()
+        {
+            Model = Models.Dall_e_3,
+            N = 1,
+            Prompt = $"Nội dung thơ: {request.PoemText}\n Câu hỏi: {request.Prompt}",
+            Size = EnumHelper.GetDescription(request.ImageSize),
+            Style = EnumHelper.GetDescription(request.ImageStyle),
+            //Quality = EnumHelper.GetDescription(request.ImageQuality),
+            Quality = "standard",
+        };
+        var response = await _openAiService.Image.CreateImage(imageCreateRequest);
+        
+        // If response is not successful then throw exception
+        if (response.Successful == false)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
+
+        }
+        return response.Results.FirstOrDefault().Url;
+    }
+
+    public async Task<string> TranslatePoemTextVietnameseIntoEnglish(string poemText)
+    {
+        // Create chat completion request for translation
+        ChatCompletionCreateRequest chatCompletionCreateRequest = new ChatCompletionCreateRequest()
+        {
+            Messages = new List<ChatMessage>()
+            {
+                new ChatMessage("system",
+                    "Bạn là con trí tuệ nhân tạo dịch thơ, giỏi dịch những bài thơ tiếng Việt sang tiếng Anh."),
+                new ChatMessage("user", $"Nội dung thơ: {poemText}"),
+                new ChatMessage("user", "Câu hỏi: Dịch thơ sang tiếng Anh"),
+                new ChatMessage("user", "Lưu ý: Chỉ trả kết là bản dịch từ tiếng Việt sang tiếng Anh")
+            },
+            MaxTokens = 250,
+            Model = Models.Gpt_4o_mini
+        };
+        
+        var response = await _openAiService.ChatCompletion.CreateCompletion(chatCompletionCreateRequest);
+        
+        // If response is not successful then throw exception
+        if (response.Successful == false)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
+
+        }
+        
+        return response.Choices.FirstOrDefault()?.Message.Content ?? "";
+    }
+    
+    public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest request)
+    {
+        // Translate poem text from Vietnamese to English
+        string translatedPoemText = await TranslatePoemTextVietnameseIntoEnglish(request.PoemText);
+
+        ConvertTextToImageWithFluxSchnellEnhancedModel model = new ConvertTextToImageWithFluxSchnellEnhancedModel()
+        {
+            Prompt = $"Poem content: {translatedPoemText}",
+            NegativePrompt = request.NegativePrompt,
+            ImageSize = request.ImageSize,
+            NumberInferenceSteps = request.NumberInferenceSteps,
+            NumberOfImages = request.NumberOfImages,
+            OutPutFormat = request.OutPutFormat,
+            OutPutQuality = request.OutPutQuality
+        };
+        
+        var response = await _theHiveAiService.ConvertTextToImageWithFluxSchnellEnhanced(model);
+
+        return response;
+    }
+    
+    public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request)
+    {
+        // Translate poem text from Vietnamese to English
+        string translatedPoemText = await TranslatePoemTextVietnameseIntoEnglish(request.PoemText);
+
+        ConvertTextToImageWithSdxlEnhancedModel model = new ConvertTextToImageWithSdxlEnhancedModel()
+        {
+            Prompt = $"Poem content: {translatedPoemText}",
+            NegativePrompt = request.NegativePrompt,
+            ImageSize = request.ImageSize,
+            NumberInferenceSteps = request.NumberInferenceSteps,
+            GuidanceScale = request.GuidanceScale,
+            NumberOfImages = request.NumberOfImages,
+            OutPutFormat = request.OutPutFormat,
+            OutPutQuality = request.OutPutQuality
+        };
+        
+        var response = await _theHiveAiService.ConvertTextToImageWithSdxlEnhanced(model);
+
+        return response;
     }
 }

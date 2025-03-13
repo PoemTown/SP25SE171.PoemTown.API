@@ -10,6 +10,7 @@ using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
+using PoemTown.Service.ThirdParties.Models.TheHiveAi;
 
 namespace PoemTown.API.Controllers;
 
@@ -438,4 +439,100 @@ public class PoemsController : BaseController
         return Ok(new BaseResponse<string>(StatusCodes.Status200OK, "Poem completion successfully", response));
     }
 
+    /// <summary>
+    /// Chuyển đổi văn bản thành hình ảnh (Xài ngon nhưng mà mắc) (Sử dụng OpenAI), yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// ImageSize:
+    ///
+    /// - Size1024X1024 (1024 x 1024) = 1,
+    /// - Size1024X1792 (1024 x 1792) = 2,
+    ///
+    /// ImageStyle:
+    ///
+    /// - Natural = 1,
+    /// - Vivid = 2,
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/text-to-image/open-ai")]
+    public async Task<ActionResult<BaseResponse<string>>> PoemTextToImage(ConvertPoemTextToImageRequest request)
+    {
+        var response = await _poemService.ConvertPoemTextToImage(request);
+        return Ok(new BaseResponse<string>(StatusCodes.Status200OK, "Poem text to image successfully", response));
+    } 
+
+    /// <summary>
+    /// Chuyển đổi văn bản thành hình ảnh (Hình ảnh trả ra khá khác so với prompt, hạn chế sử dụng) (Sử dụng The Hive AI với model Flux Schnell Enhanced), yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// - poemText: Văn bản cần chuyển đổi (Bản tiếng việt sẽ tự động dịch sang tiếng Anh)
+    /// - prompt: Sử dụng để tạo hình ảnh (VIẾT BẰNG TIẾNG ANH) (Ví dụ: Render an image base on poem content)
+    /// - negativePrompt: Sử dụng khi muốn loại bỏ từ khóa trong Prompt (VIẾT BẰNG TIẾNG ANH) (Ví dụ: Image response must not contain any text)
+    /// - numberInferenceSteps: Số lượng bước suy luận (Mặc định là 4) (Càng cao thì ảnh càng chi tiết, tuy nhiên tốn nhiều tiền)
+    /// - numberOfImages: Số lượng hình ảnh cần tạo (Mặc định là 1) (Khuyến khích để 1)
+    /// - outPutFormat: Định dạng hình ảnh (Mặc định là Jpeg)
+    /// - outPutQuality: Chất lượng hình ảnh (Mặc định là 100%)
+    ///  
+    /// ImageSize:
+    ///
+    /// - Width1344Height768 (Width: 1344, Height: 768) = 1,
+    /// - Width1280Height960 (Width: 1280, Height: 960) = 2,
+    /// - Width960Height1280 (Width: 960, Height: 1280) = 3,
+    /// - Width768Height1344 (Width: 768, Height: 1344) = 4,
+    /// - Width1024Height1024 (Width: 1024, Height: 1024) = 5,
+    ///
+    /// OutPutFormat:
+    ///
+    /// - Jpeg = 1,
+    /// - Png = 2,
+    /// </remarks>
+    /// <param name="fluxSchnellEnhancedRequest"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/text-to-image/the-hive-ai/flux-schnell-enhanced")]
+    public async Task<ActionResult<BaseResponse<TheHiveAiResponse>>>
+        PoemTextToImageWithTheHiveAiFluxSchnellEnhanced(ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest fluxSchnellEnhancedRequest)
+    {
+        var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(fluxSchnellEnhancedRequest);
+        return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK, "Poem text to image with The Hive AI successfully", response));
+    }
+    
+    /// <summary>
+    /// Chuyển đổi văn bản thành hình ảnh (NÊN XÀI CÁI NÀY) (Sử dụng The Hive AI với model SDXL Enhanced), yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// - poemText: Văn bản cần chuyển đổi (Bản tiếng việt sẽ tự động dịch sang tiếng Anh)
+    /// - prompt: Sử dụng để tạo hình ảnh (VIẾT BẰNG TIẾNG ANH) (Ví dụ: Render an image base on poem content)
+    /// - negativePrompt: Sử dụng khi muốn loại bỏ từ khóa trong Prompt (VIẾT BẰNG TIẾNG ANH) (Ví dụ: Image response must not contain any text)
+    /// - numberInferenceSteps: Số lượng bước suy luận (Mặc định là 4) (Càng cao thì ảnh càng chi tiết, tuy nhiên tốn nhiều TÀI NGUYÊN)
+    /// - guidanceScale: Tỷ lệ chính xác mà hình trả ra dựa trên prompt (càng cao thì càng giống với prompt mô tả, tuy nhiên tốn nhiều TÀI NGUYÊN)
+    /// - numberOfImages: Số lượng hình ảnh cần tạo (Mặc định là 1) (Khuyến khích để 1)
+    /// - outPutFormat: Định dạng hình ảnh (Mặc định là Jpeg)
+    /// - outPutQuality: Chất lượng hình ảnh (Mặc định là 100%)
+    ///  
+    /// ImageSize:
+    ///
+    /// - Width1344Height768 (Width: 1344, Height: 768) = 1,
+    /// - Width1280Height960 (Width: 1280, Height: 960) = 2,
+    /// - Width960Height1280 (Width: 960, Height: 1280) = 3,
+    /// - Width768Height1344 (Width: 768, Height: 1344) = 4,
+    /// - Width1024Height1024 (Width: 1024, Height: 1024) = 5,
+    ///
+    /// OutPutFormat:
+    ///
+    /// - Jpeg = 1,
+    /// - Png = 2,
+    /// </remarks>
+    /// <param name="fluxSchnellEnhancedRequest"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/text-to-image/the-hive-ai/sdxl-enhanced")]
+    public async Task<ActionResult<BaseResponse<TheHiveAiResponse>>>
+        PoemTextToImageWithTheHiveAiSdxlEnhanced(ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest fluxSchnellEnhancedRequest)
+    {
+        var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(fluxSchnellEnhancedRequest);
+        return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK, "Poem text to image with The Hive AI successfully", response));
+    }
 }

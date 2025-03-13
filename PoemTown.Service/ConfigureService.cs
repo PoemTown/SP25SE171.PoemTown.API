@@ -26,6 +26,7 @@ using PoemTown.Service.Services;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Service.ThirdParties.Services;
 using PoemTown.Service.ThirdParties.Settings.AwsS3;
+using PoemTown.Service.ThirdParties.Settings.TheHiveAi;
 using PoemTown.Service.ThirdParties.Settings.ZaloPay;
 using Quartz;
 using RazorLight;
@@ -48,6 +49,7 @@ public static class ConfigureService
         services.AddPaymentRedirectConfig(configuration);
         services.AddQuartzConfig();
         services.AddBetalgoOpenAI(configuration);
+        services.AddTheHiveAiSettings(configuration);
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -80,6 +82,7 @@ public static class ConfigureService
         services.AddScoped<IAwsS3Service, AwsS3Service>();
         services.AddScoped<IZaloPayService, ZaloPayService>();
         services.AddScoped<ZaloPayService>();
+        services.AddScoped<ITheHiveAiService, TheHiveAiService>();
     }
     
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)
@@ -250,5 +253,19 @@ public static class ConfigureService
             options.ApiKey = configuration.GetSection("OpenAIService:ApiKey").Value 
                              ?? throw new ArgumentNullException();
         });
+    }
+
+    private static void AddTheHiveAiSettings(this IServiceCollection services, IConfiguration configuration)
+    {
+        var theHiveAiConfig = configuration.GetSection("TheHiveAiService:ApiKey");
+        services.AddSingleton<TheHiveAiSettings>(options =>
+        {
+            var theHiveAiSettings = new TheHiveAiSettings
+            {
+                ApiKey = theHiveAiConfig.Value ?? ""
+            };
+            return theHiveAiSettings;
+        });
+
     }
 }

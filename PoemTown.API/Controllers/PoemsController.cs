@@ -457,6 +457,7 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpPost]
     [Route("v1/text-to-image/open-ai")]
+    [Authorize]
     public async Task<ActionResult<BaseResponse<string>>> PoemTextToImage(ConvertPoemTextToImageRequest request)
     {
         var response = await _poemService.ConvertPoemTextToImage(request);
@@ -492,6 +493,7 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpPost]
     [Route("v1/text-to-image/the-hive-ai/flux-schnell-enhanced")]
+    [Authorize]
     public async Task<ActionResult<BaseResponse<TheHiveAiResponse>>>
         PoemTextToImageWithTheHiveAiFluxSchnellEnhanced(ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest fluxSchnellEnhancedRequest)
     {
@@ -529,6 +531,7 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpPost]
     [Route("v1/text-to-image/the-hive-ai/sdxl-enhanced")]
+    [Authorize]
     public async Task<ActionResult<BaseResponse<TheHiveAiResponse>>>
         PoemTextToImageWithTheHiveAiSdxlEnhanced(ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest fluxSchnellEnhancedRequest)
     {

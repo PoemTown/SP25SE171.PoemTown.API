@@ -27,7 +27,7 @@ namespace PoemTown.Repository.Entities
         public decimal Price { get; set; }
         public Guid? SourceCopyRightId { get; set; }
         public Guid? CollectionId { get; set; }
-        public bool? IsPublic { get; set; } = true;
+        public bool? IsSellCopyRight { get; set; } = false;
         public virtual Collection? Collection { get; set; }
         public virtual OrderDetail? OrderDetail { get; set; }
         public virtual LeaderBoardDetail? LeaderBoardDetail { get; set; }

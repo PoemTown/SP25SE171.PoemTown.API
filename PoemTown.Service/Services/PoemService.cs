@@ -801,7 +801,7 @@ public class PoemService : IPoemService
         }
 
         poem.Price = request.Price;
-        poem.IsPublic = false;
+        poem.IsSellCopyRight = true;
 
         _unitOfWork.GetRepository<Poem>().Update(poem);
 
@@ -829,9 +829,9 @@ public class PoemService : IPoemService
         }
 
         // If poem is public then throw exception
-        if (poem.IsPublic == true)
+        if (poem.IsSellCopyRight == false)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is public, cannot purchase");
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not for sell, cannot purchase");
         }
 
         // Find user by id

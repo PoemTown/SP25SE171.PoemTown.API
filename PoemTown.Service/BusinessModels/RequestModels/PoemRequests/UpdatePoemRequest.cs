@@ -26,5 +26,5 @@ public class UpdatePoemRequest
     public ICollection<CreateNewRecordFileRequest>? RecordFiles { get; set; }
 
     public PoemType? Type { get; set; }
-    public bool? IsPublic { get; set; }
+    public bool? IsSellCopyRight { get; set; }
 }

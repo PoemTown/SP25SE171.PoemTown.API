@@ -2,6 +2,9 @@
 
 public enum UserPoemType
 {
+
     CopyRightHolder = 1,
-    Buyer = 2   
+    PoemBuyer = 2,
+    RecordBuyer = 3,
+    RecordHolder = 4
 }

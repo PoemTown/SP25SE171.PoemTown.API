@@ -16,15 +16,16 @@ namespace PoemTown.Service.Interfaces
     public interface ICollectionService
     {
         Task CreateCollection(Guid userId, CreateCollectionRequest request, string role);
+        Task CreateCollectionCommunity(Guid userId, CreateCollectionRequest request);
+
         Task UpdateCollection(UpdateCollectionRequest request);
         Task<PaginationResponse<GetCollectionResponse>> GetCollections(Guid userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
         Task<PaginationResponse<GetCollectionResponse>> GetCollectionsCommunity(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
         Task DeleteCollection(Guid collectionId, byte[] rowVersion);
         Task DeleteCollectionPermanent(Guid collectionId);
         Task AddPoemToCollection(Guid poemId, Guid collectionId);
-        Task<PaginationResponse<GetCollectionResponse>>
-            GetTrendingCollections(Guid? userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
+        Task<PaginationResponse<GetCollectionResponse>>GetTrendingCollections(Guid? userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
         Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid userId);
-        Task<string> UploadProfileImage(Guid userId, IFormFile file);
+        Task<string> UploadCollectionImage(Guid userId, IFormFile file);
     }
 }

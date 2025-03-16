@@ -3,11 +3,13 @@ using Betalgo.Ranul.OpenAI.Interfaces;
 using Betalgo.Ranul.OpenAI.ObjectModels;
 using Betalgo.Ranul.OpenAI.ObjectModels.RequestModels;
 using Betalgo.Ranul.OpenAI.ObjectModels.ResponseModels;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Repository.Enums.UserPoems;
@@ -19,6 +21,7 @@ using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
+using PoemTown.Service.Events.OrderEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -40,18 +43,21 @@ public class PoemService : IPoemService
     private readonly IAwsS3Service _awsS3Service;
     private readonly IOpenAIService _openAiService;
     private readonly ITheHiveAiService _theHiveAiService;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public PoemService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IAwsS3Service awsS3Service,
         IOpenAIService openAiService,
-        ITheHiveAiService theHiveAiService)
+        ITheHiveAiService theHiveAiService,
+        IPublishEndpoint publishEndpoint)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _awsS3Service = awsS3Service;
         _openAiService = openAiService;
         _theHiveAiService = theHiveAiService;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task CreateNewPoem(Guid userId, CreateNewPoemRequest request)
@@ -121,6 +127,53 @@ public class PoemService : IPoemService
         // Save changes
         await _unitOfWork.SaveChangesAsync();
     }
+    public async Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request)
+    {
+        // Mapping request to entity
+        Poem poem = _mapper.Map<CreateNewPoemRequest, Poem>(request);
+
+        // Check if source copy right exist, if not then throw exception else assign source copy right to poem
+        if (request.SourceCopyRightId != null)
+        {
+            UserPoemRecordFile? sourceCopyRight = await _unitOfWork.GetRepository<UserPoemRecordFile>()
+                .FindAsync(p => p.Id == request.SourceCopyRightId && p.UserId == userId);
+            if (sourceCopyRight == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Source copy right not found");
+            }
+
+            poem.SourceCopyRightId = sourceCopyRight.Id;
+        }
+
+        Collection? collection = null;
+
+        // If collectionId is not null then check if the collection exist
+        if (request.CollectionId != null)
+        {
+            collection = await _unitOfWork.GetRepository<Collection>()
+                .FindAsync(p => p.Id == request.CollectionId && p.UserId == userId);
+            if (collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            }
+        }
+
+        poem.Collection = collection;
+        // Add poem to database
+        await _unitOfWork.GetRepository<Poem>().InsertAsync(poem);
+        // Assign user to poem
+        UserPoemRecordFile userPoemRecord = new UserPoemRecordFile
+        {
+            PoemId = poem.Id,
+            UserId = userId,
+            Type = UserPoemType.CopyRightHolder,
+        };
+        await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecord);
+        // Save changes
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+
 
     public async Task<GetPoemDetailResponse>
         GetPoemDetail(Guid userId, Guid poemId,
@@ -371,6 +424,28 @@ public class PoemService : IPoemService
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not a draft, cannot delete");
         }
 
+        _unitOfWork.GetRepository<Poem>().Delete(poem);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+
+    public async Task DeletePoemInCommunity(Guid userId, Guid poemId)
+    {
+        // Find poem by id
+        Poem? poem = await _unitOfWork.GetRepository<Poem>()
+            .FindAsync(p => p.Id == poemId);
+        // If poem not found then throw exception
+        if (poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+
+        UserPoemRecordFile? userPoemRecordFile = await _unitOfWork.GetRepository<UserPoemRecordFile>().FindAsync(r => r.PoemId == poemId && r.UserId == userId && r.Type == UserPoemType.CopyRightHolder);
+        //Check if record file is not yours
+        if (userPoemRecordFile == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "This poem is not yours");
+        }
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -804,7 +879,6 @@ public class PoemService : IPoemService
         poem.IsSellCopyRight = true;
 
         _unitOfWork.GetRepository<Poem>().Update(poem);
-
         UserPoemRecordFile? userPoemRecordFile = new UserPoemRecordFile()
         {
             UserId = userId,
@@ -836,7 +910,7 @@ public class PoemService : IPoemService
 
         // Find user by id
         UserPoemRecordFile? userPoemRecordFile = await _unitOfWork.GetRepository<UserPoemRecordFile>()
-            .FindAsync(p => p.UserId == userId && p.PoemId == poemId);
+            .FindAsync(p => p.UserId == userId && p.PoemId == poemId && p.Type == UserPoemType.PoemBuyer);
 
         // If user already purchased this poem then throw exception
         if (userPoemRecordFile != null)
@@ -849,13 +923,27 @@ public class PoemService : IPoemService
         {
             UserId = userId,
             PoemId = poemId,
-            Type = UserPoemType.Buyer,
+            Type = UserPoemType.PoemBuyer,
             CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
             CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(2).DateTime
         };
 
         await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecordFile);
         await _unitOfWork.SaveChangesAsync();
+
+        CreateOrderEvent message = new CreateOrderEvent()
+        {
+            OrderCode = OrderCodeGenerator.Generate(),
+            Amount = poem.Price,
+            Type = OrderType.Poems,
+            OrderDescription = $"Mua bản quyền bài thơ {poem.Title}",
+            Status = OrderStatus.Paid,
+            PoemId = poem.Id,
+            PaidDate = DateTimeHelper.SystemTimeNow,
+            DiscountAmount = 0,
+            UserId = userId
+        };
+        await _publishEndpoint.Publish(message);
     }
 
     public async Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request)

@@ -40,4 +40,7 @@ public interface IPoemService
     Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
         ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request);
     
+    Task PurchasePoemCopyRight(Guid userId, Guid poemId);
+    Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request);
+    Task DeletePoemInCommunity(Guid userId, Guid poemId);
 }

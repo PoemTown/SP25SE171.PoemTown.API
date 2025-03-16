@@ -14,6 +14,8 @@ public class RecordFileMapping : Profile
         CreateMap<CreateNewRecordFileRequest, RecordFile>();
         
         CreateMap<CreateNewRecordFileRequest, CreateNewPoemRequest>();
+        CreateMap<UpdateRecordRequest, RecordFile>();
+
 
         CreateMap<RecordFile, GetRecordFileResponse>().ReverseMap();
 

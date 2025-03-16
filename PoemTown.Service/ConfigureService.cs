@@ -50,6 +50,7 @@ public static class ConfigureService
         services.AddQuartzConfig();
         services.AddBetalgoOpenAI(configuration);
         services.AddTheHiveAiSettings(configuration);
+        services.AddSignalRConfig();
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -77,7 +78,11 @@ public static class ConfigureService
         services.AddScoped<ITransactionService, TransactionService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IRoleService, RoleService>();
-        
+        services.AddScoped<IRecordFileService, RecordFileService>();
+        services.AddScoped<IChatService, ChatService>();
+
+
+
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
         services.AddScoped<IZaloPayService, ZaloPayService>();
@@ -266,6 +271,10 @@ public static class ConfigureService
             };
             return theHiveAiSettings;
         });
+    }
 
+    private static void AddSignalRConfig (this IServiceCollection services)
+    {
+        services.AddSignalR();
     }
 }

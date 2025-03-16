@@ -177,6 +177,26 @@ public class PoemsController : BaseController
     }
 
     /// <summary>
+    /// Xóa một bài thơ trong bộ sưu tập cộng đồng, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// CHÚ Ý REQUEST PARAMETER:
+    ///
+    /// - poemId: lấy từ request path
+    /// </remarks>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/{poemId}/community")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> DeletePoemInCommunity(Guid poemId)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.DeletePoemInCommunity(userId, poemId);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem deleted in community successfully"));
+    }
+
+    /// <summary>
     /// Lấy chi tiết của một bài thơ (Không bao gồm lịch sử chỉnh sửa), yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
@@ -409,6 +429,23 @@ public class PoemsController : BaseController
     }
     
     /// <summary>
+    /// Mua bản quyền của một bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/purchase")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> PurchasePoem([FromQuery]Guid poemId)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.PurchasePoemCopyRight(userId, poemId);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Purchase poem successfully"));
+    }
+
+    
+    
+    /// <summary>
     /// AI gợi ý hoàn thiện bài thơ, yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
@@ -428,7 +465,10 @@ public class PoemsController : BaseController
     ///
     /// maxToken: Số lượng token tối đa mà AI sẽ hoàn thiện (100 token xấp xỉ 750 chữ)
     /// </remarks>
-    /// <param name="request"></param>
+    /// <summary>
+    /// Mua bản quyền của một bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="poemId"></param>
     /// <returns></returns>
     [HttpPost]
     [Route("v1/ai-chat-completion")]
@@ -500,7 +540,7 @@ public class PoemsController : BaseController
         var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(fluxSchnellEnhancedRequest);
         return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK, "Poem text to image with The Hive AI successfully", response));
     }
-    
+
     /// <summary>
     /// Chuyển đổi văn bản thành hình ảnh (NÊN XÀI CÁI NÀY) (Sử dụng The Hive AI với model SDXL Enhanced), yêu cầu đăng nhập
     /// </summary>
@@ -533,9 +573,21 @@ public class PoemsController : BaseController
     [Route("v1/text-to-image/the-hive-ai/sdxl-enhanced")]
     [Authorize]
     public async Task<ActionResult<BaseResponse<TheHiveAiResponse>>>
-        PoemTextToImageWithTheHiveAiSdxlEnhanced(ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest fluxSchnellEnhancedRequest)
+        PoemTextToImageWithTheHiveAiSdxlEnhanced(
+            ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest fluxSchnellEnhancedRequest)
     {
         var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(fluxSchnellEnhancedRequest);
-        return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK, "Poem text to image with The Hive AI successfully", response));
+        return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK,
+            "Poem text to image with The Hive AI successfully", response));
+    }
+
+    [HttpPost]
+    [Route("v1/community")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> CreatePoemInCommunity(CreateNewPoemRequest request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.CreatePoemInCommunity(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Create poem in community successfully"));
     }
 }

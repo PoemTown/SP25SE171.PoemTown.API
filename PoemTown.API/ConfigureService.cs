@@ -14,6 +14,7 @@ using PoemTown.API.CustomModelConvention;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.Entities;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Jwt;
+using PoemTown.Service.SignalR;
 
 namespace PoemTown.API;
 
@@ -31,33 +32,37 @@ public static class ConfigureService
         services.AddHttpClientConfig();
         services.AddScoped<ValidateModelStateAttribute>();
     }
-    
-    public static void AddApplicationApi(this IApplicationBuilder app)
+
+    public static void AddApplicationApi(this WebApplication app)
     {
+
         app.UseForwardedHeaders(new ForwardedHeadersOptions
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedFor |
                                ForwardedHeaders.XForwardedProto
         });
-        
+
+        app.UseRouting();
+
         app.UseCors("AllowAll");
         app.UseHttpsRedirection();
-        
         app.UseAuthentication();
         app.UseAuthorization();
 
         app.AddMiddlewareConfigs();
 
-        
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "Service API v1");
         });
 
-
+        // ✅ Map SignalR Hub
+        app.MapHub<ChatHub>("/chatHub");
     }
-    
+
+
+
     private static void AddMiddlewareConfigs(this IApplicationBuilder app)
     {
         app.UseMiddleware<ValidateJwtTokenMiddleware>();
@@ -123,7 +128,7 @@ public static class ConfigureService
                 {
                     builder.AllowAnyOrigin()
                         .AllowAnyMethod()
-                        .AllowAnyHeader(); 
+                        .AllowAnyHeader();
                 });
         });
     }

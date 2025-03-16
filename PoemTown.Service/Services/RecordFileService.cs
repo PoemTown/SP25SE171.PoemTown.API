@@ -64,22 +64,14 @@ namespace PoemTown.Service.Services
                 throw new CoreException(StatusCodes.Status400BadRequest, "User not own this poem");
             }
             await _unitOfWork.GetRepository<RecordFile>().InsertAsync(record);
-            // Check if is the owner of poem then update otherwise create new owner of record
-            if (userPoemRecord.Type == UserPoemType.CopyRightHolder)
-            {
-                userPoemRecord.RecordFileId = record.Id;
-                _unitOfWork.GetRepository<UserPoemRecordFile>().Update(userPoemRecord);
-            }
-            else
-            {
                 userPoemRecord = new UserPoemRecordFile
                 {
                     UserId = userId,
                     RecordFileId = record.Id,
-                    Type = UserPoemType.CopyRightHolder,
+                    Type = UserPoemType.RecordHolder,
+                    PoemId= poemID,
                 };
                 await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecord);
-            }
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -222,7 +214,7 @@ namespace PoemTown.Service.Services
             //Get all records that user have
             var records = _unitOfWork.GetRepository<UserPoemRecordFile>()
            .AsQueryable()
-           .Where(p => p.UserId == userId && p.RecordFileId != null && p.Type == UserPoemType.CopyRightHolder && p.DeletedTime == null);
+           .Where(p => p.UserId == userId && p.RecordFileId != null && p.Type == UserPoemType.RecordHolder && p.DeletedTime == null);
 
             var recordsList = records.ToList();
             Console.WriteLine($"Tổng số records: {recordsList.Count}");
@@ -262,7 +254,7 @@ namespace PoemTown.Service.Services
                 Owner = _mapper.Map<GetBasicUserInformationResponse>(
     _unitOfWork.GetRepository<UserPoemRecordFile>()
         .AsQueryable()
-        .Where(u => u.RecordFileId == s.RecordFileId && u.Type == UserPoemType.CopyRightHolder && u.DeletedTime == null)
+        .Where(u => u.RecordFileId == s.RecordFileId && u.Type == UserPoemType.RecordHolder && u.DeletedTime == null)
         .Select(u => u.User) // Lấy trực tiếp User từ UserPoemRecordFile
         .FirstOrDefault() // Chỉ lấy 1 user
 )

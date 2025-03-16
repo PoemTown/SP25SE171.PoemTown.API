@@ -46,6 +46,7 @@ public static class ConfigureService
         services.AddZaloPayConfig(configuration);
         services.AddPaymentRedirectConfig(configuration);
         services.AddQuartzConfig();
+        services.AddSignalRConfig();
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -74,6 +75,8 @@ public static class ConfigureService
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IRecordFileService, RecordFileService>();
+        services.AddScoped<IChatService, ChatService>();
+
 
 
         //Third parties
@@ -241,5 +244,10 @@ public static class ConfigureService
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
         
         services.AddScoped<PaymentTimeOutJob>();
+    }
+
+    private static void AddSignalRConfig (this IServiceCollection services)
+    {
+        services.AddSignalR();
     }
 }

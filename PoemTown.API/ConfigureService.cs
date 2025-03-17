@@ -42,9 +42,12 @@ public static class ConfigureService
                                ForwardedHeaders.XForwardedProto
         });
 
-        app.UseRouting();
 
         app.UseCors("AllowAll");
+
+        app.UseWebSockets();
+        app.UseRouting();
+        
         app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
@@ -174,7 +177,21 @@ public static class ConfigureService
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
                 ClockSkew = TimeSpan.Zero
             };
-            
+
+            // Get token from query string[access_token]
+            options.Events = new JwtBearerEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    var accessToken = context.Request.Query["access_token"];
+                    if (!string.IsNullOrEmpty(accessToken))
+                    {
+                        context.Token = accessToken;
+                    }
+
+                    return Task.CompletedTask;
+                }
+            };
         });
     }
     

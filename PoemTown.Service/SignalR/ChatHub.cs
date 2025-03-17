@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.SignalR;
-using PoemTown.Service.Interfaces;
+﻿using PoemTown.Service.Interfaces;
 using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using System.Security.Claims;
+using Microsoft.AspNetCore.SignalR;
 
 namespace PoemTown.Service.SignalR
 {
@@ -12,16 +12,18 @@ namespace PoemTown.Service.SignalR
     {
         public static ConcurrentDictionary<string, string> UserConnections = new();
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
+            // Get user id from token
             var userId = Context.User?.FindFirst("UserId")?.Value ??
                          Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
+            
+            // Add user connection
             if (!string.IsNullOrEmpty(userId))
             {
                 UserConnections[userId] = Context.ConnectionId;
             }
-            return base.OnConnectedAsync();
+            await base.OnConnectedAsync();
         }
 
         public override Task OnDisconnectedAsync(Exception? exception)
@@ -32,6 +34,11 @@ namespace PoemTown.Service.SignalR
                 UserConnections.TryRemove(userId, out _);
             }
             return base.OnDisconnectedAsync(exception);
+        }
+
+        public async Task SendMessagehihi(string message)
+        {
+            await Clients.All.SendAsync("ChatMessage", $"{Context.ConnectionId}: {message}");
         }
     }
 

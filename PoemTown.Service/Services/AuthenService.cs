@@ -63,7 +63,7 @@ namespace PoemTown.Service.Services
         /// <exception cref="CoreException"></exception>
         public async Task<LoginResponse> Login(LoginRequest request, string userAgent, string ipAddress)
         {
-            User? user = await _userManager.FindByEmailAsync(request.Email);
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Email == request.Email);
             if (user == null)
             {
                 throw new CoreException(StatusCodes.Status401Unauthorized, "User not found");
@@ -212,7 +212,7 @@ namespace PoemTown.Service.Services
 
         public async Task<LoginResponse> LoginWithGoogle(string googleId, string email, string userAgent, string ipAddress)
         {
-            User? user = await _userManager.FindByEmailAsync(email);
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Email == email);
             TokenResponse token;
             
             //User already exists
@@ -267,7 +267,7 @@ namespace PoemTown.Service.Services
 
         public async Task Logout(Guid userId, string userAgent, string ipAddress)
         {
-            User? user = await _userManager.FindByIdAsync(userId.ToString());
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
             
             if (user == null)
             {

@@ -57,7 +57,7 @@ public class AccountService : IAccountService
     /// <exception cref="CoreException"></exception>
     public async Task ConfirmEmail(ConfirmEmailRequest request)
     {
-        User? user = await _userManager.FindByEmailAsync(request.Email);
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Email == request.Email);
         
         if(user == null)
         {
@@ -112,7 +112,7 @@ public class AccountService : IAccountService
 
     public async Task SendEmailOtp(ResendEmailConfirmationRequest request)
     {
-        User user = await _userManager.FindByEmailAsync(request.Email);
+        User user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Email == request.Email);
         if(user == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
@@ -134,7 +134,7 @@ public class AccountService : IAccountService
     
     public async Task ChangePassword(Guid userId, ChangePasswordRequest request)
     {
-        User user = await _userManager.FindByIdAsync(userId.ToString());
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
         if(user == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
@@ -179,7 +179,7 @@ public class AccountService : IAccountService
 
     public async Task ForgotPassword(ForgotPasswordRequest request)
     {
-        User? user = await _userManager.FindByEmailAsync(request.Email);
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Email == request.Email);
         if(user == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
@@ -211,7 +211,7 @@ public class AccountService : IAccountService
     /// <exception cref="CoreException"></exception>
     public async Task NewPasswordForgot(NewPasswordForgotRequest request)
     {
-        User user = await _userManager.FindByEmailAsync(request.Email);
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Email == request.Email);
         
         if(user == null)
         {
@@ -333,7 +333,7 @@ public class AccountService : IAccountService
     
     public async Task<GetAccountDetailResponse> GetAccountDetail(Guid userId)
     {
-        User? user = await _userManager.FindByIdAsync(userId.ToString());
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
         
         // Check if user is null
         if(user == null)
@@ -354,7 +354,7 @@ public class AccountService : IAccountService
 
     public async Task UpdateAccountStatus(Guid userId, AccountStatus status)
     {
-        User? user = await _userManager.FindByIdAsync(userId.ToString());
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
 
         // Check if user is null
         if (user == null)
@@ -379,7 +379,7 @@ public class AccountService : IAccountService
     
     public async Task AddAccountRole(Guid userId, Guid roleId)
     {
-        User? user = await _userManager.FindByIdAsync(userId.ToString());
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
         
         // Check if user is null
         if(user == null)
@@ -412,7 +412,7 @@ public class AccountService : IAccountService
     
     public async Task RemoveAccountRole(Guid userId, Guid roleId)
     {
-        User? user = await _userManager.FindByIdAsync(userId.ToString());
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
         
         // Check if user is null
         if(user == null)
@@ -445,7 +445,7 @@ public class AccountService : IAccountService
     
     public async Task UpdateAccountRole(Guid userId, Guid roleId)
     {
-        User? user = await _userManager.FindByIdAsync(userId.ToString());
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
         
         // Check if user is null
         if(user == null)
@@ -485,4 +485,116 @@ public class AccountService : IAccountService
         await _unitOfWork.GetRepository<UserRole>().InsertAsync(userRole);
         await _unitOfWork.SaveChangesAsync();
     }
+    
+    
+    public async Task CreateModeratorAccount(CreateModeratorAccountRequest request)
+    {
+        // Check if email is already used
+        User? user = await _unitOfWork.GetRepository<User>()
+            .AsQueryable()
+            .FirstOrDefaultAsync(p => p.Email == request.Email && p.DeletedTime == null);
+        if(user != null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Email is already used");
+        }
+        
+        var userSalt = PasswordHasher.GenerateSalt();
+        // Create new user
+        user = new User()
+        {
+            UserName = request.Email,
+            Email = request.Email,
+            FullName = request.FullName,
+            PhoneNumber = request.PhoneNumber,
+            Status = AccountStatus.Active,
+            EmailConfirmed = true,
+            DisplayName = request.Email,
+            Salt = userSalt,
+        };
+        
+        var generatePassword = PasswordHasher.GenerateSecurePassword();
+        
+        // Hash password
+        string hashedPassword = PasswordHasher.HashPassword(generatePassword, user.Salt);
+        
+        // Add user to database
+        IdentityResult result = await _userManager.CreateAsync(user, hashedPassword);
+        if(!result.Succeeded)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, result.Errors.First().Description);
+        }
+        
+        // Add role to user
+        Role? role = await _unitOfWork.GetRepository<Role>().FindAsync(p => p.Name == "MODERATOR");
+        if(role == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Role not found");
+        }
+        
+        await _userManager.AddToRoleAsync(user, role.Name!);
+        
+        // Send email to user
+        SendPasswordToModeratorAccountEvent message = new SendPasswordToModeratorAccountEvent()
+        {
+            Email = user.Email,
+            FullName = user.FullName ?? user.Email,
+            Password = generatePassword
+        };
+        await _publishEndpoint.Publish(message);
+    }
+
+    public async Task DeleteAccount(Guid accountId)
+    {
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == accountId);
+        
+        // Check if user is null
+        if(user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        
+        // Check if user is admin
+        if(user.UserRoles.Any(p => p.Role.Name == "ADMIN"))
+        {
+            throw new CoreException(StatusCodes.Status401Unauthorized, "Cannot delete admin account");
+        }
+
+        user.UserName = null;
+        user.NormalizedUserName = null;
+        user.Email = null;
+        user.NormalizedEmail = null;
+        user.PhoneNumber = null;
+        user.DeletedTime = DateTimeHelper.SystemTimeNow;
+        
+        _unitOfWork.GetRepository<User>().Update(user);
+        
+        // Remove all user tokens
+        var userTokens = await _unitOfWork.GetRepository<UserToken>()
+            .AsQueryable()
+            .Where(p => p.UserId == accountId)
+            .ToListAsync();
+        
+        _unitOfWork.GetRepository<UserToken>().DeletePermanentRange(userTokens);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    
+    /*public async Task DeleteAccountPermanent(Guid accountId)
+    {
+        User? user = await _userManager.FindByIdAsync(accountId.ToString());
+        
+        // Check if user is null
+        if(user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        
+        // Check if user is already deleted
+        if(user.DeletedTime == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "This account is not soft deleted yet");
+        }
+        
+        _unitOfWork.GetRepository<User>().DeletePermanent(user);
+        await _unitOfWork.SaveChangesAsync();
+    }*/
 }

@@ -56,4 +56,16 @@ public class EmailService : IEmailService
         string body = await RenderEmailTemplateAsync("EmailForgotPasswordTemplate", emailForgotPassword);
         await SendEmailAsync(emailForgotPassword.Email, "Reset your password", body);
     }
+    
+    public async Task SendEmailModeratorAccountPassword(SendPasswordToModeratorAccount model)
+    {
+        var emailModeratorAccountPassword = new SendPasswordToModeratorAccount()
+        {
+            FullName = model.FullName,
+            Email = model.Email,
+            Password = model.Password
+        };
+        string body = await RenderEmailTemplateAsync("SendPasswordToModeratorAccountTemplate", emailModeratorAccountPassword);
+        await SendEmailAsync(model.Email, "Your account password", body);
+    }
 }

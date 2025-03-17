@@ -6,6 +6,7 @@ using PoemTown.Service.BusinessModels.ResponseModels.OrderResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.ReportResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.MappingModels;
@@ -17,6 +18,7 @@ public class PoemMapping : Profile
         CreateMap<CreateNewPoemRequest, Poem>();
         CreateMap<UpdatePoemRequest, Poem>();
         CreateMap<Poem, GetPoemInOrderDetailResponse>().ReverseMap();
+        CreateMap<Poem, GetPoemInReportResponse>().ReverseMap();
         
         CreateMap<GetPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))

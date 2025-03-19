@@ -5,6 +5,7 @@ USER app
 WORKDIR /app
 
 COPY ./PoemTown.API/Views /app/Views
+COPY ./PoemTown.Service/PlagiarismDetector /app/PlagiarismDetector
 
 EXPOSE 8080
 EXPOSE 8081

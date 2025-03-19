@@ -58,4 +58,28 @@ public static class ReadConfigurationHelper
         }
         return Environment.GetEnvironmentVariable(key) ?? "";
     }
+    
+    public static string GetModelOnnxPath()
+    {
+        var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+        
+        // If not in development, return the path to the model in the app directory
+        if (!isDevelopment)
+        {
+            return Path.Combine(Directory.GetCurrentDirectory(), "app", "PlagiarismDetector", "HuggingFace", "model.onnx");
+        }
+        
+        // If in development, return the path to the model in the PoemTown.Service directory
+        var pathDocker = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "../src/PoemTown.Service"));
+        var pathLocal = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "../PoemTown.Service"));
+
+        var modelPath = Path.Combine(pathDocker, "PlagiarismDetector", "HuggingFace", "model.onnx");
+        
+        // If the model path does not exist in the Docker directory, return the path in the local directory
+        if (!File.Exists(modelPath))
+        {
+            modelPath = Path.Combine(pathLocal, "PlagiarismDetector", "HuggingFace", "model.onnx");
+        }
+        return modelPath;
+    }
 }

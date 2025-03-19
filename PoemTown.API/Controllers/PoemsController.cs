@@ -7,6 +7,7 @@ using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.PlagiarismDetector.PDModels;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
@@ -589,5 +590,29 @@ public class PoemsController : BaseController
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
         await _poemService.CreatePoemInCommunity(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Create poem in community successfully"));
+    }
+    
+    [HttpPost]
+    [Route("v1/store/{poemId}")]
+    public async Task<ActionResult<BaseResponse>> StorePoemEmbedding(Guid poemId)
+    {
+        await _poemService.Store(poemId);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "Store poem embedding successfully"));
+    }
+    
+    /// <summary>
+    /// Kiểm tra bài thơ có bị đạo văn không, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="poemContent"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/plagiarism")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<PoemPlagiarismResponse>>>
+        SearchSimilarPoemEmbeddingPoint([FromQuery]string poemContent)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _poemService.CheckPoemPlagiarism(userId, poemContent);
+        return Ok(new BaseResponse<PoemPlagiarismResponse>(StatusCodes.Status200OK, "Check poem plagiarism successfully", response));
     }
 }

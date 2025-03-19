@@ -22,7 +22,10 @@ using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Events.OrderEvents;
+using PoemTown.Service.Events.PoemEvents;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.PlagiarismDetector.Interfaces;
+using PoemTown.Service.PlagiarismDetector.PDModels;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
@@ -44,13 +47,15 @@ public class PoemService : IPoemService
     private readonly IOpenAIService _openAiService;
     private readonly ITheHiveAiService _theHiveAiService;
     private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IQDrantService _qDrantService;
 
     public PoemService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IAwsS3Service awsS3Service,
         IOpenAIService openAiService,
         ITheHiveAiService theHiveAiService,
-        IPublishEndpoint publishEndpoint)
+        IPublishEndpoint publishEndpoint,
+        IQDrantService qDrantService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
@@ -58,6 +63,7 @@ public class PoemService : IPoemService
         _openAiService = openAiService;
         _theHiveAiService = theHiveAiService;
         _publishEndpoint = publishEndpoint;
+        _qDrantService = qDrantService;
     }
 
     public async Task CreateNewPoem(Guid userId, CreateNewPoemRequest request)
@@ -124,8 +130,28 @@ public class PoemService : IPoemService
         poemHistory.Version = 1;
         await _unitOfWork.GetRepository<PoemHistory>().InsertAsync(poemHistory);
 
+        // When poem is posted, assign user to poem as copy right holder
+        if (request.Status == PoemStatus.Posted)
+        {
+            await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(new UserPoemRecordFile()
+            {
+                Type = UserPoemType.CopyRightHolder,
+                PoemId = poem.Id,
+            });
+        }
+        
         // Save changes
         await _unitOfWork.SaveChangesAsync();
+        
+        // Publish event to store poem embedding
+        await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
+        {
+            PoemId = poem.Id,
+            PoetId = userId,
+            PoemContent = poem.Content
+        });
+        
+        
     }
     public async Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request)
     {
@@ -403,6 +429,16 @@ public class PoemService : IPoemService
             .MaxAsync(p => p.Version) + 1;
         await _unitOfWork.GetRepository<PoemHistory>().InsertAsync(poemHistory);
 
+        // When poem is posted, assign user to poem as copy right holder
+        if (request.Status == PoemStatus.Posted)
+        {
+            await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(new UserPoemRecordFile()
+            {
+                Type = UserPoemType.CopyRightHolder,
+                PoemId = poem.Id,
+            });
+        }
+        
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -1070,5 +1106,35 @@ public class PoemService : IPoemService
         var response = await _theHiveAiService.ConvertTextToImageWithSdxlEnhanced(model);
 
         return response;
+    }
+
+    public async Task Store(Guid poemId)
+    {
+        Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
+        if (poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+
+        await _qDrantService.StorePoemEmbeddingAsync(poemId, poem.Collection!.UserId, poem.Content!);
+    }
+
+    public bool IsPoemPlagiarism(double score)
+    {
+        return score > 0.5;
+    }
+    
+    public async Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, string poemContent)
+    {
+        // Search similar poem embedding point
+        var response = await _qDrantService.SearchSimilarPoemEmbeddingPoint(userId, poemContent);
+        
+        double averageScore = response.Results.Select(p => p.Score).Average();
+
+        return new PoemPlagiarismResponse()
+        {
+            Score = averageScore,
+            IsPlagiarism = IsPoemPlagiarism(averageScore)
+        };
     }
 }

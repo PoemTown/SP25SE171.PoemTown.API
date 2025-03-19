@@ -31,10 +31,11 @@ namespace PoemTown.Service.Services
 
             // Process Poem Leaderboard
             var poemLeaderboard = await leaderBoardRepo.AsQueryable()
-                .FirstOrDefaultAsync(lb =>
-                    lb.Type == LeaderBoardType.Poem &&
-                    lb.Status == LeaderBoardStatus.InProgress &&
-                    lb.EndDate >= now);
+               .Include(lb => lb.LeaderBoardDetails)
+               .FirstOrDefaultAsync(lb =>
+                   lb.Type == LeaderBoardType.Poem &&
+                   lb.Status == LeaderBoardStatus.InProgress &&
+                   lb.EndDate <= now);
 
             if (poemLeaderboard != null)
             {
@@ -46,14 +47,22 @@ namespace PoemTown.Service.Services
                     string achievementName = $"Top {detail.Rank} bài thơ tháng {monthYear}";
                     string achievementDescription = "Đây là phần thưởng bạn nhận được trong bảng xếp hạng bài thơ";
 
+                    var record = detail.Poem?.UserPoemRecordFiles
+                        .FirstOrDefault(p => p.Type == UserPoemType.CopyRightHolder && p.PoemId == detail.Poem?.Id);
+                    if (record == null || record.UserId == null)
+                    {
+                        // Skip awarding achievement if no owner or owner UserId is null.
+                        continue;
+                    }
+
+                    var userIDE = record.UserId.Value;
                     var achievement = new Achievement
                     {
                         Id = Guid.NewGuid(),
                         Name = achievementName,
                         Description = achievementDescription,
                         EarnedDate = now, // or use poemLeaderboard.EndDate if desired
-                        UserId = (Guid)detail.Poem?.UserPoemRecordFiles.FirstOrDefault(p => p.Type == UserPoemType.CopyRightHolder && p.Id == detail.PoemId).UserId! // if you want to use the Poem's owner,
-                                                                                                                                // you may need to adjust this to the author's Id
+                        UserId = userIDE // if you want to use the Poem's owner,                                                                                                    // you may need to adjust this to the author's Id
                     };
 
                     var achievementRepo = _unitOfWork.GetRepository<Achievement>();
@@ -71,7 +80,7 @@ namespace PoemTown.Service.Services
                 .FirstOrDefaultAsync(lb =>
                     lb.Type == LeaderBoardType.User &&
                     lb.Status == LeaderBoardStatus.InProgress &&
-                    lb.EndDate >= now);
+                    lb.EndDate <= now);
 
             if (userLeaderboard != null)
             {

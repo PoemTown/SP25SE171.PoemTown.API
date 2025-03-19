@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.LeaderBoards;
+using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.Interfaces;
@@ -31,6 +32,7 @@ namespace PoemTown.Service.Services
 
             var poemRepository = _unitOfWork.GetRepository<Poem>();
             var poems = await poemRepository.AsQueryable()
+                .Where(p => p.Status == PoemStatus.Posted)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
                 .Include(p => p.UserPoemRecordFiles)
@@ -135,6 +137,7 @@ namespace PoemTown.Service.Services
                 .Include(lb => lb.UserLeaderBoards)
                 .FirstOrDefaultAsync(lb =>
                     lb.Type == LeaderBoardType.User &&
+                    lb.Status == LeaderBoardStatus.InProgress &&
                     lb.StartDate == startOfMonth);
             if (leaderboard == null)
             {

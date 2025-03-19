@@ -23,7 +23,10 @@ namespace PoemTown.Service.Scheduler.AchievementJobs
         public async Task Execute(IJobExecutionContext context)
         {
             _logger.LogInformation("Hello world");
+            var leaderBoardJobKey = new JobKey("LeaderBoardCalculationJob", "LeaderBoard");
+            await context.Scheduler.PauseJob(leaderBoardJobKey);
             await _achievementService.CreateMonthlyAchievementsAsync();
+            await context.Scheduler.ResumeJob(leaderBoardJobKey);
         }
     }
 }

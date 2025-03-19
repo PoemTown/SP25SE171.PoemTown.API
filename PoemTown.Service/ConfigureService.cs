@@ -265,17 +265,15 @@ public static class ConfigureService
         {
             q.UseMicrosoftDependencyInjectionJobFactory();
 
-            // Define a job key for the LeaderBoardCalculationJob.
+            // Define job keys.
             var leaderBoardJobKey = new JobKey("LeaderBoardCalculationJob", "LeaderBoard");
-            var jobKey = new JobKey("MonthlyAchievementJob", "Achievement");
+            var achievementJobKey = new JobKey("MonthlyAchievementJob", "Achievement");
 
-            // Register the job using its job key.
-            q.AddJob<MonthlyAchievementJob>(opts => opts.WithIdentity(jobKey));
-
-            // Register the LeaderBoardCalculationJob.
+            // Register the jobs.
+            q.AddJob<MonthlyAchievementJob>(opts => opts.WithIdentity(achievementJobKey));
             q.AddJob<LeaderBoardCalculationJob>(opts => opts.WithIdentity(leaderBoardJobKey));
 
-            // Create a trigger for LeaderBoardCalculationJob to fire immediately and every 30 seconds.
+            // Trigger for LeaderBoardCalculationJob: fire immediately and every 30 seconds.
             q.AddTrigger(opts => opts
                 .ForJob(leaderBoardJobKey)
                 .WithIdentity("LeaderBoardCalculationJobTrigger", "LeaderBoard")
@@ -284,17 +282,12 @@ public static class ConfigureService
                     .WithIntervalInSeconds(30)
                     .RepeatForever()));
 
+            // Trigger for MonthlyAchievementJob: for testing, fire every 1 minute.
             q.AddTrigger(opts => opts
-                .ForJob(jobKey)
+                .ForJob(achievementJobKey)
                 .WithIdentity("MonthlyAchievementJobTrigger", "Achievement")
-                .StartNow()
-                .WithSimpleSchedule(x => x
-                    .WithIntervalInMinutes(1)
-                    .RepeatForever()));
-        ;
-    });
-
-        services.AddQuartz(p => p.UseMicrosoftDependencyInjectionJobFactory());
+                .WithCronSchedule("0 59 23 L * ?"));
+        });
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
         
         services.AddScoped<PaymentTimeOutJob>();

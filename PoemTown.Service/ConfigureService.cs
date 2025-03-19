@@ -23,6 +23,8 @@ using PoemTown.Service.Consumers.TransactionConsumers;
 using PoemTown.Service.Consumers.UserEWalletConsumers;
 using PoemTown.Service.Events.ThemeEvents;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.Scheduler.AchievementJobs;
+using PoemTown.Service.Scheduler.LeaderBoardJobs;
 using PoemTown.Service.PlagiarismDetector.Interfaces;
 using PoemTown.Service.PlagiarismDetector.Services;
 using PoemTown.Service.PlagiarismDetector.Settings;
@@ -87,6 +89,8 @@ public static class ConfigureService
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IRecordFileService, RecordFileService>();
         services.AddScoped<IChatService, ChatService>();
+        services.AddScoped<ILeaderBoardService, LeaderBoardService>();
+        services.AddScoped<IAchievementService, AchievementService>();
 
 
         //Plagiarism detector
@@ -257,10 +261,38 @@ public static class ConfigureService
     
     private static void AddQuartzConfig(this IServiceCollection services)
     {
-        services.AddQuartz(p => p.UseMicrosoftDependencyInjectionJobFactory());
+        services.AddQuartz(q =>
+        {
+            q.UseMicrosoftDependencyInjectionJobFactory();
+
+            // Define job keys.
+            var leaderBoardJobKey = new JobKey("LeaderBoardCalculationJob", "LeaderBoard");
+            var achievementJobKey = new JobKey("MonthlyAchievementJob", "Achievement");
+
+            // Register the jobs.
+            q.AddJob<MonthlyAchievementJob>(opts => opts.WithIdentity(achievementJobKey));
+            q.AddJob<LeaderBoardCalculationJob>(opts => opts.WithIdentity(leaderBoardJobKey));
+
+            // Trigger for LeaderBoardCalculationJob: fire immediately and every 30 seconds.
+            q.AddTrigger(opts => opts
+                .ForJob(leaderBoardJobKey)
+                .WithIdentity("LeaderBoardCalculationJobTrigger", "LeaderBoard")
+                .StartNow()
+                .WithSimpleSchedule(x => x
+                    .WithIntervalInSeconds(30)
+                    .RepeatForever()));
+
+            // Trigger for MonthlyAchievementJob: for testing, fire every 1 minute.
+            q.AddTrigger(opts => opts
+                .ForJob(achievementJobKey)
+                .WithIdentity("MonthlyAchievementJobTrigger", "Achievement")
+                .WithCronSchedule("0 59 23 L * ?"));
+        });
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
         
         services.AddScoped<PaymentTimeOutJob>();
+        services.AddScoped<LeaderBoardCalculationJob>();
+        services.AddScoped<MonthlyAchievementJob>();
     }
 
     private static void AddBetalgoOpenAI(this IServiceCollection services, IConfiguration configuration)

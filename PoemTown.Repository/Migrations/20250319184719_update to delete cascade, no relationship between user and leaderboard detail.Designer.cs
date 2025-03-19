@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PoemTown.Repository.Base;
 
@@ -11,9 +12,11 @@ using PoemTown.Repository.Base;
 namespace PoemTown.Repository.Migrations
 {
     [DbContext(typeof(PoemTownDbContext))]
-    partial class PoemTownDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250319184719_update to delete cascade, no relationship between user and leaderboard detail")]
+    partial class updatetodeletecascadenorelationshipbetweenuserandleaderboarddetail
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -928,9 +931,6 @@ namespace PoemTown.Repository.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid?>("PlagiarismFromPoemId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("PoemId")
                         .HasColumnType("uniqueidentifier");
 
@@ -948,8 +948,6 @@ namespace PoemTown.Repository.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("PlagiarismFromPoemId");
 
                     b.HasIndex("PoemId");
 
@@ -2078,14 +2076,9 @@ namespace PoemTown.Repository.Migrations
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Report", b =>
                 {
-                    b.HasOne("PoemTown.Repository.Entities.Poem", "PlagiarismFromPoem")
-                        .WithMany("PlagiarismReports")
-                        .HasForeignKey("PlagiarismFromPoemId");
-
                     b.HasOne("PoemTown.Repository.Entities.Poem", "Poem")
                         .WithMany("Reports")
-                        .HasForeignKey("PoemId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .HasForeignKey("PoemId");
 
                     b.HasOne("PoemTown.Repository.Entities.User", "ReportUser")
                         .WithMany("ReportUsers")
@@ -2096,8 +2089,6 @@ namespace PoemTown.Repository.Migrations
                         .WithMany("ReportedUsers")
                         .HasForeignKey("ReportedUserId")
                         .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("PlagiarismFromPoem");
 
                     b.Navigation("Poem");
 
@@ -2364,8 +2355,6 @@ namespace PoemTown.Repository.Migrations
                     b.Navigation("Likes");
 
                     b.Navigation("OrderDetail");
-
-                    b.Navigation("PlagiarismReports");
 
                     b.Navigation("PoemHistories");
 

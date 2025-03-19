@@ -136,6 +136,7 @@ public class PoemService : IPoemService
             await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(new UserPoemRecordFile()
             {
                 Type = UserPoemType.CopyRightHolder,
+                UserId = userId,
                 PoemId = poem.Id,
             });
         }
@@ -436,6 +437,7 @@ public class PoemService : IPoemService
             {
                 Type = UserPoemType.CopyRightHolder,
                 PoemId = poem.Id,
+                UserId = userId,
             });
         }
         

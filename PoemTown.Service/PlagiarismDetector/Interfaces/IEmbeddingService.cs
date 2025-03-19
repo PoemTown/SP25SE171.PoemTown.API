@@ -2,6 +2,5 @@
 
 public interface IEmbeddingService
 {
-    float[] GenerateEmbedding(string text);
     Task<double[]> GenerateEmbeddingFromOpenAI(string text);
 }

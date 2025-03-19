@@ -12,17 +12,17 @@ namespace PoemTown.Service.PlagiarismDetector.Services;
 
 public class EmbeddingService : IEmbeddingService
 {
-    private readonly InferenceSession _session;
+    //private readonly InferenceSession _session;
     private readonly IOpenAIService _openAiService;
-    private static readonly string ModelPath = ReadConfigurationHelper.GetModelOnnxPath();
+    //private static readonly string ModelPath = ReadConfigurationHelper.GetModelOnnxPath();
 
     public EmbeddingService(IOpenAIService openAiService)
     {
-        _session = new InferenceSession(ModelPath);
+    //    _session = new InferenceSession(ModelPath);
         _openAiService = openAiService;
     }
 
-    public float[] GenerateEmbedding(string text)
+    /*public float[] GenerateEmbedding(string text)
     {
         var (inputIds, attentionMask, tokenTypeIds) = Tokenize(text);
 
@@ -48,7 +48,7 @@ public class EmbeddingService : IEmbeddingService
             new DenseTensor<long>(attentionMask, new[] { 1, tokens.Length }),
             new DenseTensor<long>(tokenTypeIds, new[] { 1, tokens.Length })
         );
-    }
+    }*/
 
     public async Task<double[]> GenerateEmbeddingFromOpenAI(string text)
     {

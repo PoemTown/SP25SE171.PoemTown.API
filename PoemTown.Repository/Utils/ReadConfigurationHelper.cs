@@ -59,7 +59,7 @@ public static class ReadConfigurationHelper
         return Environment.GetEnvironmentVariable(key) ?? "";
     }
     
-    public static string GetModelOnnxPath()
+    /*public static string GetModelOnnxPath()
     {
         var isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
         
@@ -81,5 +81,5 @@ public static class ReadConfigurationHelper
             modelPath = Path.Combine(pathLocal, "PlagiarismDetector", "HuggingFace", "model.onnx");
         }
         return modelPath;
-    }
+    }*/
 }

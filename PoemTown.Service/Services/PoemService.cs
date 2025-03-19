@@ -440,6 +440,14 @@ public class PoemService : IPoemService
         }
         
         await _unitOfWork.SaveChangesAsync();
+        
+        // Publish event to store poem embedding
+        await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
+        {
+            PoemId = poem.Id,
+            PoetId = userId,
+            PoemContent = poem.Content
+        });
     }
 
     public async Task DeletePoem(Guid poemId)

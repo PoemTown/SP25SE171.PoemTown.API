@@ -25,7 +25,6 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public AccountStatus? Status { get; set; } = AccountStatus.InActive;
 
     public virtual UserEWallet? EWallet { get; set; }
-    public virtual LeaderBoardDetail? LeaderBoardDetail {  get; set; }
     public virtual ICollection<UserLeaderBoard>? UserLeaderBoards { get; set; }
 
     public virtual ICollection<Collection>? Collections { get; set; }

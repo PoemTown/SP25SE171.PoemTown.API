@@ -33,7 +33,7 @@ namespace PoemTown.API.Controllers
         [HttpGet]
         [Route("v1")]
         [Authorize]
-        public async Task<ActionResult<BaseResponse>> CreateCollection()
+        public async Task<ActionResult<BaseResponse>> GetStatistics()
         {
             Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
             var result = await _service.GetStatisticsAsync(userId);

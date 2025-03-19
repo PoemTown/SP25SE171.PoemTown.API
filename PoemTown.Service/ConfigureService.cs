@@ -16,6 +16,7 @@ using PoemTown.Service.BusinessModels.ViewTemplateModels;
 using PoemTown.Service.Consumers.CollectionConsumers;
 using PoemTown.Service.Consumers.EmailConsumers;
 using PoemTown.Service.Consumers.OrderConsumers;
+using PoemTown.Service.Consumers.PoemConsumers;
 using PoemTown.Service.Consumers.TemplateConsumers;
 using PoemTown.Service.Consumers.ThemeConsumers;
 using PoemTown.Service.Consumers.TransactionConsumers;
@@ -24,6 +25,9 @@ using PoemTown.Service.Events.ThemeEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.Scheduler.AchievementJobs;
 using PoemTown.Service.Scheduler.LeaderBoardJobs;
+using PoemTown.Service.PlagiarismDetector.Interfaces;
+using PoemTown.Service.PlagiarismDetector.Services;
+using PoemTown.Service.PlagiarismDetector.Settings;
 using PoemTown.Service.Scheduler.PaymentJobs;
 using PoemTown.Service.Services;
 using PoemTown.Service.ThirdParties.Interfaces;
@@ -31,6 +35,7 @@ using PoemTown.Service.ThirdParties.Services;
 using PoemTown.Service.ThirdParties.Settings.AwsS3;
 using PoemTown.Service.ThirdParties.Settings.TheHiveAi;
 using PoemTown.Service.ThirdParties.Settings.ZaloPay;
+using Qdrant.Client;
 using Quartz;
 using RazorLight;
 
@@ -54,6 +59,7 @@ public static class ConfigureService
         services.AddBetalgoOpenAI(configuration);
         services.AddTheHiveAiSettings(configuration);
         services.AddSignalRConfig();
+        services.AddQDrantConfig(configuration);
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -87,6 +93,9 @@ public static class ConfigureService
         services.AddScoped<IAchievementService, AchievementService>();
 
 
+        //Plagiarism detector
+        services.AddScoped<IEmbeddingService, EmbeddingService>();
+        services.AddScoped<IQDrantService, QDrantService>();
 
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
@@ -117,6 +126,7 @@ public static class ConfigureService
             config.AddConsumer<CreateOrderConsumer>();
             config.AddConsumer<CreateTransactionConsumer>();
             config.AddConsumer<SendPasswordToModeratorAccountConsumer>();
+            config.AddConsumer<CheckPoemPlagiarismConsumer>();
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {
@@ -317,5 +327,27 @@ public static class ConfigureService
     private static void AddSignalRConfig (this IServiceCollection services)
     {
         services.AddSignalR();
+    }
+    
+    private static void AddQDrantConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        var qdrantConfig = configuration.GetSection("QDrant");
+        services.AddSingleton<QDrantSettings>(options =>
+        {
+            var qdrantSettings = new QDrantSettings
+            {
+                Host = qdrantConfig.GetSection("Host").Value,
+                Port = int.Parse(qdrantConfig.GetSection("Port").Value),
+                ApiKey = qdrantConfig.GetSection("ApiKey").Value
+            };
+            return qdrantSettings;
+        });
+
+        services.AddSingleton<QdrantClient>(options =>
+        {
+            var qdrantSettings = options.GetRequiredService<QDrantSettings>();
+            return new QdrantClient(host: qdrantSettings.Host, port: qdrantSettings.Port,
+                apiKey: qdrantSettings.ApiKey);
+        });
     }
 }

@@ -39,6 +39,7 @@ namespace PoemTown.Repository.Entities
         public virtual ICollection<RecordFile>? RecordFiles { get; set; }
         public virtual ICollection<TargetMark>? TargetMarks { get; set; }
         public virtual ICollection<Report>? Reports { get; set; }
+        public virtual ICollection<Report>? PlagiarismReports { get; set; }
         public virtual ICollection<Comment>? Comments { get; set; }
         /*
         public virtual ICollection<UserCopyRight>? UserCopyRights { get; set; }

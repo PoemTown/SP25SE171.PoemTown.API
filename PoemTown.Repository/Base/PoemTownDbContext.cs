@@ -81,6 +81,12 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
             .HasForeignKey(t => t.UserEWalletId)
             .OnDelete(DeleteBehavior.Restrict); // Thay Cascade bằng Restrict
 
+        builder.Entity<Report>()
+            .HasOne(p => p.Poem)
+            .WithMany(r => r.Reports)
+            .HasForeignKey(p => p.PoemId)
+            .OnDelete(DeleteBehavior.Restrict); // Thay Cascade bằng Restrict
+        
         /*// Transactions -> Users
         builder.Entity<Transaction>()
             .HasOne(t => t.User)

@@ -14,10 +14,8 @@ namespace PoemTown.Repository.Entities
         public Guid Id { get; set; }
         public Guid? UserId { get; set; }
         public Guid? LeaderBoardId { get; set; }
-
+        public int Rank { get; set; }
         public virtual User? User { get; set; }
-
         public virtual LeaderBoard? LeaderBoard {  get; set; }
-
     }
 }

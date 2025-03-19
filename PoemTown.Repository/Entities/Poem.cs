@@ -30,7 +30,7 @@ namespace PoemTown.Repository.Entities
         public bool? IsSellCopyRight { get; set; } = false;
         public virtual Collection? Collection { get; set; }
         public virtual OrderDetail? OrderDetail { get; set; }
-        public virtual LeaderBoardDetail? LeaderBoardDetail { get; set; }
+        public virtual ICollection<LeaderBoardDetail> LeaderBoardDetails { get; set; }
         public virtual ICollection<Like>? Likes { get; set; }
         /*        public virtual CopyRight CopyRight { get; set; }*/
         public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }

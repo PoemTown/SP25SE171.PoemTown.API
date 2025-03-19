@@ -131,5 +131,5 @@ public class QDrantService : IQDrantService
     
     private string GetQDrantUri => _webHostEnvironment.IsDevelopment()
             ? $"http://{_qDrantSettings.Host}:{_qDrantSettings.Port}"
-            : $"{_qDrantSettings.Host}:{_qDrantSettings.Port}";
+            : $"https://{_qDrantSettings.Host}:{_qDrantSettings.Port}";
 }

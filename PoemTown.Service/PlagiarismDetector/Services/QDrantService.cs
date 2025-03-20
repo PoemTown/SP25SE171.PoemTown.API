@@ -58,7 +58,7 @@ public class QDrantService : IQDrantService
                     vector = embedding,
                     payload = new
                     {
-                        poetId = poetId,
+                        poetId = poetId.ToString(),
                         poemContent = poemText,
                     },
                 }

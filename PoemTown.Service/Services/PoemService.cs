@@ -136,6 +136,7 @@ public class PoemService : IPoemService
             await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(new UserPoemRecordFile()
             {
                 Type = UserPoemType.CopyRightHolder,
+                UserId = userId,
                 PoemId = poem.Id,
             });
         }
@@ -147,7 +148,7 @@ public class PoemService : IPoemService
         await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
         {
             PoemId = poem.Id,
-            PoetId = userId,
+            UserId = userId,
             PoemContent = poem.Content
         });
         
@@ -436,10 +437,19 @@ public class PoemService : IPoemService
             {
                 Type = UserPoemType.CopyRightHolder,
                 PoemId = poem.Id,
+                UserId = userId,
             });
         }
         
         await _unitOfWork.SaveChangesAsync();
+        
+        // Publish event to store poem embedding
+        await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
+        {
+            PoemId = poem.Id,
+            UserId = userId,
+            PoemContent = poem.Content
+        });
     }
 
     public async Task DeletePoem(Guid poemId)

@@ -8,7 +8,10 @@ public class GetReportResponse
     public Guid Id { get; set; }
     public string ReportReason { get; set; }
     public ReportStatus Status { get; set; }
+    public bool? IsSystem { get; set; }
+    public double? PlagiarismScore { get; set; }
     public GetReportUserInReportResponse ReportReportUser { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
     public GetPoemInReportResponse Poem { get; set; }
+    public GetPoemInReportResponse? PlagiarismFromPoem { get; set; }
 }

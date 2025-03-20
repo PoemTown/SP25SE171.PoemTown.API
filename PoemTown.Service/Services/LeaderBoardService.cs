@@ -1,10 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using PoemTown.Repository.Base;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.LeaderBoards;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
+using PoemTown.Service.BusinessModels.ResponseModels.LeaderBoardDetailResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.LeaderBoardResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.UserLeaderBoardResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.QueryOptions.FilterOptions.LeaderBoardFilters;
+using PoemTown.Service.QueryOptions.RequestOptions;
+using PoemTown.Service.QueryOptions.SortOptions.LeaderBoardSorts;
 using PoemTown.Service.Scheduler.LeaderBoardJobs;
 using Quartz;
 using System;
@@ -17,10 +28,12 @@ namespace PoemTown.Service.Services
 {
     public class LeaderBoardService : ILeaderBoardService
     {
+        private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        public LeaderBoardService(IUnitOfWork unitOfWork)
+        public LeaderBoardService(IUnitOfWork unitOfWork, IMapper mapper) 
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
         public async Task CalculateTopPoemsAsync()
         {
@@ -184,5 +197,153 @@ namespace PoemTown.Service.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        public async Task<PaginationResponse<GetLeaderBoardResponse>> GetTopPoemsLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
+        {
+            DateTimeOffset targetDate = request.FilterOptions?.Date ?? DateTimeHelper.SystemTimeNow;
+
+            var leaderboardQuery = _unitOfWork.GetRepository<LeaderBoard>().AsQueryable()
+              .Include(lb => lb.LeaderBoardDetails)
+                .ThenInclude(detail => detail.Poem)
+                    .ThenInclude(p => p.UserPoemRecordFiles)
+                        .ThenInclude(uprf => uprf.User)
+                .Where(lb => lb.Type == LeaderBoardType.Poem
+                 && lb.Status == LeaderBoardStatus.InProgress
+                 && lb.StartDate.HasValue
+                 && lb.StartDate.Value.Month == targetDate.Month
+                 && lb.StartDate.Value.Year == targetDate.Year);
+
+            var leaderboard = await leaderboardQuery.FirstOrDefaultAsync();
+
+            if (leaderboard == null)
+            {
+                return new PaginationResponse<GetLeaderBoardResponse>(
+                    new List<GetLeaderBoardResponse>(), request.PageNumber, request.PageSize, 0, 0);
+            }
+
+            // Start with the leaderboard details.
+            var detailsQuery = leaderboard.LeaderBoardDetails.AsQueryable();
+
+            // Filter by poem name if provided.
+            if (!string.IsNullOrWhiteSpace(request.FilterOptions?.Name))
+            {
+                detailsQuery = detailsQuery.Where(d => d.Poem != null &&
+                    d.Poem.Title.Contains(request.FilterOptions.Name, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort by rank. Default is ascending (RankAscending), but if sort option is RankDescending, then reverse.
+            if (request.SortOptions == GetLeaderBoardSortOption.RankDescending)
+            {
+                detailsQuery = detailsQuery.OrderByDescending(d => d.Rank);
+            }
+            else
+            {
+                detailsQuery = detailsQuery.OrderBy(d => d.Rank);
+            }
+
+            detailsQuery = detailsQuery.Take(20);
+
+            var topPoems = detailsQuery.Select(d => new GetLeaderBoardDetailResponse
+            {
+                Id = d.Id,
+                PoemId = d.PoemId,
+                LeaderBoardId = d.LeaderBoardId,
+                Rank = d.Rank,
+                Poem = d.Poem != null ? _mapper.Map<GetPoemResponse>(d.Poem) : null
+            }).ToList();
+
+            var leaderBoardResponse = new GetLeaderBoardResponse
+            {
+                Id = leaderboard.Id,
+                Type = leaderboard.Type,
+                StartDate = leaderboard.StartDate,
+                EndDate = leaderboard.EndDate,
+                Status = leaderboard.Status,
+                TopPoems = topPoems,
+                TopUsers = null  // This method only returns the poem leaderboard.
+            };
+
+            return new PaginationResponse<GetLeaderBoardResponse>(
+                new List<GetLeaderBoardResponse> { leaderBoardResponse },
+                request.PageNumber,
+                request.PageSize,
+                totalRecords: 1,
+                currentPageRecords: 1);
+        }
+
+        public async Task<PaginationResponse<GetLeaderBoardResponse>> GetTopUsersLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
+        {
+            // Use the provided date or default to the current system time.
+            DateTimeOffset targetDate = request.FilterOptions?.Date ?? DateTimeHelper.SystemTimeNow;
+
+            // Query for the User LeaderBoard for the target month.
+            var leaderboardQuery = _unitOfWork.GetRepository<LeaderBoard>().AsQueryable()
+                .Include(lb => lb.UserLeaderBoards)
+                    .ThenInclude(ulb => ulb.User)
+                .Where(lb => lb.Type == LeaderBoardType.User
+                             && lb.Status == LeaderBoardStatus.InProgress
+                             && lb.StartDate.HasValue
+                             && lb.StartDate.Value.Month == targetDate.Month
+                             && lb.StartDate.Value.Year == targetDate.Year);
+
+            var leaderboard = await leaderboardQuery.FirstOrDefaultAsync();
+            if (leaderboard == null)
+            {
+                return new PaginationResponse<GetLeaderBoardResponse>(
+                    new List<GetLeaderBoardResponse>(), request.PageNumber, request.PageSize, 0, 0);
+            }
+
+            // Start with the leaderboard's user leaderboard entries.
+            var detailsQuery = leaderboard.UserLeaderBoards.AsQueryable();
+
+            // Filter by user name if provided.
+            if (!string.IsNullOrWhiteSpace(request.FilterOptions?.Name))
+            {
+                detailsQuery = detailsQuery.Where(d => d.User != null &&
+                    d.User.DisplayName.Contains(request.FilterOptions.Name, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Sort by rank.
+            if (request.SortOptions == GetLeaderBoardSortOption.RankDescending)
+            {
+                detailsQuery = detailsQuery.OrderByDescending(d => d.Rank);
+            }
+            else
+            {
+                detailsQuery = detailsQuery.OrderBy(d => d.Rank);
+            }
+
+            // Limit to the top 20 entries.
+            detailsQuery = detailsQuery.Take(20);
+
+            // Map the details to GetUserLeaderBoardResponse using AutoMapper.
+            var topUsers = detailsQuery.Select(d => new GetUserLeaderBoardResponse
+            {
+                Id = d.Id,
+                UserId = d.UserId,
+                LeaderBoardId = d.LeaderBoardId,
+                Rank = d.Rank,
+                User = d.User != null ? _mapper.Map<GetUserProfileResponse>(d.User) : null
+            }).ToList();
+
+            // Create the leaderboard response.
+            var leaderBoardResponse = new GetLeaderBoardResponse
+            {
+                Id = leaderboard.Id,
+                Type = leaderboard.Type,
+                StartDate = leaderboard.StartDate,
+                EndDate = leaderboard.EndDate,
+                Status = leaderboard.Status,
+                TopUsers = topUsers,
+                TopPoems = null // This endpoint is for users.
+            };
+
+            // Wrap the response in a pagination response.
+            return new PaginationResponse<GetLeaderBoardResponse>(
+                new List<GetLeaderBoardResponse> { leaderBoardResponse },
+                request.PageNumber,
+                request.PageSize,
+                totalRecords: 1,
+                currentPageRecords: 1);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using PoemTown.Service.BusinessModels.ResponseModels.RoleResponse;
+﻿using PoemTown.Repository.Enums.Accounts;
+using PoemTown.Service.BusinessModels.ResponseModels.RoleResponse;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.AccountResponses;
 
@@ -9,6 +10,7 @@ public class GetAccountResponse
     public string Email { get; set; }
     public string FullName { get; set; }
     public string? Avatar { get; set; }
+    public AccountStatus? Status { get; set; }
     public string DisplayName { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
     public DateTimeOffset LastUpdatedTime { get; set; }

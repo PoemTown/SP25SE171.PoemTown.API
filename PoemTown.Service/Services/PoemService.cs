@@ -1,5 +1,9 @@
 ﻿using AutoMapper;
 using MassTransit;
+using Betalgo.Ranul.OpenAI.Interfaces;
+using Betalgo.Ranul.OpenAI.ObjectModels;
+using Betalgo.Ranul.OpenAI.ObjectModels.RequestModels;
+using Betalgo.Ranul.OpenAI.ObjectModels.ResponseModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
@@ -24,6 +28,11 @@ using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Service.ThirdParties.Models.AwsS3;
+using PoemTown.Service.ThirdParties.Models.TheHiveAi;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 
 namespace PoemTown.Service.Services;
 
@@ -33,16 +42,22 @@ public class PoemService : IPoemService
     private readonly IMapper _mapper;
     private readonly IAwsS3Service _awsS3Service;
     private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IOpenAIService _openAiService;
+    private readonly ITheHiveAiService _theHiveAiService;
 
     public PoemService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IAwsS3Service awsS3Service,
-        IPublishEndpoint publishEndpoint)
+        IPublishEndpoint publishEndpoint,
+        IOpenAIService openAiService,
+        ITheHiveAiService theHiveAiService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _awsS3Service = awsS3Service;
         _publishEndpoint = publishEndpoint;
+        _openAiService = openAiService;
+        _theHiveAiService = theHiveAiService;
     }
 
     public async Task CreateNewPoem(Guid userId, CreateNewPoemRequest request)
@@ -98,7 +113,7 @@ public class PoemService : IPoemService
         }
 
         poem.Collection = collection;
-        
+
         // Add poem to database
         await _unitOfWork.GetRepository<Poem>().InsertAsync(poem);
 
@@ -108,7 +123,7 @@ public class PoemService : IPoemService
         poemHistory.PoemId = poem.Id;
         poemHistory.Version = 1;
         await _unitOfWork.GetRepository<PoemHistory>().InsertAsync(poemHistory);
-        
+
         // Save changes
         await _unitOfWork.SaveChangesAsync();
     }
@@ -160,39 +175,40 @@ public class PoemService : IPoemService
 
 
 
-    public async Task<GetPoemDetailResponse> 
-        GetPoemDetail(Guid userId, Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+    public async Task<GetPoemDetailResponse>
+        GetPoemDetail(Guid userId, Guid poemId,
+            RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
     {
         Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
-        
-        if(poem == null)
+
+        if (poem == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
         }
-        
-        
+
+
         // Check if user own this poem
         if (poem.Collection!.UserId != userId)
         {
             throw new CoreException(StatusCodes.Status403Forbidden, "User does not own this poem");
         }
-        
+
         var poemDetail = _mapper.Map<GetPoemDetailResponse>(poem);
-        
+
         // Assign author to poem
         poemDetail.User = _mapper.Map<GetBasicUserInformationResponse>(poem.Collection!.User);
-        
+
         if (poem.RecordFiles != null && poem.RecordFiles.Count <= 0)
         {
             return poemDetail;
         }
-        
+
         // Get record files of poem with filter, sort and paging
         var recordFilesQuery = _unitOfWork.GetRepository<RecordFile>()
             .AsQueryable();
 
         recordFilesQuery = recordFilesQuery.Where(p => p.PoemId == poemId && p.Poem!.Collection!.UserId == userId);
-        
+
         switch (request.SortOptions)
         {
             case GetPoemRecordFileDetailSortOption.CreatedTimeAscending:
@@ -205,7 +221,7 @@ public class PoemService : IPoemService
                 recordFilesQuery = recordFilesQuery.OrderByDescending(p => p.CreatedTime);
                 break;
         }
-        
+
         var queryPaging = await _unitOfWork.GetRepository<RecordFile>()
             .GetPagination(recordFilesQuery, request.PageNumber, request.PageSize);
 
@@ -220,15 +236,15 @@ public class PoemService : IPoemService
 
         return poemDetail;
     }
-    
+
     public async Task<PaginationResponse<GetPoemResponse>> GetMyPoems
         (Guid userId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
 
         poemQuery = poemQuery.Where(p => p.Collection!.UserId == userId);
-        
-        if(request.IsDelete == true)
+
+        if (request.IsDelete == true)
         {
             poemQuery = poemQuery.Where(p => p.DeletedTime != null);
         }
@@ -236,6 +252,7 @@ public class PoemService : IPoemService
         {
             poemQuery = poemQuery.Where(p => p.DeletedTime == null);
         }
+
         // Apply filter
         if (request.FilterOptions != null)
         {
@@ -307,7 +324,7 @@ public class PoemService : IPoemService
 
             poem.CopyRights = _mapper.Map<IList<GetUserPoemResponse>>(copyRights);
         }*/
-        
+
         // Assign poems (in queryPaging.Data) to Poem list
         IList<GetPoemResponse> poems = new List<GetPoemResponse>();
         foreach (var poem in queryPaging.Data)
@@ -317,15 +334,19 @@ public class PoemService : IPoemService
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
+
             poems.Add(_mapper.Map<GetPoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
-            
-            poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+
+            poems.Last().Like =
+                _mapper.Map<GetLikeResponse>(
+                    poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
-                (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
+            (poemEntity.TargetMarks!.FirstOrDefault(tm =>
+                tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
-        
+
         return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
@@ -333,7 +354,7 @@ public class PoemService : IPoemService
     public async Task UpdatePoem(Guid userId, UpdatePoemRequest request)
     {
         // (Nếu có) Trong trường hợp chỉnh sửa status của poem thành POSTED thì không cần lưu bản history (Chưa hoàn thiện)
-        
+
         // Find poem by id
         Poem? poem = await _unitOfWork.GetRepository<Poem>()
             .FindAsync(p => p.Id == request.Id);
@@ -381,10 +402,10 @@ public class PoemService : IPoemService
             .Where(p => request.Id == p.PoemId && p.DeletedTime == null)
             .MaxAsync(p => p.Version) + 1;
         await _unitOfWork.GetRepository<PoemHistory>().InsertAsync(poemHistory);
-        
+
         await _unitOfWork.SaveChangesAsync();
     }
-    
+
     public async Task DeletePoem(Guid poemId)
     {
         // Find poem by id
@@ -402,7 +423,7 @@ public class PoemService : IPoemService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not a draft, cannot delete");
         }
-        
+
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -438,8 +459,8 @@ public class PoemService : IPoemService
         if (poem == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
-        } 
-        
+        }
+
         // If poem is not soft deleted then throw exception
         if (poem.DeletedTime == null)
         {
@@ -451,7 +472,7 @@ public class PoemService : IPoemService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not a draft, cannot delete");
         }
-        
+
         _unitOfWork.GetRepository<Poem>().DeletePermanent(poem);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -476,11 +497,14 @@ public class PoemService : IPoemService
         {
             if (!String.IsNullOrWhiteSpace(request.FilterOptions.Title))
             {
-                poemQuery = poemQuery.Where(p => p.Title!.Contains(request.FilterOptions.Title, StringComparison.OrdinalIgnoreCase));
+                poemQuery = poemQuery.Where(p =>
+                    p.Title!.Contains(request.FilterOptions.Title, StringComparison.OrdinalIgnoreCase));
             }
+
             if (!String.IsNullOrWhiteSpace(request.FilterOptions.ChapterName))
             {
-                poemQuery = poemQuery.Where(p => p.ChapterName!.Contains(request.FilterOptions.ChapterName, StringComparison.OrdinalIgnoreCase));
+                poemQuery = poemQuery.Where(p =>
+                    p.ChapterName!.Contains(request.FilterOptions.ChapterName, StringComparison.OrdinalIgnoreCase));
             }
 
             if (request.FilterOptions.Type != null)
@@ -493,12 +517,13 @@ public class PoemService : IPoemService
                 poemQuery = poemQuery.Where(p => p.CollectionId == request.FilterOptions.CollectionId);
             }   */
 
-            if(request.FilterOptions.AudioStatus != null)
+            if (request.FilterOptions.AudioStatus != null)
             {
                 if (request.FilterOptions.AudioStatus == PoemAudio.HaveAudio)
                 {
                     poemQuery = poemQuery.Where(p => p.RecordFiles.Any());
                 }
+
                 if (request.FilterOptions.AudioStatus == PoemAudio.NoAudio)
                 {
                     poemQuery = poemQuery.Where(p => !p.RecordFiles.Any());
@@ -507,7 +532,7 @@ public class PoemService : IPoemService
         }
 
         //apply sort
-        switch(request.SortOptions)
+        switch (request.SortOptions)
         {
             case GetPoemsSortOption.LikeCountAscending:
                 poemQuery = poemQuery.OrderBy(p => p.Likes!.Count(l => l.PoemId == p.Id));
@@ -534,7 +559,7 @@ public class PoemService : IPoemService
 
         var queryPaging = await _unitOfWork.GetRepository<Poem>()
             .GetPagination(poemQuery, request.PageNumber, request.PageSize);
-        
+
         //var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
 
         IList<GetPostedPoemResponse> poems = new List<GetPostedPoemResponse>();
@@ -545,29 +570,33 @@ public class PoemService : IPoemService
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
+
             poems.Add(_mapper.Map<GetPostedPoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
-            
-            // Assign like to poem by adding into the last element of the list
-            poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
-            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
-                (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
-        }
-        
-        return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize, 
-            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
 
+            // Assign like to poem by adding into the last element of the list
+            poems.Last().Like =
+                _mapper.Map<GetLikeResponse>(
+                    poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+            (poemEntity.TargetMarks!.FirstOrDefault(tm =>
+                tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
+        }
+
+        return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
 
     public async Task<PaginationResponse<GetPoemInCollectionResponse>> GetPoemsInCollection
-         (Guid userId, Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
+        (Guid userId, Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
         Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
-        if(collection == null)
+        if (collection == null)
         {
             throw new CoreException(StatusCodes.Status404NotFound, "Collection not found");
         }
+
         /*if (collection.DeletedTime != null)
         {
             throw new CoreException(StatusCodes.Status404NotFound, "Collection is deleted");
@@ -584,6 +613,7 @@ public class PoemService : IPoemService
         {
             poemQuery = poemQuery.Where(p => p.DeletedTime == null);
         }
+
         // Apply filter
         if (request.FilterOptions != null)
         {
@@ -645,7 +675,7 @@ public class PoemService : IPoemService
             .GetPagination(poemQuery, request.PageNumber, request.PageSize);
 
         //var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
-        
+
         IList<GetPoemInCollectionResponse> poems = new List<GetPoemInCollectionResponse>();
         foreach (var poem in queryPaging.Data)
         {
@@ -654,14 +684,18 @@ public class PoemService : IPoemService
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
+
             poems.Add(_mapper.Map<GetPoemInCollectionResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
-            poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+            poems.Last().Like =
+                _mapper.Map<GetLikeResponse>(
+                    poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
-                (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
+            (poemEntity.TargetMarks!.FirstOrDefault(tm =>
+                tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
-        
+
         return new PaginationResponse<GetPoemInCollectionResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
@@ -674,15 +708,15 @@ public class PoemService : IPoemService
         poemQuery = poemQuery.Where(p => p.Status == PoemStatus.Posted);
 
         poemQuery = poemQuery
-         .Select(p => new
-         {
-             Poem = p,
-             Score = (p.Likes!.Count * 1.0 + p.Comments!.Count * 0.2) /
-                     ((EF.Functions.DateDiffHour(p.CreatedTime, DateTime.UtcNow) + 2) *
-                      Math.Sqrt(EF.Functions.DateDiffHour(p.CreatedTime, DateTime.UtcNow) + 2))
-         })
-         .OrderByDescending(x => x.Score)
-         .Select(x => x.Poem);
+            .Select(p => new
+            {
+                Poem = p,
+                Score = (p.Likes!.Count * 1.0 + p.Comments!.Count * 0.2) /
+                        ((EF.Functions.DateDiffHour(p.CreatedTime, DateTime.UtcNow) + 2) *
+                         Math.Sqrt(EF.Functions.DateDiffHour(p.CreatedTime, DateTime.UtcNow) + 2))
+            })
+            .OrderByDescending(x => x.Score)
+            .Select(x => x.Poem);
 
         if (request.IsDelete == true)
         {
@@ -697,11 +731,14 @@ public class PoemService : IPoemService
         {
             if (!String.IsNullOrWhiteSpace(request.FilterOptions.Title))
             {
-                poemQuery = poemQuery.Where(p => p.Title!.Contains(request.FilterOptions.Title, StringComparison.OrdinalIgnoreCase));
+                poemQuery = poemQuery.Where(p =>
+                    p.Title!.Contains(request.FilterOptions.Title, StringComparison.OrdinalIgnoreCase));
             }
+
             if (!String.IsNullOrWhiteSpace(request.FilterOptions.ChapterName))
             {
-                poemQuery = poemQuery.Where(p => p.ChapterName!.Contains(request.FilterOptions.ChapterName, StringComparison.OrdinalIgnoreCase));
+                poemQuery = poemQuery.Where(p =>
+                    p.ChapterName!.Contains(request.FilterOptions.ChapterName, StringComparison.OrdinalIgnoreCase));
             }
 
             if (request.FilterOptions.Type != null)
@@ -722,6 +759,7 @@ public class PoemService : IPoemService
                 {
                     poemQuery = poemQuery.Where(p => p.RecordFiles.Any());
                 }
+
                 if (request.FilterOptions.AudioStatus == PoemAudio.NoAudio)
                 {
                     poemQuery = poemQuery.Where(p => !p.RecordFiles.Any());
@@ -767,20 +805,24 @@ public class PoemService : IPoemService
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
+
             poems.Add(_mapper.Map<GetPostedPoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
-            
+
             // Assign like to poem by adding into the last element of the list
-            poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+            poems.Last().Like =
+                _mapper.Map<GetLikeResponse>(
+                    poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
-                (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
+            (poemEntity.TargetMarks!.FirstOrDefault(tm =>
+                tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
-        
+
         return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
-    
+
     public async Task<string> UploadPoemImage(Guid userId, IFormFile file)
     {
         var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
@@ -789,6 +831,7 @@ public class PoemService : IPoemService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
         }
+
         ImageHelper.ValidateImage(file);
 
         // Upload image to AWS S3
@@ -800,7 +843,7 @@ public class PoemService : IPoemService
         };
         return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
     }
-    
+
     public async Task EnableSellingPoem(Guid userId, EnableSellingPoemRequest request)
     {
         // Find poem by id
@@ -814,11 +857,11 @@ public class PoemService : IPoemService
         }
 
         // Check if user own this poem
-        if(poem.Collection!.UserId != userId)
+        if (poem.Collection!.UserId != userId)
         {
             throw new CoreException(StatusCodes.Status403Forbidden, "User does not own this poem");
         }
-        
+
         // If poem is not posted then throw exception
         if (poem.Status != PoemStatus.Posted)
         {
@@ -832,8 +875,8 @@ public class PoemService : IPoemService
         }
 
         poem.Price = request.Price;
-        poem.IsPublic = false;
-        
+        poem.IsSellCopyRight = true;
+
         _unitOfWork.GetRepository<Poem>().Update(poem);
         UserPoemRecordFile? userPoemRecordFile = new UserPoemRecordFile()
         {
@@ -841,11 +884,11 @@ public class PoemService : IPoemService
             PoemId = poem.Id,
             Type = UserPoemType.CopyRightHolder,
         };
-        
+
         await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecordFile);
         await _unitOfWork.SaveChangesAsync();
     }
-    
+
     public async Task PurchasePoemCopyRight(Guid userId, Guid poemId)
     {
         // Find poem by id
@@ -859,9 +902,9 @@ public class PoemService : IPoemService
         }
 
         // If poem is public then throw exception
-        if (poem.IsPublic == true)
+        if (poem.IsSellCopyRight == false)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is public, cannot purchase");
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not for sell, cannot purchase");
         }
 
         // Find user by id
@@ -883,7 +926,7 @@ public class PoemService : IPoemService
             CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
             CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(2).DateTime
         };
-        
+
         await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecordFile);
         await _unitOfWork.SaveChangesAsync();
 
@@ -900,5 +943,131 @@ public class PoemService : IPoemService
             UserId = userId
         };
         await _publishEndpoint.Publish(message);
+    }
+
+    public async Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request)
+    {
+        var chatCompletionCreateRequest = new ChatCompletionCreateRequest()
+        {
+            Messages = new List<ChatMessage>()
+            {
+                new ChatMessage("system", "Bạn là con trí tuệ nhân tạo thơ, giỏi viết những bài thơ tiếng Việt đẹp."),
+                new ChatMessage("user", $"Thể thơ: {EnumHelper.GetDescription(request.Type)}"),
+                new ChatMessage("user", $"Nội dung thơ: {request.PoemContent}"),
+                new ChatMessage("user", $"Câu hỏi: {request.ChatContent}"),
+            },
+            // Set max token for completion
+            MaxTokens = request.MaxToken,
+            
+            // Set model for chat completion
+            Model = Models.Gpt_4o_mini
+        };
+        
+        var response = await _openAiService.ChatCompletion.CreateCompletion(chatCompletionCreateRequest);
+
+        // If response is not successful then throw exception
+        if (response.Successful == false)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
+
+        }
+        
+        return response.Choices.FirstOrDefault()?.Message.Content ?? "";
+    }
+    
+    public async Task<string> ConvertPoemTextToImage(ConvertPoemTextToImageRequest request)
+    {
+        // Create image with OpenAI model DALL-E 3
+        ImageCreateRequest imageCreateRequest = new ImageCreateRequest()
+        {
+            Model = Models.Dall_e_3,
+            N = 1,
+            Prompt = $"Nội dung thơ: {request.PoemText}\n Câu hỏi: {request.Prompt}",
+            Size = EnumHelper.GetDescription(request.ImageSize),
+            Style = EnumHelper.GetDescription(request.ImageStyle),
+            //Quality = EnumHelper.GetDescription(request.ImageQuality),
+            Quality = "standard",
+        };
+        var response = await _openAiService.Image.CreateImage(imageCreateRequest);
+        
+        // If response is not successful then throw exception
+        if (response.Successful == false)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
+
+        }
+        return response.Results.FirstOrDefault().Url;
+    }
+
+    public async Task<string> TranslatePoemTextVietnameseIntoEnglish(string poemText)
+    {
+        // Create chat completion request for translation
+        ChatCompletionCreateRequest chatCompletionCreateRequest = new ChatCompletionCreateRequest()
+        {
+            Messages = new List<ChatMessage>()
+            {
+                new ChatMessage("system",
+                    "Bạn là con trí tuệ nhân tạo dịch thơ, giỏi dịch những bài thơ tiếng Việt sang tiếng Anh."),
+                new ChatMessage("user", $"Nội dung thơ: {poemText}"),
+                new ChatMessage("user", "Câu hỏi: Dịch thơ sang tiếng Anh"),
+                new ChatMessage("user", "Lưu ý: Chỉ trả kết là bản dịch từ tiếng Việt sang tiếng Anh")
+            },
+            MaxTokens = 250,
+            Model = Models.Gpt_4o_mini
+        };
+        
+        var response = await _openAiService.ChatCompletion.CreateCompletion(chatCompletionCreateRequest);
+        
+        // If response is not successful then throw exception
+        if (response.Successful == false)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
+
+        }
+        
+        return response.Choices.FirstOrDefault()?.Message.Content ?? "";
+    }
+    
+    public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest request)
+    {
+        // Translate poem text from Vietnamese to English
+        string translatedPoemText = await TranslatePoemTextVietnameseIntoEnglish(request.PoemText);
+
+        ConvertTextToImageWithFluxSchnellEnhancedModel model = new ConvertTextToImageWithFluxSchnellEnhancedModel()
+        {
+            Prompt = $"Poem content: {translatedPoemText}",
+            NegativePrompt = request.NegativePrompt,
+            ImageSize = request.ImageSize,
+            NumberInferenceSteps = request.NumberInferenceSteps,
+            NumberOfImages = request.NumberOfImages,
+            OutPutFormat = request.OutPutFormat,
+            OutPutQuality = request.OutPutQuality
+        };
+        
+        var response = await _theHiveAiService.ConvertTextToImageWithFluxSchnellEnhanced(model);
+
+        return response;
+    }
+    
+    public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request)
+    {
+        // Translate poem text from Vietnamese to English
+        string translatedPoemText = await TranslatePoemTextVietnameseIntoEnglish(request.PoemText);
+
+        ConvertTextToImageWithSdxlEnhancedModel model = new ConvertTextToImageWithSdxlEnhancedModel()
+        {
+            Prompt = $"Poem content: {translatedPoemText}",
+            NegativePrompt = request.NegativePrompt,
+            ImageSize = request.ImageSize,
+            NumberInferenceSteps = request.NumberInferenceSteps,
+            GuidanceScale = request.GuidanceScale,
+            NumberOfImages = request.NumberOfImages,
+            OutPutFormat = request.OutPutFormat,
+            OutPutQuality = request.OutPutQuality
+        };
+        
+        var response = await _theHiveAiService.ConvertTextToImageWithSdxlEnhanced(model);
+
+        return response;
     }
 }

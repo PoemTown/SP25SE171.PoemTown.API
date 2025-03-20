@@ -16,6 +16,6 @@ public class GetPoemHistoryDetailResponse
     public string PoemImage { get; set; }
     public decimal Price { get; set; }
     public Guid? SourceCopyRightId { get; set; }
-    public bool IsPublic { get; set; }
+    public bool IsSellCopyRight { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
 }

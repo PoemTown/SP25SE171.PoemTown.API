@@ -9,6 +9,7 @@ public class GetMasterTemplateResponse
     public TemplateStatus? Status { get; set; }
     public decimal Price { get; set; }
     public string? TagName { get; set; } = null;
+    public string? CoverImage { get; set; } 
     public bool? IsBought { get; set; }
     public TemplateType? Type { get; set; } = null;
 }

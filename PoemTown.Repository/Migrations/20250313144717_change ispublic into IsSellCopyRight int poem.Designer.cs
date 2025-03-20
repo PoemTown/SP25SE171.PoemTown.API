@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PoemTown.Repository.Base;
 
@@ -11,9 +12,11 @@ using PoemTown.Repository.Base;
 namespace PoemTown.Repository.Migrations
 {
     [DbContext(typeof(PoemTownDbContext))]
-    partial class PoemTownDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250313144717_change ispublic into IsSellCopyRight int poem")]
+    partial class changeispublicintoIsSellCopyRightintpoem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -982,28 +985,28 @@ namespace PoemTown.Repository.Migrations
                     b.ToTable("Roles", (string)null);
 
                     b.HasData(
-                    new
-                    {
-                        Id = new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"),
-                        ConcurrencyStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",
-                        CreatedBy = "System",
-                        CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 13, 21, 47, 15, 909, DateTimeKind.Unspecified).AddTicks(5626), new TimeSpan(0, 7, 0, 0, 0)),
-                        LastUpdatedBy = "System",
-                        LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 13, 21, 47, 15, 909, DateTimeKind.Unspecified).AddTicks(5628), new TimeSpan(0, 7, 0, 0, 0)),
-                        Name = "ADMIN",
-                        NormalizedName = "ADMIN"
-                    },
-                    new
-                    {
-                        Id = new Guid("89fca251-f021-425b-de62-08dcdfcdb851"),
-                        ConcurrencyStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",
-                        CreatedBy = "System",
-                        CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 13, 21, 47, 15, 909, DateTimeKind.Unspecified).AddTicks(5640), new TimeSpan(0, 7, 0, 0, 0)),
-                        LastUpdatedBy = "System",
-                        LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 13, 21, 47, 15, 909, DateTimeKind.Unspecified).AddTicks(5642), new TimeSpan(0, 7, 0, 0, 0)),
-                        Name = "USER",
-                        NormalizedName = "USER"
-                    });
+                        new
+                        {
+                            Id = new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"),
+                            ConcurrencyStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",
+                            CreatedBy = "System",
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 13, 21, 47, 15, 909, DateTimeKind.Unspecified).AddTicks(5626), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedBy = "System",
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 13, 21, 47, 15, 909, DateTimeKind.Unspecified).AddTicks(5628), new TimeSpan(0, 7, 0, 0, 0)),
+                            Name = "ADMIN",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = new Guid("89fca251-f021-425b-de62-08dcdfcdb851"),
+                            ConcurrencyStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",
+                            CreatedBy = "System",
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 13, 21, 47, 15, 909, DateTimeKind.Unspecified).AddTicks(5640), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedBy = "System",
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 13, 21, 47, 15, 909, DateTimeKind.Unspecified).AddTicks(5642), new TimeSpan(0, 7, 0, 0, 0)),
+                            Name = "USER",
+                            NormalizedName = "USER"
+                        });
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.RoleClaim", b =>
@@ -1415,7 +1418,6 @@ namespace PoemTown.Repository.Migrations
                             TwoFactorEnabled = false,
                             UserName = "user@gmail.com"
                         });
-
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.UserClaim", b =>
@@ -1609,16 +1611,16 @@ namespace PoemTown.Repository.Migrations
                     b.Property<DateTimeOffset>("LastUpdatedTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid?>("PoemId")
+                    b.Property<Guid>("PoemId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("RecordFileId")
+                    b.Property<Guid>("RecordFileId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int?>("Type")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("UserId")
+                    b.Property<Guid>("UserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
@@ -2211,17 +2213,20 @@ namespace PoemTown.Repository.Migrations
                     b.HasOne("PoemTown.Repository.Entities.Poem", "Poem")
                         .WithMany("UserPoemRecordFiles")
                         .HasForeignKey("PoemId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("PoemTown.Repository.Entities.RecordFile", "RecordFile")
                         .WithMany("UserPoemRecordFiles")
                         .HasForeignKey("RecordFileId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("PoemTown.Repository.Entities.User", "User")
                         .WithMany("UserPoemRecordFiles")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Poem");
 

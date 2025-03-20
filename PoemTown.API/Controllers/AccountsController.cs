@@ -184,7 +184,7 @@ public class AccountsController : BaseController
     }
     
     /// <summary>
-    /// Cập nhật quyền hạn của tài khoản, yêu cầu quyền ADMIN
+    /// Thêm quyền hạn của tài khoản, yêu cầu quyền ADMIN
     /// </summary>
     /// <param name="userId"></param>
     /// <param name="roleId"></param>
@@ -192,7 +192,7 @@ public class AccountsController : BaseController
     [HttpPost]
     [Route("v1/accounts/role/{userId}")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<ActionResult<BaseResponse>> UpdateAccountRole(Guid userId, [FromQuery] Guid roleId)
+    public async Task<ActionResult<BaseResponse>> AddAccountRole(Guid userId, [FromQuery] Guid roleId)
     {
         await _accountService.AddAccountRole(userId, roleId);
         return Accepted(String.Empty, new BaseResponse(StatusCodes.Status202Accepted, "Account role added"));
@@ -211,5 +211,21 @@ public class AccountsController : BaseController
     {
         await _accountService.RemoveAccountRole(userId, roleId);
         return Accepted(String.Empty, new BaseResponse(StatusCodes.Status202Accepted, "Account role removed"));
+    }
+    
+    
+    /// <summary>
+    /// Cập nhật quyền hạn của tài khoản, yêu cầu quyền ADMIN
+    /// </summary>
+    /// <param name="userId"></param>
+    /// <param name="roleId"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/accounts/role/{userId}")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> UpdateAccountRole(Guid userId, [FromQuery] Guid roleId)
+    {
+        await _accountService.UpdateAccountRole(userId, roleId);
+        return Accepted(String.Empty, new BaseResponse(StatusCodes.Status202Accepted, "Account role updated"));
     }
 }

@@ -257,6 +257,8 @@ namespace PoemTown.Service.Services
                     c.CollectionName.Contains(request.FilterOptions.CollectionName));
             }
 
+            collectionQuery = collectionQuery.Where(c => c.IsCommunity == false);
+
             // Calculate trending score
             collectionQuery = collectionQuery
                 .Select(c => new

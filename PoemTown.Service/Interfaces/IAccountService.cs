@@ -59,4 +59,5 @@ public interface IAccountService
         Task UpdateAccountStatus(Guid userId, AccountStatus status);
         Task AddAccountRole(Guid userId, Guid roleId);
         Task RemoveAccountRole(Guid userId, Guid roleId);
+        Task UpdateAccountRole(Guid userId, Guid roleId);
     }

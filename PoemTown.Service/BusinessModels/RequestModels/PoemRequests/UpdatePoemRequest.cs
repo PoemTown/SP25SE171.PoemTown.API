@@ -21,10 +21,10 @@ public class UpdatePoemRequest
     
     public Guid? SourceCopyRightId { get; set; }
     
-    public string? PoemImageUrl { get; set; }
+    public string? PoemImage { get; set; }
     
     public ICollection<CreateNewRecordFileRequest>? RecordFiles { get; set; }
 
     public PoemType? Type { get; set; }
-    public bool? IsPublic { get; set; }
+    public bool? IsSellCopyRight { get; set; }
 }

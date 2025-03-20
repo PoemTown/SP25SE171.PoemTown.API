@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Betalgo.Ranul.OpenAI.ObjectModels.ResponseModels;
+using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
+using PoemTown.Service.ThirdParties.Models.TheHiveAi;
 
 namespace PoemTown.Service.Interfaces;
 
@@ -32,4 +34,13 @@ public interface IPoemService
     Task PurchasePoemCopyRight(Guid userId, Guid poemId);
     Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request);
     Task DeletePoemInCommunity(Guid userId, Guid poemId);
+    Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request);
+    Task<string> ConvertPoemTextToImage(ConvertPoemTextToImageRequest request);
+
+    Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(
+        ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest request);
+
+    Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
+        ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request);
+    
 }

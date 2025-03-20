@@ -442,4 +442,47 @@ public class AccountService : IAccountService
         // Remove role from user
         await _userManager.RemoveFromRoleAsync(user, role.Name!);
     }
+    
+    public async Task UpdateAccountRole(Guid userId, Guid roleId)
+    {
+        User? user = await _userManager.FindByIdAsync(userId.ToString());
+        
+        // Check if user is null
+        if(user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        
+        Role? role = await _unitOfWork.GetRepository<Role>().FindAsync(p => p.Id == roleId);
+        
+        // Check if role is null
+        if(role == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Role not found");
+        }
+
+        // Check if request role is admin, cannot update role of admin account
+        if (role.Name == "ADMIN")
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Cannot update role of admin account");
+        }
+        
+        IList<UserRole> userRoles = await _unitOfWork.GetRepository<UserRole>()
+            .AsQueryable()
+            .Where(p => p.UserId == userId)
+            .ToListAsync();
+        
+        // Remove all roles of user
+        _unitOfWork.GetRepository<UserRole>().DeletePermanentRange(userRoles);
+        
+        // Add new role to user
+        UserRole userRole = new UserRole()
+        {
+            RoleId = role.Id,
+            UserId = userId,
+        };
+        
+        await _unitOfWork.GetRepository<UserRole>().InsertAsync(userRole);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

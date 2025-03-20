@@ -212,7 +212,9 @@ public class TargetMarkService : ITargetMarkService
             }
             collections.Add(_mapper.Map<GetCollectionInTargetMarkResponse>(collectionEntity));
             // Assign author to collection by adding into the last element of the list
-            collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
+            if (collectionEntity.IsCommunity == false) { 
+                collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
+            }
             collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
                 (collectionEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id && tm.Type == TargetMarkType.Collection));
         }

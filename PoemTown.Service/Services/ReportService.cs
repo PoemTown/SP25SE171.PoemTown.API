@@ -159,5 +159,29 @@ public class ReportService : IReportService
         return new PaginationResponse<GetMyReportResponse>
             (reports, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
                 queryPaging.CurrentPageRecords);
-    } 
+    }
+
+    public async Task ResolveReport(ResolveReportRequest request)
+    {
+        var report = await _unitOfWork.GetRepository<Report>().FindAsync(r => r.Id == request.Id);
+        
+        // Check if the report exists
+        if (report == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report not found");
+        }
+
+        // Check if the report has been resolved
+        if (report.Status != ReportStatus.Pending)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report has been resolved");
+        }
+
+        // Update the report
+        report.Status = request.Status;
+        report.ResolveResponse = request.ResolveResponse;
+        
+        _unitOfWork.GetRepository<Report>().Update(report);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

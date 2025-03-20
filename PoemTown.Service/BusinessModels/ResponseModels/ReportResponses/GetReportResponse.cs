@@ -10,6 +10,7 @@ public class GetReportResponse
     public ReportStatus Status { get; set; }
     public bool? IsSystem { get; set; }
     public double? PlagiarismScore { get; set; }
+    public string? ResolveResponse { get; set; }
     public GetReportUserInReportResponse ReportReportUser { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
     public GetPoemInReportResponse Poem { get; set; }

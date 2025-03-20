@@ -9,4 +9,7 @@ public class GetReportFilterOption
     public ReportStatus? Status { get; set; }
     [FromQuery(Name = "reportUserEmail")]
     public string? ReportUserEmail { get; set; }
+    
+    [FromQuery(Name = "isSystem")]
+    public bool? IsSystem { get; set; }
 }

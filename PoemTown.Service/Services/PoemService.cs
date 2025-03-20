@@ -148,7 +148,7 @@ public class PoemService : IPoemService
         await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
         {
             PoemId = poem.Id,
-            PoetId = userId,
+            UserId = userId,
             PoemContent = poem.Content
         });
         
@@ -447,7 +447,7 @@ public class PoemService : IPoemService
         await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
         {
             PoemId = poem.Id,
-            PoetId = userId,
+            UserId = userId,
             PoemContent = poem.Content
         });
     }

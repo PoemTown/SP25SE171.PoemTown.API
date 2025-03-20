@@ -592,11 +592,17 @@ public class PoemsController : BaseController
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Create poem in community successfully"));
     }
     
+    /// <summary>
+    /// Chuyển đổi thơ sang vector embedding, lưu vào QDrant database (Mục đích dùng để train trong việc phát hiện ĐẠO VĂN, có thể không cần lên giao diện), yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
     [HttpPost]
     [Route("v1/store/{poemId}")]
-    public async Task<ActionResult<BaseResponse>> StorePoemEmbedding(Guid poemId)
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> ConvertPoemIntoEmbeddingAndSaveToQdrant(Guid poemId)
     {
-        await _poemService.Store(poemId);
+        await _poemService.ConvertPoemIntoEmbeddingAndSaveToQdrant(poemId);
         return Ok(new BaseResponse(StatusCodes.Status201Created, "Store poem embedding successfully"));
     }
     

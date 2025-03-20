@@ -12,10 +12,9 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.LeaderBoardDetailRespon
     public class GetLeaderBoardDetailResponse
     {
         public Guid Id { get; set; }
-        public Guid? UserId { get; set; }
         public Guid? PoemId { get; set; }
         public Guid? LeaderBoardId { get; set; }
-        public GetUserProfileResponse User { get; set; }
+        public int Rank { get; set; }
         public GetPoemResponse Poem { get; set; }
     }
 }

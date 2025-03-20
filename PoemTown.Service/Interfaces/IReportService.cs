@@ -16,4 +16,6 @@ public interface IReportService
 
     Task<PaginationResponse<GetMyReportResponse>>
         GetMyReports(Guid userId, RequestOptionsBase<GetMyReportFilterOption, GetMyReportSortOption> request);
+
+    Task ResolveReport(ResolveReportRequest request);
 }

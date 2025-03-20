@@ -21,7 +21,7 @@ namespace PoemTown.Repository.Entities
         public string ReportReason { get; set; } = default!;
         public ReportStatus Status { get; set; } = ReportStatus.Pending;
         public bool? IsSystem { get; set; } = false;
-
+        public double? PlagiarismScore { get; set; }
         public Guid? ReportUserId { get; set; }
         public Guid? ReportedUserId { get; set; }
 

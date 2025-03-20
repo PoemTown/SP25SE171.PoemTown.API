@@ -35,7 +35,8 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
         var response = await _qDrantService.SearchSimilarPoemEmbeddingPoint(message.UserId, message.PoemContent);
 
         // Check if the poem is plagiarism
-        bool isPoemPlagiarism = _poemService.IsPoemPlagiarism(response.Results.Select(p => p.Score).Average());
+        double averageScore = response.Results.Select(p => p.Score).Average();
+        bool isPoemPlagiarism = _poemService.IsPoemPlagiarism(averageScore);
         
         
         // If the poem is plagiarism, Create a plagiarism report and send it to the admin, finally suspend the poem
@@ -69,6 +70,7 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
                 IsSystem = true,
                 ReportReason = "Hệ thống tự động phát hiện đạo văn trong bài thơ",
                 Status = ReportStatus.Pending,
+                PlagiarismScore = averageScore,
                 Poem = poem,
                 PlagiarismFromPoem = plagiarismFromPoem
             };

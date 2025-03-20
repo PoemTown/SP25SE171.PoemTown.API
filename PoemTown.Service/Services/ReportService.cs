@@ -104,6 +104,7 @@ public class ReportService : IReportService
             // Get information of the user who reported the report
             reports.Last().ReportReportUser = _mapper.Map<GetReportUserInReportResponse>(reportEntity.ReportUser);
             reports.Last().Poem = _mapper.Map<GetPoemInReportResponse>(reportEntity.Poem);
+            reports.Last().PlagiarismFromPoem = _mapper.Map<GetPoemInReportResponse>(reportEntity.PlagiarismFromPoem);
         }
         
         return new PaginationResponse<GetReportResponse>

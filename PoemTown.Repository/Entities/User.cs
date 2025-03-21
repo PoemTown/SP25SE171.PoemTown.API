@@ -60,6 +60,7 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public virtual ICollection<Achievement> Achievements { get; set; }
     public virtual ICollection<Theme> Themes { get; set; }
     public virtual ICollection<UserRole> UserRoles { get; set; }
+    public virtual ICollection<LoginTracking>? LoginTrackings { get; set; }
     public string? CreatedBy { get; set; }
     public string? LastUpdatedBy { get; set; }
     public string? DeletedBy { get; set; }

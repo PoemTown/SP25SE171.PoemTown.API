@@ -14,6 +14,7 @@ using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AuthenticationRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AuthenResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TokenResponses;
+using PoemTown.Service.Events.AuthenticationEvents;
 using PoemTown.Service.Events.EmailEvents;
 
 namespace PoemTown.Service.Services
@@ -112,18 +113,30 @@ namespace PoemTown.Service.Services
             }
 
             var signInResult = await _signInManager.PasswordSignInAsync(user, hashedPassword, true, false);
+            //check if login success
             if (!signInResult.Succeeded)
             {
                 throw new CoreException(StatusCodes.Status401Unauthorized, "Login failed");
             }
 
+            // Tracking user login by date
+            await _publishEndpoint.Publish(new TrackingUserLoginEvent()
+            {
+                UserId = user.Id,
+            });
+            
+            //generate token
             var token = await _tokenService.GenerateTokens(user, userAgent, ipAddress);
+            
             return new LoginResponse()
             {
                 AccessToken = token.AccessToken,
                 RefreshToken = token.RefreshToken,
                 Role = await _userManager.GetRolesAsync(user)
             };
+
+            
+            
         }
 
 

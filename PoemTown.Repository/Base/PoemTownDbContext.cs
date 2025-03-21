@@ -42,6 +42,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<UserTemplateDetail> UserTemplateDetails => Set<UserTemplateDetail>();
     public virtual DbSet<ThemeUserTemplateDetail> ThemeUserTemplateDetails => Set<ThemeUserTemplateDetail>();
     public virtual DbSet<Theme> Themes => Set<Theme>();
+    public virtual DbSet<LoginTracking> LoginTrackings => Set<LoginTracking>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
     */

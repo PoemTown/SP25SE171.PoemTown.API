@@ -105,4 +105,25 @@ public class ReportsController : BaseController
         
         return Ok(basePaginationResponse);
     }
+    
+    /// <summary>
+    /// Xử lý report, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <remarks>
+    /// reportStatus:
+    ///
+    /// - Pending = 1,
+    /// - Approved = 2,
+    /// - Rejected = 3
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/resolve")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> ResolveReport([FromBody] ResolveReportRequest request)
+    {
+        await _reportService.ResolveReport(request);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Report resolved successfully"));
+    }
 }

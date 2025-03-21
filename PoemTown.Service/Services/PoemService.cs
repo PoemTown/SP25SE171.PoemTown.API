@@ -1118,7 +1118,7 @@ public class PoemService : IPoemService
         return response;
     }
 
-    public async Task Store(Guid poemId)
+    public async Task ConvertPoemIntoEmbeddingAndSaveToQdrant(Guid poemId)
     {
         Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
         if (poem == null)

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using PoemTown.Repository.Base;
+using PoemTown.Repository.Enums.SaleVersions;
 
 namespace PoemTown.Repository.Entities;
 
@@ -9,7 +10,7 @@ public class SaleVersion : BaseEntity
     public int CommissionPercentage { get; set; }
     public decimal Price { get; set; }
     public int DurationTime { get; set; }
-    
+    public SaleVersionStatus Status { get; set; } = SaleVersionStatus.NotInSale;
     public Guid PoemId { get; set; }
     
     public virtual Poem Poem { get; set; } = null!;

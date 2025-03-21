@@ -20,14 +20,15 @@ namespace PoemTown.Repository.Entities
         public bool? IsPublic { get; set; } = true;
         public decimal Price { get; set; }
         public Guid PoemId { get; set; } 
-        /*public Guid UserId { get; set; }*/
+        public Guid? UserId { get; set; }
         [ForeignKey("PoemId")]
         public virtual Poem? Poem { get; set; }
-        /*[ForeignKey("UserId")]
-
-        public virtual User? User { get; set; }*/
+        [ForeignKey("UserId")]
+        public virtual User? User { get; set; }
         
-        public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }
+        public virtual Guid? SaleVersionId { get; set; }
+        public virtual SaleVersion? SaleVersion { get; set; }
+        public virtual ICollection<UsageRight>? UsageRights { get; set; }
         
     }
 

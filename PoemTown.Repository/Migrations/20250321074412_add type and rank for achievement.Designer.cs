@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PoemTown.Repository.Base;
 
@@ -11,9 +12,11 @@ using PoemTown.Repository.Base;
 namespace PoemTown.Repository.Migrations
 {
     [DbContext(typeof(PoemTownDbContext))]
-    partial class PoemTownDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250321074412_add type and rank for achievement")]
+    partial class addtypeandrankforachievement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -316,9 +319,9 @@ namespace PoemTown.Repository.Migrations
                         new
                         {
                             Id = new Guid("094de1df-60b1-4a58-878c-dc6909f5262e"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8608), new TimeSpan(0, 7, 0, 0, 0)),
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6691), new TimeSpan(0, 7, 0, 0, 0)),
                             EndDate = new DateTimeOffset(new DateTime(2025, 3, 31, 23, 59, 59, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8608), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6691), new TimeSpan(0, 7, 0, 0, 0)),
                             StartDate = new DateTimeOffset(new DateTime(2025, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
                             Status = 0,
                             Type = 0
@@ -326,13 +329,55 @@ namespace PoemTown.Repository.Migrations
                         new
                         {
                             Id = new Guid("094de1df-60b1-4a58-878c-dc6909f5293e"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8633), new TimeSpan(0, 7, 0, 0, 0)),
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6706), new TimeSpan(0, 7, 0, 0, 0)),
                             EndDate = new DateTimeOffset(new DateTime(2025, 3, 31, 23, 59, 59, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8633), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6706), new TimeSpan(0, 7, 0, 0, 0)),
                             StartDate = new DateTimeOffset(new DateTime(2025, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
                             Status = 0,
                             Type = 1
                         });
+                });
+
+            modelBuilder.Entity("PoemTown.Repository.Entities.LeaderBoardDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("DeletedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("LeaderBoardId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PoemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Rank")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeaderBoardId");
+
+                    b.HasIndex("PoemId");
+
+                    b.ToTable("LeaderBoardDetails");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Like", b =>
@@ -375,43 +420,6 @@ namespace PoemTown.Repository.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Likes");
-                });
-
-            modelBuilder.Entity("PoemTown.Repository.Entities.LoginTracking", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("CreatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("DeletedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("LastUpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("LoginDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("LoginTrackings");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.MasterTemplate", b =>
@@ -779,14 +787,9 @@ namespace PoemTown.Repository.Migrations
                     b.Property<int?>("Type")
                         .HasColumnType("int");
 
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("CollectionId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Poems");
                 });
@@ -861,48 +864,6 @@ namespace PoemTown.Repository.Migrations
                     b.ToTable("PoemHistories");
                 });
 
-            modelBuilder.Entity("PoemTown.Repository.Entities.PoemLeaderBoard", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("CreatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("DeletedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("LastUpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("LeaderBoardId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("PoemId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Rank")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LeaderBoardId");
-
-                    b.HasIndex("PoemId");
-
-                    b.ToTable("PoemLeaderBoards");
-                });
-
             modelBuilder.Entity("PoemTown.Repository.Entities.RecordFile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -942,19 +903,9 @@ namespace PoemTown.Repository.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid?>("SaleVersionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PoemId");
-
-                    b.HasIndex("SaleVersionId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("RecordFiles");
                 });
@@ -1004,9 +955,6 @@ namespace PoemTown.Repository.Migrations
 
                     b.Property<Guid?>("ReportedUserId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ResolveResponse")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -1075,9 +1023,9 @@ namespace PoemTown.Repository.Migrations
                             Id = new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"),
                             ConcurrencyStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",
                             CreatedBy = "System",
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8483), new TimeSpan(0, 7, 0, 0, 0)),
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6597), new TimeSpan(0, 7, 0, 0, 0)),
                             LastUpdatedBy = "System",
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8485), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6598), new TimeSpan(0, 7, 0, 0, 0)),
                             Name = "ADMIN",
                             NormalizedName = "ADMIN"
                         },
@@ -1086,9 +1034,9 @@ namespace PoemTown.Repository.Migrations
                             Id = new Guid("89fca251-f021-425b-de62-08dcdfcdb851"),
                             ConcurrencyStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",
                             CreatedBy = "System",
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8492), new TimeSpan(0, 7, 0, 0, 0)),
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6604), new TimeSpan(0, 7, 0, 0, 0)),
                             LastUpdatedBy = "System",
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8493), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6605), new TimeSpan(0, 7, 0, 0, 0)),
                             Name = "USER",
                             NormalizedName = "USER"
                         });
@@ -1134,49 +1082,6 @@ namespace PoemTown.Repository.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("RoleClaims", (string)null);
-                });
-
-            modelBuilder.Entity("PoemTown.Repository.Entities.SaleVersion", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("CommissionPercentage")
-                        .HasColumnType("int");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("CreatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("DeletedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<int>("DurationTime")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LastUpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("PoemId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PoemId");
-
-                    b.ToTable("SaleVersions");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.TargetMark", b =>
@@ -1381,62 +1286,6 @@ namespace PoemTown.Repository.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("PoemTown.Repository.Entities.UsageRight", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("CopyRightValidFrom")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("CopyRightValidTo")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("CreatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("DeletedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("LastUpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("PoemId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("RecordFileId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("SaleVersionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int?>("Type")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecordFileId");
-
-                    b.HasIndex("SaleVersionId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UsageRights");
-                });
-
             modelBuilder.Entity("PoemTown.Repository.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1564,12 +1413,12 @@ namespace PoemTown.Repository.Migrations
                         {
                             Id = new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"),
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "8f859c97-e9e4-4a5a-8225-4fe50e25f5a2",
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8260), new TimeSpan(0, 7, 0, 0, 0)),
+                            ConcurrencyStamp = "2be4aeca-c27c-4ee3-befb-906ddea733c0",
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6481), new TimeSpan(0, 7, 0, 0, 0)),
                             Email = "admin@gmail.com",
                             EmailConfirmed = true,
                             FullName = "admin",
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8260), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6481), new TimeSpan(0, 7, 0, 0, 0)),
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "admin",
@@ -1585,12 +1434,12 @@ namespace PoemTown.Repository.Migrations
                         {
                             Id = new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"),
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "247f803e-392f-407d-98d4-b1c65c646e88",
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8398), new TimeSpan(0, 7, 0, 0, 0)),
+                            ConcurrencyStamp = "45b7dbf4-b21a-4144-9207-a750b81b4afe",
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6539), new TimeSpan(0, 7, 0, 0, 0)),
                             Email = "user@gmail.com",
                             EmailConfirmed = true,
                             FullName = "user",
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8398), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6539), new TimeSpan(0, 7, 0, 0, 0)),
                             LockoutEnabled = false,
                             NormalizedEmail = "USER@GMAIL.COM",
                             NormalizedUserName = "user",
@@ -1768,6 +1617,59 @@ namespace PoemTown.Repository.Migrations
                     b.ToTable("UserLogins", (string)null);
                 });
 
+            modelBuilder.Entity("PoemTown.Repository.Entities.UserPoemRecordFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CopyRightValidFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CopyRightValidTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreatedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("DeletedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("LastUpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("LastUpdatedTime")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("PoemId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("RecordFileId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PoemId");
+
+                    b.HasIndex("RecordFileId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserPoemRecordFiles");
+                });
+
             modelBuilder.Entity("PoemTown.Repository.Entities.UserRole", b =>
                 {
                     b.Property<Guid>("UserId")
@@ -1805,15 +1707,15 @@ namespace PoemTown.Repository.Migrations
                         {
                             UserId = new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"),
                             RoleId = new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8539), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8539), new TimeSpan(0, 7, 0, 0, 0))
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6638), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6638), new TimeSpan(0, 7, 0, 0, 0))
                         },
                         new
                         {
                             UserId = new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"),
                             RoleId = new Guid("89fca251-f021-425b-de62-08dcdfcdb851"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8547), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 19, 5, 19, 416, DateTimeKind.Unspecified).AddTicks(8547), new TimeSpan(0, 7, 0, 0, 0))
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6643), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 14, 44, 11, 911, DateTimeKind.Unspecified).AddTicks(6643), new TimeSpan(0, 7, 0, 0, 0))
                         });
                 });
 
@@ -2041,6 +1943,23 @@ namespace PoemTown.Repository.Migrations
                     b.Navigation("FollowedUser");
                 });
 
+            modelBuilder.Entity("PoemTown.Repository.Entities.LeaderBoardDetail", b =>
+                {
+                    b.HasOne("PoemTown.Repository.Entities.LeaderBoard", "LeaderBoard")
+                        .WithMany("LeaderBoardDetails")
+                        .HasForeignKey("LeaderBoardId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("PoemTown.Repository.Entities.Poem", "Poem")
+                        .WithMany("LeaderBoardDetails")
+                        .HasForeignKey("PoemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("LeaderBoard");
+
+                    b.Navigation("Poem");
+                });
+
             modelBuilder.Entity("PoemTown.Repository.Entities.Like", b =>
                 {
                     b.HasOne("PoemTown.Repository.Entities.Poem", "Poem")
@@ -2052,17 +1971,6 @@ namespace PoemTown.Repository.Migrations
                         .HasForeignKey("UserId");
 
                     b.Navigation("Poem");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("PoemTown.Repository.Entities.LoginTracking", b =>
-                {
-                    b.HasOne("PoemTown.Repository.Entities.User", "User")
-                        .WithMany("LoginTrackings")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -2155,14 +2063,7 @@ namespace PoemTown.Repository.Migrations
                         .WithMany("Poems")
                         .HasForeignKey("CollectionId");
 
-                    b.HasOne("PoemTown.Repository.Entities.User", "User")
-                        .WithMany("Poems")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.Navigation("Collection");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.PoemHistory", b =>
@@ -2176,23 +2077,6 @@ namespace PoemTown.Repository.Migrations
                     b.Navigation("Poem");
                 });
 
-            modelBuilder.Entity("PoemTown.Repository.Entities.PoemLeaderBoard", b =>
-                {
-                    b.HasOne("PoemTown.Repository.Entities.LeaderBoard", "LeaderBoard")
-                        .WithMany("PoemLeaderBoards")
-                        .HasForeignKey("LeaderBoardId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("PoemTown.Repository.Entities.Poem", "Poem")
-                        .WithMany("PoemLeaderBoards")
-                        .HasForeignKey("PoemId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("LeaderBoard");
-
-                    b.Navigation("Poem");
-                });
-
             modelBuilder.Entity("PoemTown.Repository.Entities.RecordFile", b =>
                 {
                     b.HasOne("PoemTown.Repository.Entities.Poem", "Poem")
@@ -2201,20 +2085,7 @@ namespace PoemTown.Repository.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("PoemTown.Repository.Entities.SaleVersion", "SaleVersion")
-                        .WithMany("RecordFiles")
-                        .HasForeignKey("SaleVersionId");
-
-                    b.HasOne("PoemTown.Repository.Entities.User", "User")
-                        .WithMany("RecordFiles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.Navigation("Poem");
-
-                    b.Navigation("SaleVersion");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Report", b =>
@@ -2254,17 +2125,6 @@ namespace PoemTown.Repository.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("PoemTown.Repository.Entities.SaleVersion", b =>
-                {
-                    b.HasOne("PoemTown.Repository.Entities.Poem", "Poem")
-                        .WithMany("SaleVersions")
-                        .HasForeignKey("PoemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Poem");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.TargetMark", b =>
@@ -2341,29 +2201,6 @@ namespace PoemTown.Repository.Migrations
                     b.Navigation("UserEWallet");
                 });
 
-            modelBuilder.Entity("PoemTown.Repository.Entities.UsageRight", b =>
-                {
-                    b.HasOne("PoemTown.Repository.Entities.RecordFile", "RecordFile")
-                        .WithMany("UsageRights")
-                        .HasForeignKey("RecordFileId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("PoemTown.Repository.Entities.SaleVersion", "SaleVersion")
-                        .WithMany("UsageRights")
-                        .HasForeignKey("SaleVersionId");
-
-                    b.HasOne("PoemTown.Repository.Entities.User", "User")
-                        .WithMany("UsageRights")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("RecordFile");
-
-                    b.Navigation("SaleVersion");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("PoemTown.Repository.Entities.UserClaim", b =>
                 {
                     b.HasOne("PoemTown.Repository.Entities.User", null)
@@ -2408,6 +2245,30 @@ namespace PoemTown.Repository.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("PoemTown.Repository.Entities.UserPoemRecordFile", b =>
+                {
+                    b.HasOne("PoemTown.Repository.Entities.Poem", "Poem")
+                        .WithMany("UserPoemRecordFiles")
+                        .HasForeignKey("PoemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("PoemTown.Repository.Entities.RecordFile", "RecordFile")
+                        .WithMany("UserPoemRecordFiles")
+                        .HasForeignKey("RecordFileId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("PoemTown.Repository.Entities.User", "User")
+                        .WithMany("UserPoemRecordFiles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Poem");
+
+                    b.Navigation("RecordFile");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.UserRole", b =>
@@ -2480,7 +2341,7 @@ namespace PoemTown.Repository.Migrations
 
             modelBuilder.Entity("PoemTown.Repository.Entities.LeaderBoard", b =>
                 {
-                    b.Navigation("PoemLeaderBoards");
+                    b.Navigation("LeaderBoardDetails");
 
                     b.Navigation("UserLeaderBoards");
                 });
@@ -2510,6 +2371,8 @@ namespace PoemTown.Repository.Migrations
                 {
                     b.Navigation("Comments");
 
+                    b.Navigation("LeaderBoardDetails");
+
                     b.Navigation("Likes");
 
                     b.Navigation("OrderDetail");
@@ -2518,32 +2381,23 @@ namespace PoemTown.Repository.Migrations
 
                     b.Navigation("PoemHistories");
 
-                    b.Navigation("PoemLeaderBoards");
-
                     b.Navigation("RecordFiles");
 
                     b.Navigation("Reports");
 
-                    b.Navigation("SaleVersions");
-
                     b.Navigation("TargetMarks");
+
+                    b.Navigation("UserPoemRecordFiles");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.RecordFile", b =>
                 {
-                    b.Navigation("UsageRights");
+                    b.Navigation("UserPoemRecordFiles");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Role", b =>
                 {
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("PoemTown.Repository.Entities.SaleVersion", b =>
-                {
-                    b.Navigation("RecordFiles");
-
-                    b.Navigation("UsageRights");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Theme", b =>
@@ -2571,15 +2425,9 @@ namespace PoemTown.Repository.Migrations
 
                     b.Navigation("Likes");
 
-                    b.Navigation("LoginTrackings");
-
                     b.Navigation("MarkByUsers");
 
                     b.Navigation("Orders");
-
-                    b.Navigation("Poems");
-
-                    b.Navigation("RecordFiles");
 
                     b.Navigation("ReportUsers");
 
@@ -2589,9 +2437,9 @@ namespace PoemTown.Repository.Migrations
 
                     b.Navigation("ToUser");
 
-                    b.Navigation("UsageRights");
-
                     b.Navigation("UserLeaderBoards");
+
+                    b.Navigation("UserPoemRecordFiles");
 
                     b.Navigation("UserRoles");
 

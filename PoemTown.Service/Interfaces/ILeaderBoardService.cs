@@ -16,8 +16,8 @@ namespace PoemTown.Service.Interfaces
         Task CalculateTopPoemsAsync();
         Task CalculateTopUsersAsync();
 
-        Task<PaginationResponse<GetLeaderBoardResponse>> GetTopPoemsLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request);
-        Task<PaginationResponse<GetLeaderBoardResponse>> GetTopUsersLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request);
+        Task<GetLeaderBoardResponse> GetTopPoemsLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request);
+        Task<GetLeaderBoardResponse> GetTopUsersLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request);
 
     }
 }

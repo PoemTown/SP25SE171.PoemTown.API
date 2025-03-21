@@ -42,7 +42,7 @@ namespace PoemTown.Service.Services
 
             // Process Poem Leaderboard
             var poemLeaderboard = await leaderBoardRepo.AsQueryable()
-               .Include(lb => lb.LeaderBoardDetails)
+               .Include(lb => lb.PoemLeaderBoards)
                .FirstOrDefaultAsync(lb =>
                    lb.Type == LeaderBoardType.Poem &&
                    lb.Status == LeaderBoardStatus.InProgress &&
@@ -51,15 +51,17 @@ namespace PoemTown.Service.Services
             if (poemLeaderboard != null)
             {
                 // Create achievements for each leaderboard detail entry.
-                foreach (var detail in poemLeaderboard.LeaderBoardDetails)
+                foreach (var detail in poemLeaderboard.PoemLeaderBoards)
                 {
                     // Format the month/year string (e.g., "3/2025")
                     string monthYear = poemLeaderboard.StartDate?.ToString("M/yyyy", CultureInfo.InvariantCulture) ?? "";
                     string achievementName = $"Top {detail.Rank} bài thơ tháng {monthYear}";
                     string achievementDescription = "Đây là phần thưởng bạn nhận được trong bảng xếp hạng bài thơ";
 
-                    var record = detail.Poem?.UserPoemRecordFiles
-                        .FirstOrDefault(p => p.Type == UserPoemType.CopyRightHolder && p.PoemId == detail.Poem?.Id);
+                    /*var record = detail.Poem?.UserPoemRecordFiles
+                        .FirstOrDefault(p => p.Type == UserPoemType.CopyRightHolder && p.PoemId == detail.Poem?.Id);*/
+
+                    var record = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == detail.PoemId); // Nhớ coi xem đúng ko rồi sửa khúc này nha khôi
                     if (record == null || record.UserId == null)
                     {
                         // Skip awarding achievement if no owner or owner UserId is null.

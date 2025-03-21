@@ -24,10 +24,11 @@ namespace PoemTown.Repository.Entities
         [ForeignKey("PoemId")]
         public virtual Poem? Poem { get; set; }
         [ForeignKey("UserId")]
-
         public virtual User? User { get; set; }
         
-        public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }
+        public virtual Guid? SaleVersionId { get; set; }
+        public virtual SaleVersion? SaleVersion { get; set; }
+        public virtual ICollection<UsageRight>? UsageRights { get; set; }
         
     }
 

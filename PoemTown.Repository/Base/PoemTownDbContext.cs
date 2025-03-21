@@ -19,7 +19,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<Comment> Comments=> Set<Comment>();
     public virtual DbSet<Follower> Followers => Set<Follower>();
     public virtual DbSet<LeaderBoard> LeaderBoards => Set<LeaderBoard>();
-    public virtual DbSet<LeaderBoardDetail> LeaderBoardDetails => Set<LeaderBoardDetail>();
+    public virtual DbSet<PoemLeaderBoard> PoemLeaderBoards => Set<PoemLeaderBoard>();
     public virtual DbSet<Like> Likes => Set<Like>();
     public virtual DbSet<MasterTemplate> MasterTemplates => Set<MasterTemplate>();
     public virtual DbSet<Message> Messages=> Set<Message>();
@@ -38,11 +38,12 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<UserCopyRightPoems> UserCopyRightPoems => Set<UserCopyRightPoems>();*/
     public virtual DbSet<UserEWallet> UserEWallets => Set<UserEWallet>();
     public virtual DbSet<UserLeaderBoard> UserLeaderBoards => Set<UserLeaderBoard>();
-    public virtual DbSet<UserPoemRecordFile> UserPoemRecordFiles => Set<UserPoemRecordFile>();
+    public virtual DbSet<UsageRight> UsageRights => Set<UsageRight>();
     public virtual DbSet<UserTemplateDetail> UserTemplateDetails => Set<UserTemplateDetail>();
     public virtual DbSet<ThemeUserTemplateDetail> ThemeUserTemplateDetails => Set<ThemeUserTemplateDetail>();
     public virtual DbSet<Theme> Themes => Set<Theme>();
     public virtual DbSet<LoginTracking> LoginTrackings => Set<LoginTracking>();
+    public virtual DbSet<SaleVersion> SaleVersions => Set<SaleVersion>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
     */
@@ -203,21 +204,21 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
             .HasForeignKey(c => c.PoemId)
             .OnDelete(DeleteBehavior.Cascade); // Cascade có thể giữ nguyên
 
-        builder.Entity<UserPoemRecordFile>()
+        /*builder.Entity<UserPoemRecordFile>()
        .HasOne(uc => uc.Poem) // Một UserCopyRight liên kết với một CopyRight
        .WithMany(c => c.UserPoemRecordFiles) // Một CopyRight có nhiều UserCopyRight
        .HasForeignKey(uc => uc.PoemId) // Khóa ngoại trong UserCopyRight
-       .OnDelete(DeleteBehavior.Restrict);
+       .OnDelete(DeleteBehavior.Restrict);*/
 
-        builder.Entity<UserPoemRecordFile>()
+        builder.Entity<UsageRight>()
         .HasOne(uc => uc.User) // Một UserCopyRight liên kết với một User
-        .WithMany(u => u.UserPoemRecordFiles) // Một User có nhiều UserCopyRight
+        .WithMany(u => u.UsageRights) // Một User có nhiều UserCopyRight
         .HasForeignKey(uc => uc.UserId) // Khóa ngoại trong UserCopyRight
         .OnDelete(DeleteBehavior.Restrict);
         
-        builder.Entity<UserPoemRecordFile>()
+        builder.Entity<UsageRight>()
         .HasOne(uc => uc.RecordFile) // Một UserCopyRight liên kết với một RecordFile
-        .WithMany(r => r.UserPoemRecordFiles) // Một RecordFile có nhiều UserCopyRight
+        .WithMany(r => r.UsageRights) // Một RecordFile có nhiều UserCopyRight
         .HasForeignKey(uc => uc.RecordFileId) // Khóa ngoại trong UserCopyRight
         .OnDelete(DeleteBehavior.Restrict);
 
@@ -247,17 +248,20 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
         .OnDelete(DeleteBehavior.Restrict);
 
         builder.Entity<LeaderBoard>()
-        .HasMany(lb => lb.LeaderBoardDetails)
+        .HasMany(lb => lb.PoemLeaderBoards)
         .WithOne(d => d.LeaderBoard)
         .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Entity<LeaderBoardDetail>()
+        builder.Entity<PoemLeaderBoard>()
         .HasOne(d => d.Poem)
-        .WithMany(p => p.LeaderBoardDetails)
+        .WithMany(p => p.PoemLeaderBoards)
         .HasForeignKey(d => d.PoemId)
         .OnDelete(DeleteBehavior.Restrict);
 
-
+        builder.Entity<Poem>()
+            .HasOne(p => p.User)
+            .WithMany(u => u.Poems)
+            .HasForeignKey(p => p.UserId);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

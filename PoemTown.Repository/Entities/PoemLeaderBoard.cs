@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace PoemTown.Repository.Entities
 {
-    public class LeaderBoardDetail : BaseEntity
+    public class PoemLeaderBoard : BaseEntity
     {
         [Key]
         public Guid Id { get; set; }

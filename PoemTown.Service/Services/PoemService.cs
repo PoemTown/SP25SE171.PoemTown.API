@@ -74,7 +74,7 @@ public class PoemService : IPoemService
         // Check if source copy right exist, if not then throw exception else assign source copy right to poem
         if (request.SourceCopyRightId != null)
         {
-            UserPoemRecordFile? sourceCopyRight = await _unitOfWork.GetRepository<UserPoemRecordFile>()
+            UsageRight? sourceCopyRight = await _unitOfWork.GetRepository<UsageRight>()
                 .FindAsync(p => p.Id == request.SourceCopyRightId && p.UserId == userId);
             if (sourceCopyRight == null)
             {
@@ -133,7 +133,7 @@ public class PoemService : IPoemService
         // When poem is posted, assign user to poem as copy right holder
         if (request.Status == PoemStatus.Posted)
         {
-            await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(new UserPoemRecordFile()
+            await _unitOfWork.GetRepository<UsageRight>().InsertAsync(new UsageRight()
             {
                 Type = UserPoemType.CopyRightHolder,
                 UserId = userId,
@@ -162,7 +162,7 @@ public class PoemService : IPoemService
         // Check if source copy right exist, if not then throw exception else assign source copy right to poem
         if (request.SourceCopyRightId != null)
         {
-            UserPoemRecordFile? sourceCopyRight = await _unitOfWork.GetRepository<UserPoemRecordFile>()
+            UsageRight? sourceCopyRight = await _unitOfWork.GetRepository<UsageRight>()
                 .FindAsync(p => p.Id == request.SourceCopyRightId && p.UserId == userId);
             if (sourceCopyRight == null)
             {
@@ -189,13 +189,13 @@ public class PoemService : IPoemService
         // Add poem to database
         await _unitOfWork.GetRepository<Poem>().InsertAsync(poem);
         // Assign user to poem
-        UserPoemRecordFile userPoemRecord = new UserPoemRecordFile
+        UsageRight userPoemRecord = new UsageRight
         {
             PoemId = poem.Id,
             UserId = userId,
             Type = UserPoemType.CopyRightHolder,
         };
-        await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecord);
+        await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecord);
         // Save changes
         await _unitOfWork.SaveChangesAsync();
     }
@@ -401,7 +401,7 @@ public class PoemService : IPoemService
         // Check if source copy right exist, if not then throw exception else assign source copy right to poem
         if (request.SourceCopyRightId != null)
         {
-            UserPoemRecordFile? sourceCopyRight = await _unitOfWork.GetRepository<UserPoemRecordFile>()
+            UsageRight? sourceCopyRight = await _unitOfWork.GetRepository<UsageRight>()
                 .FindAsync(p => p.Id == request.SourceCopyRightId && p.UserId == userId);
             if (sourceCopyRight == null)
             {
@@ -433,7 +433,7 @@ public class PoemService : IPoemService
         // When poem is posted, assign user to poem as copy right holder
         if (request.Status == PoemStatus.Posted)
         {
-            await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(new UserPoemRecordFile()
+            await _unitOfWork.GetRepository<UsageRight>().InsertAsync(new UsageRight()
             {
                 Type = UserPoemType.CopyRightHolder,
                 PoemId = poem.Id,
@@ -486,7 +486,7 @@ public class PoemService : IPoemService
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
         }
 
-        UserPoemRecordFile? userPoemRecordFile = await _unitOfWork.GetRepository<UserPoemRecordFile>().FindAsync(r => r.PoemId == poemId && r.UserId == userId && r.Type == UserPoemType.CopyRightHolder);
+        UsageRight? userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>().FindAsync(r => r.PoemId == poemId && r.UserId == userId && r.Type == UserPoemType.CopyRightHolder);
         //Check if record file is not yours
         if (userPoemRecordFile == null)
         {
@@ -925,14 +925,14 @@ public class PoemService : IPoemService
         poem.IsSellCopyRight = true;
 
         _unitOfWork.GetRepository<Poem>().Update(poem);
-        UserPoemRecordFile? userPoemRecordFile = new UserPoemRecordFile()
+        UsageRight? userPoemRecordFile = new UsageRight()
         {
             UserId = userId,
             PoemId = poem.Id,
             Type = UserPoemType.CopyRightHolder,
         };
 
-        await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecordFile);
+        await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecordFile);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -955,7 +955,7 @@ public class PoemService : IPoemService
         }
 
         // Find user by id
-        UserPoemRecordFile? userPoemRecordFile = await _unitOfWork.GetRepository<UserPoemRecordFile>()
+        UsageRight? userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
             .FindAsync(p => p.UserId == userId && p.PoemId == poemId && p.Type == UserPoemType.PoemBuyer);
 
         // If user already purchased this poem then throw exception
@@ -965,7 +965,7 @@ public class PoemService : IPoemService
         }
 
         // Create new user poem record file for buyer with 2 years valid copy right
-        userPoemRecordFile = new UserPoemRecordFile
+        userPoemRecordFile = new UsageRight
         {
             UserId = userId,
             PoemId = poemId,
@@ -974,7 +974,7 @@ public class PoemService : IPoemService
             CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(2).DateTime
         };
 
-        await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecordFile);
+        await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecordFile);
         await _unitOfWork.SaveChangesAsync();
 
         CreateOrderEvent message = new CreateOrderEvent()

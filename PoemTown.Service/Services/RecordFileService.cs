@@ -58,20 +58,20 @@ namespace PoemTown.Service.Services
             record.PoemId = poemID;
 
             // Check if user does not own the poem, user can not create record file
-            UserPoemRecordFile userPoemRecord = await _unitOfWork.GetRepository<UserPoemRecordFile>().FindAsync(u => u.PoemId == poemID && u.UserId == userId);
+            UsageRight userPoemRecord = await _unitOfWork.GetRepository<UsageRight>().FindAsync(u => u.PoemId == poemID && u.UserId == userId);
             if (userPoemRecord == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "User not own this poem");
             }
             await _unitOfWork.GetRepository<RecordFile>().InsertAsync(record);
-                userPoemRecord = new UserPoemRecordFile
+                userPoemRecord = new UsageRight
                 {
                     UserId = userId,
                     RecordFileId = record.Id,
                     Type = UserPoemType.RecordHolder,
                     PoemId= poemID,
                 };
-                await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecord);
+                await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecord);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -93,7 +93,7 @@ namespace PoemTown.Service.Services
                 throw new CoreException(StatusCodes.Status400BadRequest, "Can not set price with public record file");
             }
 
-            var userPoemRecordFile = await _unitOfWork.GetRepository<UserPoemRecordFile>().FindAsync(r => r.RecordFileId == request.Id && r.Type == UserPoemType.RecordBuyer);
+            var userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>().FindAsync(r => r.RecordFileId == request.Id && r.Type == UserPoemType.RecordBuyer);
 
             //Check if record file has been bought, cannot update
             if (userPoemRecordFile != null)
@@ -114,7 +114,7 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file not found");
             }
-            var userPoemRecordFile = await _unitOfWork.GetRepository<UserPoemRecordFile>().FindAsync(r => r.RecordFileId == recordId && r.Type == UserPoemType.RecordBuyer);
+            var userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>().FindAsync(r => r.RecordFileId == recordId && r.Type == UserPoemType.RecordBuyer);
 
             //Check if record file has been bought, cannot update
             if (userPoemRecordFile != null)
@@ -139,7 +139,7 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file already set to be private");
             }
-            UserPoemRecordFile? userPoemRecordFile = await _unitOfWork.GetRepository<UserPoemRecordFile>().FindAsync(r => r.RecordFileId == request.RecordId && r.UserId == userId);
+            UsageRight? userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>().FindAsync(r => r.RecordFileId == request.RecordId && r.UserId == userId);
 
             //Check if record file is not yours
             if (userPoemRecordFile == null)
@@ -171,7 +171,7 @@ namespace PoemTown.Service.Services
             }
 
             // Find user by id
-            UserPoemRecordFile? userPoemRecordFile = await _unitOfWork.GetRepository<UserPoemRecordFile>()
+            UsageRight? userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
                 .FindAsync(p => p.UserId == userId && p.RecordFileId == recordId);
 
             // If user already purchased this poem then throw exception
@@ -181,7 +181,7 @@ namespace PoemTown.Service.Services
             }
 
             // Create new user poem record file for buyer with 2 years valid copy right
-            userPoemRecordFile = new UserPoemRecordFile
+            userPoemRecordFile = new UsageRight
             {
                 UserId = userId,
                 RecordFileId = recordId,
@@ -190,7 +190,7 @@ namespace PoemTown.Service.Services
                 CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(2).DateTime
             };
 
-            await _unitOfWork.GetRepository<UserPoemRecordFile>().InsertAsync(userPoemRecordFile);
+            await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecordFile);
             await _unitOfWork.SaveChangesAsync();
 
             CreateOrderEvent message = new CreateOrderEvent()
@@ -212,7 +212,7 @@ namespace PoemTown.Service.Services
        GetSoldRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
         {
             //Get all records that user have
-            var records = _unitOfWork.GetRepository<UserPoemRecordFile>()
+            var records = _unitOfWork.GetRepository<UsageRight>()
            .AsQueryable()
            .Where(p => p.UserId == userId && p.RecordFileId != null && p.Type == UserPoemType.RecordHolder && p.DeletedTime == null);
 
@@ -224,13 +224,13 @@ namespace PoemTown.Service.Services
                 FileName = s.RecordFile.FileName,
                 Price = s.RecordFile.Price,
                 Owner = _mapper.Map<GetBasicUserInformationResponse>(s.User),
-                Buyers = _unitOfWork.GetRepository<UserPoemRecordFile>().AsQueryable()
+                Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
                             .Where(u => u.RecordFileId == s.RecordFileId && u.Type == UserPoemType.RecordBuyer && u.DeletedTime == null)
                             .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
                             .ToList()
             }).ToList();
 
-            var queryPaging = await _unitOfWork.GetRepository<UserPoemRecordFile>()
+            var queryPaging = await _unitOfWork.GetRepository<UsageRight>()
                 .GetPagination(records, request.PageNumber, request.PageSize);
 
             return new PaginationResponse<GetSoldRecordResponse>(result, queryPaging.PageNumber, queryPaging.PageSize,
@@ -241,7 +241,7 @@ namespace PoemTown.Service.Services
       GetBoughtRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
         {
             //Get all records that user have
-            var records = _unitOfWork.GetRepository<UserPoemRecordFile>()
+            var records = _unitOfWork.GetRepository<UsageRight>()
            .AsQueryable()
            .Where(p => p.UserId == userId && p.RecordFileId != null && p.Type == UserPoemType.RecordBuyer && p.DeletedTime == null);
 
@@ -252,14 +252,14 @@ namespace PoemTown.Service.Services
                 Price = s.RecordFile.Price,
                 Buyer = _mapper.Map<GetBasicUserInformationResponse>(s.User),
                 Owner = _mapper.Map<GetBasicUserInformationResponse>(
-    _unitOfWork.GetRepository<UserPoemRecordFile>()
+    _unitOfWork.GetRepository<UsageRight>()
         .AsQueryable()
         .Where(u => u.RecordFileId == s.RecordFileId && u.Type == UserPoemType.RecordHolder && u.DeletedTime == null)
         .Select(u => u.User) // Lấy trực tiếp User từ UserPoemRecordFile
         .FirstOrDefault() // Chỉ lấy 1 user
 )
             }).ToList();
-            var queryPaging = await _unitOfWork.GetRepository<UserPoemRecordFile>()
+            var queryPaging = await _unitOfWork.GetRepository<UsageRight>()
                 .GetPagination(records, request.PageNumber, request.PageSize);
 
             return new PaginationResponse<GetBoughtRecordResponse>(result, queryPaging.PageNumber, queryPaging.PageSize,
@@ -271,7 +271,7 @@ namespace PoemTown.Service.Services
       GetAllRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
         {
             //Get all records that user have
-            var recordFileIds = _unitOfWork.GetRepository<UserPoemRecordFile>()
+            var recordFileIds = _unitOfWork.GetRepository<UsageRight>()
                 .AsQueryable()
                 .Where(p => p.UserId == userId && p.RecordFileId != null && p.DeletedTime == null)
                 .Select(p => p.RecordFileId)
@@ -334,7 +334,7 @@ namespace PoemTown.Service.Services
       GetMyRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
         {
             //Get all records that user have
-            var recordFileIds = _unitOfWork.GetRepository<UserPoemRecordFile>()
+            var recordFileIds = _unitOfWork.GetRepository<UsageRight>()
                 .AsQueryable()
                 .Where(p => p.UserId == userId && p.RecordFileId !=null && p.DeletedTime == null)
                 .Select(p => p.RecordFileId)

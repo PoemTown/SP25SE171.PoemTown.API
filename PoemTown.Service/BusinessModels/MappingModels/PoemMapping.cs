@@ -24,10 +24,10 @@ public class PoemMapping : Profile
         CreateMap<GetPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
-            .ForMember(dest => dest.User,
+            /*.ForMember(dest => dest.User,
                 opt => opt.MapFrom(src =>
                     // Pick the User from the UserPoemRecordFiles that is the copyright holder.
-                    src.UserPoemRecordFiles.FirstOrDefault(uprf => uprf.Type == UserPoemType.CopyRightHolder).User));
+                    src.UserPoemRecordFiles.FirstOrDefault(uprf => uprf.Type == UserPoemType.CopyRightHolder).User))*/;
 
         CreateMap<GetRecordFileResponse, GetPoemDetailResponse>().ReverseMap();
         CreateMap<GetPoemDetailResponse, Poem>().ReverseMap()

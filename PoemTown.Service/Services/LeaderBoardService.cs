@@ -48,7 +48,9 @@ namespace PoemTown.Service.Services
                 .Where(p => p.Status == PoemStatus.Posted)
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
+                /*
                 .Include(p => p.UserPoemRecordFiles)
+                */
                 .ToListAsync();
 
             var poemScores = poems.Select(p =>
@@ -66,7 +68,7 @@ namespace PoemTown.Service.Services
 
             var leaderboardRepository = _unitOfWork.GetRepository<LeaderBoard>();
             var leaderboard = await leaderboardRepository.AsQueryable()
-                .Include(lb => lb.LeaderBoardDetails)
+                .Include(lb => lb.PoemLeaderBoards)
                 .FirstOrDefaultAsync(lb =>
                 lb.Type == LeaderBoardType.Poem &&
                 lb.Status == LeaderBoardStatus.InProgress &&
@@ -81,29 +83,29 @@ namespace PoemTown.Service.Services
                     StartDate = startOfMonth,
                     EndDate = endOfMonth,
                     Status = LeaderBoardStatus.InProgress,
-                    LeaderBoardDetails = new List<LeaderBoardDetail>()
+                    PoemLeaderBoards = new List<PoemLeaderBoard>()
                 };
                 await leaderboardRepository.InsertAsync(leaderboard);
             }
             else
             {
                 // Remove existing leaderboard details.
-                var lbDetailRepository = _unitOfWork.GetRepository<LeaderBoardDetail>();
-                foreach (var detail in leaderboard.LeaderBoardDetails.ToList())
+                var lbDetailRepository = _unitOfWork.GetRepository<PoemLeaderBoard>();
+                foreach (var detail in leaderboard.PoemLeaderBoards.ToList())
                 {
                     lbDetailRepository.DeletePermanent(detail);
                 }
-                leaderboard.LeaderBoardDetails.Clear();
+                leaderboard.PoemLeaderBoards.Clear();
                 await _unitOfWork.SaveChangesAsync();
             }
-            var lbDetailRepo = _unitOfWork.GetRepository<LeaderBoardDetail>();
+            var lbDetailRepo = _unitOfWork.GetRepository<PoemLeaderBoard>();
             int rank = 1;
             foreach (var item in topPoems)
             {
                 // Skip items that don't have an AuthorId if needed.
                 //if (item.AuthorId == null) continue;
 
-                var detail = new LeaderBoardDetail
+                var detail = new PoemLeaderBoard
                 {
                     Id = Guid.NewGuid(),
                     LeaderBoardId = leaderboard.Id,
@@ -112,7 +114,7 @@ namespace PoemTown.Service.Services
                 };
 
                 await lbDetailRepo.InsertAsync(detail);
-                leaderboard.LeaderBoardDetails.Add(detail);
+                leaderboard.PoemLeaderBoards.Add(detail);
                 rank++;
             }
             await _unitOfWork.SaveChangesAsync();
@@ -202,9 +204,11 @@ namespace PoemTown.Service.Services
             DateTimeOffset targetDate = request.FilterOptions?.Date ?? DateTimeHelper.SystemTimeNow;
 
             var leaderboardQuery = _unitOfWork.GetRepository<LeaderBoard>().AsQueryable()
-              .Include(lb => lb.LeaderBoardDetails)
+              .Include(lb => lb.PoemLeaderBoards)
                 .ThenInclude(detail => detail.Poem)
+                    /*
                     .ThenInclude(p => p.UserPoemRecordFiles)
+                        */
                         .ThenInclude(uprf => uprf.User)
                 .Where(lb => lb.Type == LeaderBoardType.Poem
                  && lb.Status == LeaderBoardStatus.InProgress
@@ -220,7 +224,7 @@ namespace PoemTown.Service.Services
             }
 
             // Start with the leaderboard details.
-            var detailsQuery = leaderboard.LeaderBoardDetails.AsQueryable();
+            var detailsQuery = leaderboard.PoemLeaderBoards.AsQueryable();
 
             // Filter by poem name if provided.
             if (!string.IsNullOrWhiteSpace(request.FilterOptions?.Name))

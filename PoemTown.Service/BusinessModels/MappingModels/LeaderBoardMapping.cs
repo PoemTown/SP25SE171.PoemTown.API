@@ -17,7 +17,7 @@ namespace PoemTown.Service.BusinessModels.MappingModels
         { 
             CreateMap<LeaderBoard, GetLeaderBoardResponse>();
 
-            CreateMap<LeaderBoardDetail, GetLeaderBoardDetailResponse>()
+            CreateMap<PoemLeaderBoard, GetLeaderBoardDetailResponse>()
                 .ForMember(dest => dest.Poem, opt => opt.MapFrom(src => src.Poem));
 
             CreateMap<UserLeaderBoard, GetUserLeaderBoardResponse>();

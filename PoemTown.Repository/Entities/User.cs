@@ -28,7 +28,7 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public virtual ICollection<UserLeaderBoard>? UserLeaderBoards { get; set; }
 
     public virtual ICollection<Collection>? Collections { get; set; }
-    public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }
+    public virtual ICollection<UsageRight>? UsageRights { get; set; }
     public virtual ICollection<TargetMark>? MarkByUsers { get; set; }
     public virtual ICollection<Follower>? FollowUser { get; set; }
     public virtual ICollection<Follower>? FollowedUser { get; set; }

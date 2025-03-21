@@ -19,7 +19,7 @@ namespace PoemTown.Repository.Entities
         public Guid Id { get; set; }
 
         public Guid? UserId { get; set; }
-        public Guid? PoemId { get; set; }
+        //public Guid? PoemId { get; set; }
         public Guid? RecordFileId { get; set; }
         
         public UserPoemType? Type { get; set; }

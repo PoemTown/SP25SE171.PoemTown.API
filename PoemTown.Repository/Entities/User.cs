@@ -34,9 +34,7 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public virtual ICollection<Follower>? FollowedUser { get; set; }
     public virtual ICollection<Report>? ReportUsers { get; set; }
     public virtual ICollection<Report>? ReportedUsers { get; set; }
-    /*
     public virtual ICollection<RecordFile>? RecordFiles { get; set; }
-    */
 
     public virtual ICollection<Comment>? AuthorComments { get; set; }
  /*   public virtual ICollection<Comment> ParentComments { get; set; }*/

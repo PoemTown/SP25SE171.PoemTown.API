@@ -197,7 +197,7 @@ namespace PoemTown.Service.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<PaginationResponse<GetLeaderBoardResponse>> GetTopPoemsLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
+        public async Task<GetLeaderBoardResponse> GetTopPoemsLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
         {
             DateTimeOffset targetDate = request.FilterOptions?.Date ?? DateTimeHelper.SystemTimeNow;
 
@@ -216,8 +216,7 @@ namespace PoemTown.Service.Services
 
             if (leaderboard == null)
             {
-                return new PaginationResponse<GetLeaderBoardResponse>(
-                    new List<GetLeaderBoardResponse>(), request.PageNumber, request.PageSize, 0, 0);
+                return new GetLeaderBoardResponse();
             }
 
             // Start with the leaderboard details.
@@ -262,15 +261,16 @@ namespace PoemTown.Service.Services
                 TopUsers = null  // This method only returns the poem leaderboard.
             };
 
-            return new PaginationResponse<GetLeaderBoardResponse>(
-                new List<GetLeaderBoardResponse> { leaderBoardResponse },
-                request.PageNumber,
-                request.PageSize,
-                totalRecords: 1,
-                currentPageRecords: 1);
+            /*  return new PaginationResponse<GetLeaderBoardResponse>(
+                  new List<GetLeaderBoardResponse> { leaderBoardResponse },
+                  request.PageNumber,
+                  request.PageSize,
+                  totalRecords: 1,
+                  currentPageRecords: 1);*/
+            return leaderBoardResponse;
         }
 
-        public async Task<PaginationResponse<GetLeaderBoardResponse>> GetTopUsersLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
+        public async Task<GetLeaderBoardResponse> GetTopUsersLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
         {
             // Use the provided date or default to the current system time.
             DateTimeOffset targetDate = request.FilterOptions?.Date ?? DateTimeHelper.SystemTimeNow;
@@ -288,8 +288,7 @@ namespace PoemTown.Service.Services
             var leaderboard = await leaderboardQuery.FirstOrDefaultAsync();
             if (leaderboard == null)
             {
-                return new PaginationResponse<GetLeaderBoardResponse>(
-                    new List<GetLeaderBoardResponse>(), request.PageNumber, request.PageSize, 0, 0);
+                return new GetLeaderBoardResponse();
             }
 
             // Start with the leaderboard's user leaderboard entries.
@@ -338,12 +337,7 @@ namespace PoemTown.Service.Services
             };
 
             // Wrap the response in a pagination response.
-            return new PaginationResponse<GetLeaderBoardResponse>(
-                new List<GetLeaderBoardResponse> { leaderBoardResponse },
-                request.PageNumber,
-                request.PageSize,
-                totalRecords: 1,
-                currentPageRecords: 1);
+            return leaderBoardResponse;
         }
     }
 }

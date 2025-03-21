@@ -12,8 +12,8 @@ using PoemTown.Repository.Base;
 namespace PoemTown.Repository.Migrations
 {
     [DbContext(typeof(PoemTownDbContext))]
-    [Migration("20250321113347_add saleversions relationship into poems, recordfiles, usagerights")]
-    partial class addsaleversionsrelationshipintopoemsrecordfilesusagerights
+    [Migration("20250321115939_remove user in record file")]
+    partial class removeuserinrecordfile
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -319,9 +319,9 @@ namespace PoemTown.Repository.Migrations
                         new
                         {
                             Id = new Guid("094de1df-60b1-4a58-878c-dc6909f5262e"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1550), new TimeSpan(0, 7, 0, 0, 0)),
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6506), new TimeSpan(0, 7, 0, 0, 0)),
                             EndDate = new DateTimeOffset(new DateTime(2025, 3, 31, 23, 59, 59, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1550), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6506), new TimeSpan(0, 7, 0, 0, 0)),
                             StartDate = new DateTimeOffset(new DateTime(2025, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
                             Status = 0,
                             Type = 0
@@ -329,9 +329,9 @@ namespace PoemTown.Repository.Migrations
                         new
                         {
                             Id = new Guid("094de1df-60b1-4a58-878c-dc6909f5293e"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1563), new TimeSpan(0, 7, 0, 0, 0)),
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6548), new TimeSpan(0, 7, 0, 0, 0)),
                             EndDate = new DateTimeOffset(new DateTime(2025, 3, 31, 23, 59, 59, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1563), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6548), new TimeSpan(0, 7, 0, 0, 0)),
                             StartDate = new DateTimeOffset(new DateTime(2025, 3, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 7, 0, 0, 0)),
                             Status = 0,
                             Type = 1
@@ -948,16 +948,11 @@ namespace PoemTown.Repository.Migrations
                     b.Property<Guid?>("SaleVersionId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
 
                     b.HasIndex("PoemId");
 
                     b.HasIndex("SaleVersionId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("RecordFiles");
                 });
@@ -1078,9 +1073,9 @@ namespace PoemTown.Repository.Migrations
                             Id = new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"),
                             ConcurrencyStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",
                             CreatedBy = "System",
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1449), new TimeSpan(0, 7, 0, 0, 0)),
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6294), new TimeSpan(0, 7, 0, 0, 0)),
                             LastUpdatedBy = "System",
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1450), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6296), new TimeSpan(0, 7, 0, 0, 0)),
                             Name = "ADMIN",
                             NormalizedName = "ADMIN"
                         },
@@ -1089,9 +1084,9 @@ namespace PoemTown.Repository.Migrations
                             Id = new Guid("89fca251-f021-425b-de62-08dcdfcdb851"),
                             ConcurrencyStamp = "A6WZZDMSOY6XEPH4VJRSRVTAXICX34US",
                             CreatedBy = "System",
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1462), new TimeSpan(0, 7, 0, 0, 0)),
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6308), new TimeSpan(0, 7, 0, 0, 0)),
                             LastUpdatedBy = "System",
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1463), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6309), new TimeSpan(0, 7, 0, 0, 0)),
                             Name = "USER",
                             NormalizedName = "USER"
                         });
@@ -1567,12 +1562,12 @@ namespace PoemTown.Repository.Migrations
                         {
                             Id = new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"),
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "247baf11-7886-415c-b2ac-c66827ed05df",
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1332), new TimeSpan(0, 7, 0, 0, 0)),
+                            ConcurrencyStamp = "5cf630ff-c7f8-4006-9a4c-19619c34ef49",
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(5960), new TimeSpan(0, 7, 0, 0, 0)),
                             Email = "admin@gmail.com",
                             EmailConfirmed = true,
                             FullName = "admin",
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1332), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(5960), new TimeSpan(0, 7, 0, 0, 0)),
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "admin",
@@ -1588,12 +1583,12 @@ namespace PoemTown.Repository.Migrations
                         {
                             Id = new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"),
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "330a255c-3588-459b-9f93-2ffedd142461",
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1390), new TimeSpan(0, 7, 0, 0, 0)),
+                            ConcurrencyStamp = "9216d878-c4e4-487a-bada-a915f08d511c",
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6140), new TimeSpan(0, 7, 0, 0, 0)),
                             Email = "user@gmail.com",
                             EmailConfirmed = true,
                             FullName = "user",
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1390), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6140), new TimeSpan(0, 7, 0, 0, 0)),
                             LockoutEnabled = false,
                             NormalizedEmail = "USER@GMAIL.COM",
                             NormalizedUserName = "user",
@@ -1808,15 +1803,15 @@ namespace PoemTown.Repository.Migrations
                         {
                             UserId = new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"),
                             RoleId = new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1497), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1497), new TimeSpan(0, 7, 0, 0, 0))
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6392), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6392), new TimeSpan(0, 7, 0, 0, 0))
                         },
                         new
                         {
                             UserId = new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"),
                             RoleId = new Guid("89fca251-f021-425b-de62-08dcdfcdb851"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1502), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 33, 46, 955, DateTimeKind.Unspecified).AddTicks(1502), new TimeSpan(0, 7, 0, 0, 0))
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6405), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 21, 18, 59, 37, 791, DateTimeKind.Unspecified).AddTicks(6405), new TimeSpan(0, 7, 0, 0, 0))
                         });
                 });
 
@@ -2160,7 +2155,8 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasOne("PoemTown.Repository.Entities.User", "User")
                         .WithMany("Poems")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Collection");
 
@@ -2207,17 +2203,9 @@ namespace PoemTown.Repository.Migrations
                         .WithMany("RecordFiles")
                         .HasForeignKey("SaleVersionId");
 
-                    b.HasOne("PoemTown.Repository.Entities.User", "User")
-                        .WithMany("RecordFiles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Poem");
 
                     b.Navigation("SaleVersion");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Report", b =>
@@ -2581,8 +2569,6 @@ namespace PoemTown.Repository.Migrations
                     b.Navigation("Orders");
 
                     b.Navigation("Poems");
-
-                    b.Navigation("RecordFiles");
 
                     b.Navigation("ReportUsers");
 

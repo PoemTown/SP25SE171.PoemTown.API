@@ -261,7 +261,14 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
         builder.Entity<Poem>()
             .HasOne(p => p.User)
             .WithMany(u => u.Poems)
-            .HasForeignKey(p => p.UserId);
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<RecordFile>()
+            .HasOne(r => r.User)
+            .WithMany(u => u.RecordFiles)
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

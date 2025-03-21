@@ -415,32 +415,32 @@ public class PoemsController : BaseController
     }
     
     /// <summary>
-    /// Kích hoạt bán bài thơ, yêu cầu đăng nhập
+    /// Bán các sale version của bài thơ, yêu cầu đăng nhập
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPut]
     [Route("v1/enable-selling")]
     [Authorize]
-    public async Task<ActionResult<BaseResponse>> EnableSellingPoem(EnableSellingPoemRequest request)
+    public async Task<ActionResult<BaseResponse>> SellingSaleVersionPoem(SellingSaleVersionPoemRequest request)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-        await _poemService.EnableSellingPoem(userId, request);
+        await _poemService.SellingSaleVersionPoem(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Enable selling poem successfully"));
     }
     
     /// <summary>
-    /// Mua bản quyền của một bài thơ, yêu cầu đăng nhập
+    /// Mua quyền sử dụng của một bài thơ, yêu cầu đăng nhập
     /// </summary>
-    /// <param name="poemId"></param>
+    /// <param name="saleVersionId"></param>
     /// <returns></returns>
     [HttpPut]
     [Route("v1/purchase")]
     [Authorize]
-    public async Task<ActionResult<BaseResponse>> PurchasePoem([FromQuery]Guid poemId)
+    public async Task<ActionResult<BaseResponse>> PurchasePoem([FromQuery]Guid saleVersionId)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-        await _poemService.PurchasePoemCopyRight(userId, poemId);
+        await _poemService.PurchasePoemCopyRight(userId, saleVersionId);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Purchase poem successfully"));
     }
 

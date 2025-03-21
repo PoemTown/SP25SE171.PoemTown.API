@@ -31,7 +31,7 @@ public interface IPoemService
         GetTrendingPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 
     Task<string> UploadPoemImage(Guid userId, IFormFile file);
-    Task EnableSellingPoem(Guid userId, EnableSellingPoemRequest request);
+    Task SellingSaleVersionPoem(Guid userId, SellingSaleVersionPoemRequest request);
     Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request);
     Task<string> ConvertPoemTextToImage(ConvertPoemTextToImageRequest request);
 
@@ -41,7 +41,7 @@ public interface IPoemService
     Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
         ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request);
     
-    Task PurchasePoemCopyRight(Guid userId, Guid poemId);
+    Task PurchasePoemCopyRight(Guid userId, Guid saleVersionId);
     Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request);
     Task DeletePoemInCommunity(Guid userId, Guid poemId);
     Task ConvertPoemIntoEmbeddingAndSaveToQdrant(Guid poemId);

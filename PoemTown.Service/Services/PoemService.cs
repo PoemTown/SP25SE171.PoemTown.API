@@ -119,7 +119,8 @@ public class PoemService : IPoemService
         }
 
         poem.Collection = collection;
-
+        poem.UserId = userId;
+        
         // Add poem to database
         await _unitOfWork.GetRepository<Poem>().InsertAsync(poem);
 

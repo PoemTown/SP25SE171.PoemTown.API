@@ -11,6 +11,7 @@ using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.Poems;
+using PoemTown.Repository.Enums.SaleVersions;
 using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
@@ -120,7 +121,7 @@ public class PoemService : IPoemService
 
         poem.Collection = collection;
         poem.UserId = userId;
-        
+
         // Add poem to database
         await _unitOfWork.GetRepository<Poem>().InsertAsync(poem);
 
@@ -131,7 +132,7 @@ public class PoemService : IPoemService
         poemHistory.Version = 1;
         await _unitOfWork.GetRepository<PoemHistory>().InsertAsync(poemHistory);
 
-/**/        /*// When poem is posted, assign user to poem as copy right holder
+/**/ /*// When poem is posted, assign user to poem as copy right holder
         if (request.Status == PoemStatus.Posted)
         {
             await _unitOfWork.GetRepository<UsageRight>().InsertAsync(new UsageRight()
@@ -141,10 +142,10 @@ public class PoemService : IPoemService
                 PoemId = poem.Id,
             });
         }*/
-        
+
         // Save changes
         await _unitOfWork.SaveChangesAsync();
-        
+
         // Publish event to store poem embedding
         await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
         {
@@ -152,9 +153,8 @@ public class PoemService : IPoemService
             UserId = userId,
             PoemContent = poem.Content
         });
-        
-        
     }
+
     public async Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request)
     {
         // Mapping request to entity
@@ -200,7 +200,6 @@ public class PoemService : IPoemService
         // Save changes
         await _unitOfWork.SaveChangesAsync();
     }
-
 
 
     public async Task<GetPoemDetailResponse>
@@ -441,9 +440,9 @@ public class PoemService : IPoemService
                 UserId = userId,
             });
         }*/
-        
+
         await _unitOfWork.SaveChangesAsync();
-        
+
         // Publish event to store poem embedding
         await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
         {
@@ -492,6 +491,7 @@ public class PoemService : IPoemService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "This poem is not yours");
         }
+
         /*UsageRight? userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
             .FindAsync(r => r.PoemId == poemId && r.UserId == userId && r.Type == UserPoemType.CopyRightHolder);
         //Check if record file is not yours
@@ -898,7 +898,7 @@ public class PoemService : IPoemService
         return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
     }
 
-    public async Task EnableSellingPoem(Guid userId, EnableSellingPoemRequest request)
+    public async Task SellingSaleVersionPoem(Guid userId, SellingSaleVersionPoemRequest request)
     {
         // Find poem by id
         Poem? poem = await _unitOfWork.GetRepository<Poem>()
@@ -911,7 +911,7 @@ public class PoemService : IPoemService
         }
 
         // Check if user own this poem
-        if (poem.Collection!.UserId != userId)
+        if (poem.UserId != userId)
         {
             throw new CoreException(StatusCodes.Status403Forbidden, "User does not own this poem");
         }
@@ -922,54 +922,94 @@ public class PoemService : IPoemService
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not posted, cannot enable selling");
         }
 
-        // If poem is already selling then throw exception
-        if (poem.Price > 0)
+        IList<SaleVersion> saleVersions = await _unitOfWork.GetRepository<SaleVersion>()
+            .AsQueryable()
+            .Where(p => p.PoemId == poem.Id && p.Poem.UserId == userId)
+            .ToListAsync();
+
+        // If poem has sale versions then set all to not in sale
+        if (saleVersions.Count > 0)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is already selling");
+            foreach (var sv in saleVersions)
+            {
+                sv.Status = SaleVersionStatus.NotInSale;
+            }
+
+            _unitOfWork.GetRepository<SaleVersion>().UpdateRange(saleVersions);
         }
 
-        poem.Price = request.Price;
-        poem.IsSellCopyRight = true;
-
-        _unitOfWork.GetRepository<Poem>().Update(poem);
-        /*UsageRight? userPoemRecordFile = new UsageRight()
+        // Finally, create new sale version for poem with status is in sale
+        SaleVersion saleVersion = new SaleVersion()
         {
-            UserId = userId,
             PoemId = poem.Id,
-            Type = UserPoemType.CopyRightHolder,
+            Price = request.Price,
+            DurationTime = request.DurationTime,
+            CommissionPercentage = request.CommissionPercentage,
+            Status = SaleVersionStatus.InSale,
         };
 
-        await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecordFile);*/
+        await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task PurchasePoemCopyRight(Guid userId, Guid versionId)
+    public async Task PurchasePoemCopyRight(Guid userId, Guid poemId)
     {
         // Find sale version of poem by id
-        SaleVersion? saleVersion = await _unitOfWork.GetRepository<SaleVersion>()
-            .FindAsync(p => p.Id == versionId);
+        Poem? poem = await _unitOfWork.GetRepository<Poem>()
+            .FindAsync(p => p.Id == poemId);
 
         // If poem not found then throw exception
-        if (saleVersion == null)
+        if (poem == null)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Version not found");
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
         }
 
-        // If poem is public then throw exception
+        // If user is owner of this poem then throw exception
+        if(poem.UserId == userId)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User is owner of this poem");
+        }
+        
+        // Get the latest sale version of poem
+        SaleVersion? saleVersion = await _unitOfWork.GetRepository<SaleVersion>()
+            .FindAsync(p => p.PoemId == poemId && p.Status == SaleVersionStatus.InSale);
+        
+        if(saleVersion == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not for sale");
+        }
+        
+        /*// If poem is public then throw exception
         if (saleVersion.Poem.IsSellCopyRight == false)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not for sell, cannot purchase");
+        }*/
+
+        UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>()
+            .FindAsync(p => p.UserId == userId);
+
+        // If user e-wallet not found then throw exception
+        if (userEWallet == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet not found");
+        }
+
+        // If user e-wallet balance is not enough then throw exception
+        if (userEWallet.WalletBalance < saleVersion.Price)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet balance is not enough");
         }
 
         UsageRight? usageRight = await _unitOfWork.GetRepository<UsageRight>()
-            .FindAsync(p => p.UserId == userId 
-                            && p.SaleVersion!.PoemId == saleVersion.Poem.Id
+            .FindAsync(p => p.UserId == userId
+                            && p.SaleVersion!.PoemId == poemId
                             && p.Type == UserPoemType.PoemBuyer);
 
         // If user already purchased this poem then throw exception
         if (usageRight != null)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "User already purchased this version sale of poen");
+            throw new CoreException(StatusCodes.Status400BadRequest,
+                "User already purchased this version sale of poem");
         }
 
         // Create new user usageRight for buyer with saleVersion.DurationTime years valid copy right
@@ -977,11 +1017,18 @@ public class PoemService : IPoemService
         {
             UserId = userId,
             Type = UserPoemType.PoemBuyer,
+            SaleVersion = saleVersion,
             CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
             CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(saleVersion.DurationTime).DateTime
         };
 
         await _unitOfWork.GetRepository<UsageRight>().InsertAsync(usageRight);
+
+        // Deduct user e-wallet balance
+        userEWallet.WalletBalance -= saleVersion.Price;
+        
+        _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
+
         await _unitOfWork.SaveChangesAsync();
 
         CreateOrderEvent message = new CreateOrderEvent()
@@ -1012,23 +1059,22 @@ public class PoemService : IPoemService
             },
             // Set max token for completion
             MaxTokens = request.MaxToken,
-            
+
             // Set model for chat completion
             Model = Models.Gpt_4o_mini
         };
-        
+
         var response = await _openAiService.ChatCompletion.CreateCompletion(chatCompletionCreateRequest);
 
         // If response is not successful then throw exception
         if (response.Successful == false)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
-
         }
-        
+
         return response.Choices.FirstOrDefault()?.Message.Content ?? "";
     }
-    
+
     public async Task<string> ConvertPoemTextToImage(ConvertPoemTextToImageRequest request)
     {
         // Create image with OpenAI model DALL-E 3
@@ -1043,13 +1089,13 @@ public class PoemService : IPoemService
             Quality = "standard",
         };
         var response = await _openAiService.Image.CreateImage(imageCreateRequest);
-        
+
         // If response is not successful then throw exception
         if (response.Successful == false)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
-
         }
+
         return response.Results.FirstOrDefault().Url;
     }
 
@@ -1069,20 +1115,20 @@ public class PoemService : IPoemService
             MaxTokens = 250,
             Model = Models.Gpt_4o_mini
         };
-        
+
         var response = await _openAiService.ChatCompletion.CreateCompletion(chatCompletionCreateRequest);
-        
+
         // If response is not successful then throw exception
         if (response.Successful == false)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
-
         }
-        
+
         return response.Choices.FirstOrDefault()?.Message.Content ?? "";
     }
-    
-    public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest request)
+
+    public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(
+        ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest request)
     {
         // Translate poem text from Vietnamese to English
         string translatedPoemText = await TranslatePoemTextVietnameseIntoEnglish(request.PoemText);
@@ -1097,13 +1143,14 @@ public class PoemService : IPoemService
             OutPutFormat = request.OutPutFormat,
             OutPutQuality = request.OutPutQuality
         };
-        
+
         var response = await _theHiveAiService.ConvertTextToImageWithFluxSchnellEnhanced(model);
 
         return response;
     }
-    
-    public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request)
+
+    public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
+        ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request)
     {
         // Translate poem text from Vietnamese to English
         string translatedPoemText = await TranslatePoemTextVietnameseIntoEnglish(request.PoemText);
@@ -1119,7 +1166,7 @@ public class PoemService : IPoemService
             OutPutFormat = request.OutPutFormat,
             OutPutQuality = request.OutPutQuality
         };
-        
+
         var response = await _theHiveAiService.ConvertTextToImageWithSdxlEnhanced(model);
 
         return response;
@@ -1140,12 +1187,12 @@ public class PoemService : IPoemService
     {
         return score > 0.5;
     }
-    
+
     public async Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, string poemContent)
     {
         // Search similar poem embedding point
         var response = await _qDrantService.SearchSimilarPoemEmbeddingPoint(userId, poemContent);
-        
+
         double averageScore = response.Results.Select(p => p.Score).Average();
 
         return new PoemPlagiarismResponse()

@@ -33,7 +33,7 @@ namespace PoemTown.Repository.Entities
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }
         public virtual Collection? Collection { get; set; }
-        public virtual OrderDetail? OrderDetail { get; set; }
+        //public virtual OrderDetail? OrderDetail { get; set; }
         public virtual ICollection<PoemLeaderBoard> PoemLeaderBoards { get; set; }
         public virtual ICollection<Like>? Likes { get; set; }
         /*        public virtual CopyRight CopyRight { get; set; }*/

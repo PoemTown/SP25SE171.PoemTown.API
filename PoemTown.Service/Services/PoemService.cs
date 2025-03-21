@@ -943,54 +943,55 @@ public class PoemService : IPoemService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task PurchasePoemCopyRight(Guid userId, Guid poemId)
+    public async Task PurchasePoemCopyRight(Guid userId, Guid versionId)
     {
-        // Find poem by id
-        Poem? poem = await _unitOfWork.GetRepository<Poem>()
-            .FindAsync(p => p.Id == poemId);
+        // Find sale version of poem by id
+        SaleVersion? saleVersion = await _unitOfWork.GetRepository<SaleVersion>()
+            .FindAsync(p => p.Id == versionId);
 
         // If poem not found then throw exception
-        if (poem == null)
+        if (saleVersion == null)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+            throw new CoreException(StatusCodes.Status400BadRequest, "Version not found");
         }
 
         // If poem is public then throw exception
-        if (poem.IsSellCopyRight == false)
+        if (saleVersion.Poem.IsSellCopyRight == false)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not for sell, cannot purchase");
         }
 
-        // Find user by id
-        UsageRight? userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
-            .FindAsync(p => p.UserId == userId && p.SaleVersion!.PoemId == poemId && p.Type == UserPoemType.PoemBuyer);
+        UsageRight? usageRight = await _unitOfWork.GetRepository<UsageRight>()
+            .FindAsync(p => p.UserId == userId 
+                            && p.SaleVersion!.PoemId == saleVersion.Poem.Id
+                            && p.Type == UserPoemType.PoemBuyer);
 
         // If user already purchased this poem then throw exception
-        if (userPoemRecordFile != null)
+        if (usageRight != null)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "User already purchased this poem");
+            throw new CoreException(StatusCodes.Status400BadRequest, "User already purchased this version sale of poen");
         }
 
-        // Create new user poem record file for buyer with 2 years valid copy right
-        userPoemRecordFile = new UsageRight
+        // Create new user usageRight for buyer with saleVersion.DurationTime years valid copy right
+        usageRight = new UsageRight
         {
             UserId = userId,
             Type = UserPoemType.PoemBuyer,
             CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
-            CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(2).DateTime
+            CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(saleVersion.DurationTime).DateTime
         };
 
-        await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecordFile);
+        await _unitOfWork.GetRepository<UsageRight>().InsertAsync(usageRight);
         await _unitOfWork.SaveChangesAsync();
 
         CreateOrderEvent message = new CreateOrderEvent()
         {
             OrderCode = OrderCodeGenerator.Generate(),
-            Amount = poem.Price,
+            Amount = saleVersion.Price,
             Type = OrderType.Poems,
-            OrderDescription = $"Mua bản quyền bài thơ {poem.Title}",
+            OrderDescription = $"Mua quyền sử dụng bài thơ {saleVersion.Poem.Title}",
             Status = OrderStatus.Paid,
-            PoemId = poem.Id,
+            SaleVersionId = saleVersion.Id,
             PaidDate = DateTimeHelper.SystemTimeNow,
             DiscountAmount = 0,
             UserId = userId

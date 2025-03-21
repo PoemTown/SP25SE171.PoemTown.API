@@ -43,19 +43,19 @@ public class CreateOrderConsumer : IConsumer<CreateOrderEvent>
         {
             // Create order details as poems
             case OrderType.Poems:
-                var poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == message.PoemId);
+                var saleVerion = await _unitOfWork.GetRepository<SaleVersion>().FindAsync(p => p.Id == message.SaleVersionId);
                 
                 // Check if poem is null
-                if (poem == null)
+                if (saleVerion == null)
                 {
-                    throw new Exception("Poem not found");
+                    throw new Exception("saleVerion not found");
                 }
                 orderDetails.Add(new()
                 {
                     Order = order,
-                    ItemPrice = poem.Price,
+                    ItemPrice = saleVerion.Price,
                     ItemQuantity = 1,
-                    Poem = poem
+                    SaleVersion = saleVerion
                 });
                 break;
             // Create order details as record files

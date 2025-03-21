@@ -1,5 +1,5 @@
 ﻿using PoemTown.Repository.Base;
-using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Achievements;
 
 namespace PoemTown.Repository.Entities;
 

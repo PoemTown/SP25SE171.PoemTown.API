@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.Entities;
-using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Achievements;
 using PoemTown.Repository.Enums.LeaderBoards;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;

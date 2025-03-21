@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PoemTown.Repository.Enums;
+using PoemTown.Repository.Enums.Achievements;
 using System;
 using System.Collections.Generic;
 using System.Linq;

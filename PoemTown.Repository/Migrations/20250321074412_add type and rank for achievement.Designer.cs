@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PoemTown.Repository.Base;
 
@@ -11,9 +12,11 @@ using PoemTown.Repository.Base;
 namespace PoemTown.Repository.Migrations
 {
     [DbContext(typeof(PoemTownDbContext))]
-    partial class PoemTownDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250321074412_add type and rank for achievement")]
+    partial class addtypeandrankforachievement
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -417,43 +420,6 @@ namespace PoemTown.Repository.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Likes");
-                });
-
-            modelBuilder.Entity("PoemTown.Repository.Entities.LoginTracking", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("CreatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("DeletedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("LastUpdatedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset>("LastUpdatedTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("LoginDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("LoginTrackings");
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.MasterTemplate", b =>
@@ -989,9 +955,6 @@ namespace PoemTown.Repository.Migrations
 
                     b.Property<Guid?>("ReportedUserId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ResolveResponse")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -2012,17 +1975,6 @@ namespace PoemTown.Repository.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("PoemTown.Repository.Entities.LoginTracking", b =>
-                {
-                    b.HasOne("PoemTown.Repository.Entities.User", "User")
-                        .WithMany("LoginTrackings")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("PoemTown.Repository.Entities.MasterTemplateDetail", b =>
                 {
                     b.HasOne("PoemTown.Repository.Entities.MasterTemplate", "MasterTemplate")
@@ -2472,8 +2424,6 @@ namespace PoemTown.Repository.Migrations
                     b.Navigation("FromUser");
 
                     b.Navigation("Likes");
-
-                    b.Navigation("LoginTrackings");
 
                     b.Navigation("MarkByUsers");
 

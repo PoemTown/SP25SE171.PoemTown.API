@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
 using PoemTown.Repository.Entities;
+using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.LeaderBoardDetailResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.LeaderBoardResponses;
-using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.LeaderBoardFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -17,12 +17,9 @@ namespace PoemTown.API.Controllers
     public class LeaderboardsController : BaseController
     {
         private readonly ILeaderBoardService _leaderBoardService;
-        private readonly IMapper _mapper;
-        
-        public LeaderboardsController(ILeaderBoardService leaderBoardService, IMapper mapper)
+        public LeaderboardsController(ILeaderBoardService leaderBoardService)
         {
             _leaderBoardService = leaderBoardService;
-            _mapper = mapper;
         }
 
         /// <summary>
@@ -47,15 +44,16 @@ namespace PoemTown.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("v1/poem-leaderboard")]
-        public async Task<ActionResult<BasePaginationResponse<GetLeaderBoardResponse>>> GetTopPoemsLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
+        public async Task<ActionResult<BaseResponse<GetLeaderBoardResponse>>> GetTopPoemsLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
         {
-            var paginationResponse = await _leaderBoardService.GetTopPoemsLeaderBoard(request);
+            var response = await _leaderBoardService.GetTopPoemsLeaderBoard(request);
             
-            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetLeaderBoardResponse>>(paginationResponse);
-            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
-            basePaginationResponse.Message = "Get Top Poems LeaderBoard successfully";
+            var baseResponse = new BaseResponse<GetLeaderBoardResponse>();
+            baseResponse.StatusCode = StatusCodes.Status200OK;
+            baseResponse.Message = "Get Top Poems LeaderBoard successfully";
+            baseResponse.Data = response;
 
-            return Ok(basePaginationResponse);
+            return Ok(baseResponse);
         }
 
         /// <summary>
@@ -80,15 +78,16 @@ namespace PoemTown.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("v1/user-leaderboard")]
-        public async Task<ActionResult<BasePaginationResponse<GetLeaderBoardResponse>>> GetTopUsersLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
+        public async Task<ActionResult<BaseResponse<GetLeaderBoardResponse>>> GetTopUsersLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
         {
-            var paginationResponse = await _leaderBoardService.GetTopUsersLeaderBoard(request);
+            var response = await _leaderBoardService.GetTopUsersLeaderBoard(request);
 
-            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetLeaderBoardResponse>>(paginationResponse);
-            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
-            basePaginationResponse.Message = "Get Top Users LeaderBoard successfully";
+            var baseResponse = new BaseResponse<GetLeaderBoardResponse>();
+            baseResponse.StatusCode = StatusCodes.Status200OK;
+            baseResponse.Message = "Get Top Poems LeaderBoard successfully";
+            baseResponse.Data = response;
 
-            return Ok(basePaginationResponse);
+            return Ok(baseResponse);
 
         }
     }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PoemTown.Repository.Enums
+namespace PoemTown.Repository.Enums.Achievements
 {
     public enum AchievementType
     {

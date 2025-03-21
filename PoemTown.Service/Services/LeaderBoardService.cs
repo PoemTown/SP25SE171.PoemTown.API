@@ -206,10 +206,7 @@ namespace PoemTown.Service.Services
             var leaderboardQuery = _unitOfWork.GetRepository<LeaderBoard>().AsQueryable()
               .Include(lb => lb.PoemLeaderBoards)
                 .ThenInclude(detail => detail.Poem)
-                    /*
-                    .ThenInclude(p => p.UserPoemRecordFiles)
-                        */
-                        .ThenInclude(uprf => uprf.User)
+                    .ThenInclude(p => p.User)
                 .Where(lb => lb.Type == LeaderBoardType.Poem
                  && lb.Status == LeaderBoardStatus.InProgress
                  && lb.StartDate.HasValue
@@ -251,7 +248,8 @@ namespace PoemTown.Service.Services
                 PoemId = d.PoemId,
                 LeaderBoardId = d.LeaderBoardId,
                 Rank = d.Rank,
-                Poem = d.Poem != null ? _mapper.Map<GetPoemResponse>(d.Poem) : null
+                Poem = d.Poem != null ? _mapper.Map<GetPoemResponse>(d.Poem) : null,
+
             }).ToList();
 
             var leaderBoardResponse = new GetLeaderBoardResponse

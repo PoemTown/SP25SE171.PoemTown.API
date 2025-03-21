@@ -53,7 +53,8 @@ namespace PoemTown.Service.Services
 
         public async Task CreateNewRecord(Guid userId, Guid poemID, CreateNewRecordFileRequest request)
         {
-            // Mapping request to entity
+            throw new NotImplementedException();
+            /*// Mapping request to entity
             RecordFile record = _mapper.Map<CreateNewRecordFileRequest, RecordFile>(request);
             record.PoemId = poemID;
 
@@ -72,7 +73,7 @@ namespace PoemTown.Service.Services
                     PoemId= poemID,
                 };
                 await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecord);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();*/
         }
 
 

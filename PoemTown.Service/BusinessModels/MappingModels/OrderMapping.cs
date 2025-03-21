@@ -15,5 +15,6 @@ public class OrderMapping : Profile
         CreateMap<GetPoemInOrderDetailResponse, GetOrderDetailResponse>();
         CreateMap<GetRecordFileInOrderDetailResponse, GetOrderDetailResponse>();
         CreateMap<GetMasterTemplateInOrderDetailResponse, GetOrderDetailResponse>();
+        CreateMap<GetSaleVersionInOrderDetailResponse, GetOrderDetailResponse>();
     }
 }

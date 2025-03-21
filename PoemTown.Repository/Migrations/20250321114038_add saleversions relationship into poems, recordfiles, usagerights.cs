@@ -30,20 +30,6 @@ namespace PoemTown.Repository.Migrations
                 nullable: false,
                 defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
 
-            migrationBuilder.AddColumn<int>(
-                name: "Rank",
-                table: "Achievements",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
-
-            migrationBuilder.AddColumn<int>(
-                name: "Type",
-                table: "Achievements",
-                type: "int",
-                nullable: false,
-                defaultValue: 0);
-
             migrationBuilder.CreateTable(
                 name: "PoemLeaderBoards",
                 columns: table => new
@@ -291,14 +277,6 @@ namespace PoemTown.Repository.Migrations
             migrationBuilder.DropColumn(
                 name: "UserId",
                 table: "RecordFiles");
-
-            migrationBuilder.DropColumn(
-                name: "Rank",
-                table: "Achievements");
-
-            migrationBuilder.DropColumn(
-                name: "Type",
-                table: "Achievements");
 
             migrationBuilder.CreateTable(
                 name: "LeaderBoardDetails",

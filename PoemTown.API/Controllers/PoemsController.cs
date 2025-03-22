@@ -621,4 +621,19 @@ public class PoemsController : BaseController
         var response = await _poemService.CheckPoemPlagiarism(userId, poemContent);
         return Ok(new BaseResponse<PoemPlagiarismResponse>(StatusCodes.Status200OK, "Check poem plagiarism successfully", response));
     }
+    
+    /// <summary>
+    /// Miễn phí sale version của bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/free/{poemId}")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> FreeSaleVersionPoem(Guid poemId)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.FreeSaleVersionPoem(userId, poemId);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Free sale version poem successfully"));
+    }
 }

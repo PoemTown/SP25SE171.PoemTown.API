@@ -143,6 +143,28 @@ public class PoemService : IPoemService
             });
         }*/
 
+        // Check if poem is posted
+        if (request.Status == PoemStatus.Posted)
+        {
+            bool isExist = await _unitOfWork.GetRepository<SaleVersion>()
+                .AsQueryable()
+                .AnyAsync(p => p.PoemId == poem.Id);
+            
+            // Check if sale version exist, if not then create default sale version for poem
+            if (!isExist)
+            {
+                // Create default sale version for poem
+                await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(new SaleVersion
+                {
+                    PoemId = poem.Id,
+                    CommissionPercentage = 0,
+                    DurationTime = 100,
+                    Status = SaleVersionStatus.Default,
+                    Price = 0,
+                });
+            }
+        }
+        
         // Save changes
         await _unitOfWork.SaveChangesAsync();
 
@@ -441,6 +463,27 @@ public class PoemService : IPoemService
             });
         }*/
 
+        if (request.Status == PoemStatus.Posted)
+        {
+            bool isExist = await _unitOfWork.GetRepository<SaleVersion>()
+                .AsQueryable()
+                .AnyAsync(p => p.PoemId == poem.Id);
+            
+            // Check if sale version exist, if not then create default sale version for poem
+            if (!isExist)
+            {
+                // Create default sale version for poem
+                await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(new SaleVersion
+                {
+                    PoemId = poem.Id,
+                    CommissionPercentage = 0,
+                    DurationTime = 100,
+                    Status = SaleVersionStatus.Default,
+                    Price = 0,
+                });
+            }
+        }
+        
         await _unitOfWork.SaveChangesAsync();
 
         // Publish event to store poem embedding
@@ -952,6 +995,69 @@ public class PoemService : IPoemService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task FreeSaleVersionPoem(Guid userId, Guid poemId)
+    {
+        // Find poem by id
+        Poem? poem = await _unitOfWork.GetRepository<Poem>()
+            .FindAsync(p => p.Id == poemId);
+
+        // If poem not found then throw exception
+        if (poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+
+        // Check if user own this poem
+        if (poem.UserId != userId)
+        {
+            throw new CoreException(StatusCodes.Status403Forbidden, "User does not own this poem");
+        }
+
+        // If poem is not posted then throw exception
+        if (poem.Status != PoemStatus.Posted)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not posted, cannot enable selling");
+        }
+
+        // Check if poem already has free sale version
+        bool anyFreeSaleVersion = await _unitOfWork.GetRepository<SaleVersion>()
+            .AsQueryable()
+            .AnyAsync(p => p.PoemId == poem.Id && p.Status == SaleVersionStatus.Free);
+        if(anyFreeSaleVersion)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem already has free sale version");
+        }
+        
+        IList<SaleVersion> saleVersions = await _unitOfWork.GetRepository<SaleVersion>()
+            .AsQueryable()
+            .Where(p => p.PoemId == poem.Id && p.Poem.UserId == userId)
+            .ToListAsync();
+
+        // If poem has sale versions then set all to not in sale
+        if (saleVersions.Count > 0)
+        {
+            foreach (var sv in saleVersions)
+            {
+                sv.Status = SaleVersionStatus.NotInSale;
+            }
+
+            _unitOfWork.GetRepository<SaleVersion>().UpdateRange(saleVersions);
+        }
+
+        // Finally, create new sale version as free for poem with status is in sale
+        SaleVersion saleVersion = new SaleVersion()
+        {
+            PoemId = poem.Id,
+            Price = 0,
+            DurationTime = 100,
+            CommissionPercentage = 0,
+            Status = SaleVersionStatus.Free,
+        };
+
+        await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    
     public async Task PurchasePoemCopyRight(Guid userId, Guid poemId)
     {
         // Find sale version of poem by id
@@ -978,7 +1084,12 @@ public class PoemService : IPoemService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not for sale");
         }
-        
+
+        // Cannot purchase free poem
+        if (saleVersion.Status == SaleVersionStatus.Free)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is free, cannot purchase");
+        }
         /*// If poem is public then throw exception
         if (saleVersion.Poem.IsSellCopyRight == false)
         {
@@ -1004,7 +1115,7 @@ public class PoemService : IPoemService
             .FindAsync(p => p.UserId == userId
                             && p.SaleVersion!.PoemId == poemId
                             && p.Type == UserPoemType.PoemBuyer);
-
+        
         // If user already purchased this poem then throw exception
         if (usageRight != null)
         {

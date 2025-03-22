@@ -47,4 +47,5 @@ public interface IPoemService
     Task ConvertPoemIntoEmbeddingAndSaveToQdrant(Guid poemId);
     Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, string text);
     bool IsPoemPlagiarism(double score);
+    Task FreeSaleVersionPoem(Guid userId, Guid poemId);
 }

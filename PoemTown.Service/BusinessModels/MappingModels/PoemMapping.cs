@@ -37,7 +37,7 @@ public class PoemMapping : Profile
             .ForMember(dest => dest.RecordFiles, opt => opt.Ignore())
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
-            .ForMember(dest => dest.IsSellCopyRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)));
+            .ForMember(dest => dest.IsSellCopyRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale )));
         
         CreateMap<GetPoemInCollectionResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))

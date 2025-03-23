@@ -1,9 +1,8 @@
-﻿namespace PoemTown.Service.BusinessModels.ResponseModels.OrderResponses;
+﻿using PoemTown.Service.BusinessModels.ResponseModels.SaleVersionResponses;
 
-public class GetSaleVersionInOrderDetailResponse
+namespace PoemTown.Service.BusinessModels.ResponseModels.OrderResponses;
+
+public class GetSaleVersionInOrderDetailResponse : GetSaleVersionResponse
 {
-    public Guid Id { get; set; }
-    public int CommissionPercentage { get; set; }
-    public int Price { get; set; }
     public GetPoemInOrderDetailResponse? Poem { get; set; }
 }

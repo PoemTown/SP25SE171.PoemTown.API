@@ -11,6 +11,7 @@ public class SaleVersion : BaseEntity
     public decimal Price { get; set; }
     public int DurationTime { get; set; }
     public SaleVersionStatus Status { get; set; } = SaleVersionStatus.NotInSale;
+    public bool IsInUse { get; set; }
     public Guid PoemId { get; set; }
     
     public virtual Poem Poem { get; set; } = null!;

@@ -26,33 +26,41 @@ public class PoemMapping : Profile
         CreateMap<GetPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
-            .ForMember(dest => dest.IsSellCopyRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
+            .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
             /*.ForMember(dest => dest.User,
                 opt => opt.MapFrom(src =>
                     // Pick the User from the UserPoemRecordFiles that is the copyright holder.
-                    src.UserPoemRecordFiles.FirstOrDefault(uprf => uprf.Type == UserPoemType.CopyRightHolder).User))*/;
+                    src.UserPoemRecordFiles.FirstOrDefault(uprf => uprf.Type == UserPoemType.CopyRightHolder).User))*/
 
         CreateMap<GetRecordFileResponse, GetPoemDetailResponse>().ReverseMap();
         CreateMap<GetPoemDetailResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.RecordFiles, opt => opt.Ignore())
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
-            .ForMember(dest => dest.IsSellCopyRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale )));
+            .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale )))
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
         
         CreateMap<GetPoemInCollectionResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
-            .ForMember(dest => dest.IsSellCopyRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)));
+            .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
+
         CreateMap<GetPostedPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
-            .ForMember(dest => dest.IsSellCopyRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)));
+            .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
+
         
         // poem in target mark
         CreateMap<GetPoemInTargetMarkResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
-            .ForMember(dest => dest.IsSellCopyRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)));
+            .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
+
 
         // poem in collection
         CreateMap<GetCollectionInPoemResponse, GetPoemResponse>();

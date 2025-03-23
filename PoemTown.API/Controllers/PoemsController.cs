@@ -701,10 +701,10 @@ public class PoemsController : BaseController
     [Route("v1/plagiarism")]
     [Authorize]
     public async Task<ActionResult<BaseResponse<PoemPlagiarismResponse>>>
-        SearchSimilarPoemEmbeddingPoint([FromBody] string poemContent)
+        SearchSimilarPoemEmbeddingPoint([FromBody] CheckPoemPlagiarismRequest request)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-        var response = await _poemService.CheckPoemPlagiarism(userId, poemContent);
+        var response = await _poemService.CheckPoemPlagiarism(userId, request);
         return Ok(new BaseResponse<PoemPlagiarismResponse>(StatusCodes.Status200OK, "Check poem plagiarism successfully", response));
     }
     

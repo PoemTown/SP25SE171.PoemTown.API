@@ -92,7 +92,7 @@ public class QDrantService : IQDrantService
         {
             collection_name = CollectionName,
             vector = embedding,
-            limit = 1,
+            limit = 10,
             filter = new
             {
                 must_not = new[]

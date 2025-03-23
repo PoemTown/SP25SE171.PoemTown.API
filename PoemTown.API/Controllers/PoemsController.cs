@@ -38,6 +38,18 @@ public class PoemsController : BaseController
     /// - 2: Suspended (Không sử dụng)
     ///
     /// Type: Loại bài thơ, thể thơ:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -92,6 +104,13 @@ public class PoemsController : BaseController
     ///
     /// - Poem = 1,
     /// - Collection = 2
+    ///
+    /// SaleVersion Status:
+    /// 
+    /// - InSale = 1,
+    /// - NotInSale = 2,
+    /// - Free = 3,
+    /// - Default = 4
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -125,8 +144,19 @@ public class PoemsController : BaseController
     /// - 2: Suspended (Không sử dụng)
     ///
     /// Type: Loại bài thơ, thể thơ:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
     /// </remarks>
-
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPut]
@@ -234,7 +264,13 @@ public class PoemsController : BaseController
     ///
     /// - CreatedTimeAscending = 1 (Thời gian tạo tăng dần),
     /// - CreatedTimeDescending = 2 (Thời gian tạo giảm dần) (Mặc định)
+    ///
+    /// SaleVersion Status:
     /// 
+    /// - InSale = 1,
+    /// - NotInSale = 2,
+    /// - Free = 3,
+    /// - Default = 4
     /// </remarks>
     /// <param name="poemId"></param>
     /// <returns></returns>
@@ -291,6 +327,13 @@ public class PoemsController : BaseController
     ///
     /// - Poem = 1,
     /// - Collection = 2
+    ///
+    /// SaleVersion Status:
+    /// 
+    /// - InSale = 1,
+    /// - NotInSale = 2,
+    /// - Free = 3,
+    /// - Default = 4
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -319,10 +362,46 @@ public class PoemsController : BaseController
     /// Lấy danh sách bài thơ theo bộ sưu tập, yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
+    /// Status: Trạng thái của bài thơ
+    ///
+    /// - 0: Draft
+    /// - 1: Posted
+    /// - 2: Suspended
+    ///
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
+    ///
+    /// SortOptions: Sắp xếp bài thơ theo thứ tự
+    ///
+    /// - 1: LikeCountAscending (Lượt thích tăng dần)
+    /// - 2: LikeCountDescending (Lượt thích giảm dần)
+    /// - 3: CommentCountAscending (Lượt bình luận tăng dần)
+    /// - 4: CommentCountDescending (Lượt bình luận giảm dần)
+    /// - 5: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
+    /// - 6: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    ///
     /// TargetMark Type:
     ///
     /// - Poem = 1,
     /// - Collection = 2
+    ///
+    /// SaleVersion Status:
+    /// 
+    /// - InSale = 1,
+    /// - NotInSale = 2,
+    /// - Free = 3,
+    /// - Default = 4
     /// </remarks>
     /// <param name="request"></param>
     /// <param name="collectionId">Lấy từ request path</param>
@@ -378,6 +457,13 @@ public class PoemsController : BaseController
     ///
     /// - Poem = 1,
     /// - Collection = 2
+    ///
+    /// SaleVersion Status:
+    /// 
+    /// - InSale = 1,
+    /// - NotInSale = 2,
+    /// - Free = 3,
+    /// - Default = 4
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>

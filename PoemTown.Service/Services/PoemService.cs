@@ -159,6 +159,7 @@ public class PoemService : IPoemService
                     PoemId = poem.Id,
                     CommissionPercentage = 0,
                     DurationTime = 100,
+                    IsInUse = true,
                     Status = SaleVersionStatus.Default,
                     Price = 0,
                 });
@@ -219,6 +220,30 @@ public class PoemService : IPoemService
             Type = UserPoemType.CopyRightHolder,
         };
         await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecord);*/
+        
+        // Create new sale version as FREE for poem because this is community poem
+        if (request.Status == PoemStatus.Posted)
+        {
+            bool isExist = await _unitOfWork.GetRepository<SaleVersion>()
+                .AsQueryable()
+                .AnyAsync(p => p.PoemId == poem.Id);
+            
+            // Check if sale version exist, if not then create default sale version for poem
+            if (!isExist)
+            {
+                // Create default sale version for poem
+                await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(new SaleVersion
+                {
+                    PoemId = poem.Id,
+                    CommissionPercentage = 0,
+                    DurationTime = 100,
+                    IsInUse = true,
+                    Status = SaleVersionStatus.Free,
+                    Price = 0,
+                });
+            }
+        }
+        
         // Save changes
         await _unitOfWork.SaveChangesAsync();
     }
@@ -478,6 +503,7 @@ public class PoemService : IPoemService
                     PoemId = poem.Id,
                     CommissionPercentage = 0,
                     DurationTime = 100,
+                    IsInUse = true,
                     Status = SaleVersionStatus.Default,
                     Price = 0,
                 });
@@ -965,6 +991,12 @@ public class PoemService : IPoemService
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not posted, cannot enable selling");
         }
 
+        // Disable selling for community poem
+        if (poem.Collection is { IsCommunity: true })
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is community poem, cannot enable selling");
+        }
+        
         IList<SaleVersion> saleVersions = await _unitOfWork.GetRepository<SaleVersion>()
             .AsQueryable()
             .Where(p => p.PoemId == poem.Id && p.Poem.UserId == userId)
@@ -976,6 +1008,7 @@ public class PoemService : IPoemService
             foreach (var sv in saleVersions)
             {
                 sv.Status = SaleVersionStatus.NotInSale;
+                sv.IsInUse = false;
             }
 
             _unitOfWork.GetRepository<SaleVersion>().UpdateRange(saleVersions);
@@ -988,6 +1021,7 @@ public class PoemService : IPoemService
             Price = request.Price,
             DurationTime = request.DurationTime,
             CommissionPercentage = request.CommissionPercentage,
+            IsInUse = true,
             Status = SaleVersionStatus.InSale,
         };
 
@@ -1038,6 +1072,7 @@ public class PoemService : IPoemService
         {
             foreach (var sv in saleVersions)
             {
+                sv.IsInUse = false;
                 sv.Status = SaleVersionStatus.NotInSale;
             }
 
@@ -1051,6 +1086,7 @@ public class PoemService : IPoemService
             Price = 0,
             DurationTime = 100,
             CommissionPercentage = 0,
+            IsInUse = true,
             Status = SaleVersionStatus.Free,
         };
 

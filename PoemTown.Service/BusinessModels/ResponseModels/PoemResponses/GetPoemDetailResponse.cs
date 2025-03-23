@@ -4,6 +4,7 @@ using PoemTown.Repository.Enums.Poems;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.SaleVersionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -21,11 +22,12 @@ public class GetPoemDetailResponse
     public string ChapterName { get; set; }
     public string PoemImage { get; set; }
     public decimal Price { get; set; }
-    public bool IsSellCopyRight { get; set; }
+    public bool IsSellUsageRight { get; set; }
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
     public GetCollectionInPoemResponse Collection { get; set; }
     public GetBasicUserInformationResponse User { get; set; }
+    public GetSaleVersionResponse? SaleVersion { get; set; }
     public PaginationResponse<GetRecordFileResponse> RecordFiles { get; set; }
 }

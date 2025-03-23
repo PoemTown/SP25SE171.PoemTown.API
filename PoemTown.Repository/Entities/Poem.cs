@@ -29,7 +29,7 @@ namespace PoemTown.Repository.Entities
         public Guid? SourceCopyRightId { get; set; }
         public Guid? CollectionId { get; set; }
         public Guid? UserId { get; set; }
-        public bool? IsSellCopyRight { get; set; } = false;
+        public bool? IsSellUsageRight { get; set; } = false;
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }
         public virtual Collection? Collection { get; set; }

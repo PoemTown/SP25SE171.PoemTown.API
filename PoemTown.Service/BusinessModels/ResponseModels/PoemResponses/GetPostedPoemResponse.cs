@@ -2,6 +2,7 @@
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.CommentResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.SaleVersionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
@@ -20,7 +21,7 @@ public class GetPostedPoemResponse
     public string ChapterName { get; set; }
     public string? PoemImage { get; set; }
     public decimal Price { get; set; }
-    public bool IsSellCopyRight { get; set; }
+    public bool IsSellUsageRight { get; set; }
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
@@ -28,4 +29,6 @@ public class GetPostedPoemResponse
     public GetBasicUserInformationResponse User { get; set; }
     public GetLikeResponse Like { get; set; }
     public GetTargetMarkResponse TargetMark { get; set; }
+    public GetSaleVersionResponse? SaleVersion { get; set; }
+
 }

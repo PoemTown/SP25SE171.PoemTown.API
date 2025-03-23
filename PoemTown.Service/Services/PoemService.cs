@@ -1471,10 +1471,10 @@ public class PoemService : IPoemService
         return score > 0.5;
     }
 
-    public async Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, string poemContent)
+    public async Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, CheckPoemPlagiarismRequest request)
     {
         // Search similar poem embedding point
-        var response = await _qDrantService.SearchSimilarPoemEmbeddingPoint(userId, poemContent);
+        var response = await _qDrantService.SearchSimilarPoemEmbeddingPoint(userId, request.PoemContent);
 
         // If the score is greater than 0.9 then return the score of highest
         double averageScore = response.Results

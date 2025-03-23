@@ -45,7 +45,7 @@ public interface IPoemService
     Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request);
     Task DeletePoemInCommunity(Guid userId, Guid poemId);
     Task ConvertPoemIntoEmbeddingAndSaveToQdrant(Guid poemId);
-    Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, string text);
+    Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, CheckPoemPlagiarismRequest request);
     bool IsPoemPlagiarism(double score);
     Task FreeSaleVersionPoem(Guid userId, Guid poemId);
 }

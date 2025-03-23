@@ -19,6 +19,7 @@ public class GetPoemInCollectionResponse
     public string ChapterName { get; set; }
     public string? PoemImage { get; set; }
     public decimal Price { get; set; }
+    public bool? IsAbleToUploadRecordFile { get; set; } = false;
     public bool IsSellUsageRight { get; set; }
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }

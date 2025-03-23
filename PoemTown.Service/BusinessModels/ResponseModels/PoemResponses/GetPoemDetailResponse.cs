@@ -23,6 +23,7 @@ public class GetPoemDetailResponse
     public string PoemImage { get; set; }
     public decimal Price { get; set; }
     public bool IsSellUsageRight { get; set; }
+    public bool? IsAbleToUploadRecordFile { get; set; } = false;
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }

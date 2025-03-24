@@ -10,6 +10,7 @@ using PoemTown.Service.BusinessModels.RequestModels.ReportRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.ReportResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.PlagiarismDetector.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.ReportFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.ReportSorts;
@@ -20,10 +21,14 @@ public class ReportService : IReportService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
-    public ReportService(IUnitOfWork unitOfWork, IMapper mapper)
+    private readonly IQDrantService _qDrantService;
+    public ReportService(IUnitOfWork unitOfWork, 
+        IMapper mapper,
+        IQDrantService qDrantService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _qDrantService = qDrantService;
     }
 
     public async Task CreateReportPoem(Guid userId, CreateReportPoemRequest request)
@@ -170,15 +175,38 @@ public class ReportService : IReportService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Report not found");
         }
-
-        // Check if the report has been resolved
-        if (report.Status != ReportStatus.Pending)
+        
+        Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == report.PoemId);
+                
+        // Check if the poem exists
+        if(poem == null)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Report has been resolved");
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+        
+        // Check if the poem is not suspended
+        if (poem.Status != PoemStatus.Suspended)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Can not approve report of poem which is not suspended");
+        }
+        
+        switch (request.Status)
+        {
+            case ReportStatus.Approved:
+                poem.Status = PoemStatus.Posted;
+                
+                // Store the poem embedding
+                await _qDrantService.StorePoemEmbeddingAsync(poem.Id, poem.UserId!.Value, poem.Content!);
+                break;
+            
+            case ReportStatus.Rejected:
+                poem.Status = PoemStatus.Rejected;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
 
         // Update the report
-        report.Status = request.Status;
         report.ResolveResponse = request.ResolveResponse;
         
         _unitOfWork.GetRepository<Report>().Update(report);

@@ -52,6 +52,12 @@ public class UserEWalletsController : BaseController
     /// <summary>
     /// Lấy thông tin ví điện tử của bản thân, yêu cầu đăng nhập
     /// </summary>
+    /// <remarks>
+    /// WalletStatus:
+    ///
+    /// - InActive = 1,
+    /// - Active = 2
+    /// </remarks>
     /// <returns></returns>
     [HttpGet]
     [Route("v1/mine")]

@@ -7,4 +7,5 @@ public interface IUserEWalletService
 {
     Task<DepositUserEWalletResponse> DepositUserEWalletAsync(Guid userId, DepositUserEWalletRequest request);
     Task DonateUserEWalletAsync(Guid userId, DonateUserEWalletRequest request);
+    Task<GetUserEWalletResponse> GetUserEWalletAsync(Guid userId);
 }

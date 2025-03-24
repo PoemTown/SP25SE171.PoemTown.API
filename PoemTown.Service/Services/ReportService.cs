@@ -200,7 +200,7 @@ public class ReportService : IReportService
                 break;
             
             case ReportStatus.Rejected:
-                poem.Status = PoemStatus.Rejected;
+                poem.Status = PoemStatus.Draft;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

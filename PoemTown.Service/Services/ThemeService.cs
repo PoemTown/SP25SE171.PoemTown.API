@@ -43,45 +43,71 @@ public class ThemeService : IThemeService
                 MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.Header,
                 Image =
-                    "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/default header-1740549085.jpg",
+                    "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/Header Mặc định-1740771946.png",
+                ColorCode = "#000000",
             },
             new()
             {
                 MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.NavBackground
+                Type = TemplateDetailType.NavBackground,
+                ColorCode = "#000000",
+                Image = "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/NavBackground mặc định-1740773774.png",
             },
             new()
             {
                 MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.NavBorder,
-                ColorCode = "#cccccc"
+                ColorCode = "#CCCCCC",
+                Image = null
             },
             new()
             {
                 MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.MainBackground,
-            },
-            new()
-            {
-                MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.AchievementBackground,
+                ColorCode = null,
+                Image = "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/Mặc định-1740774283.png",
             },
             new()
             {
                 MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.AchievementBorder,
-                ColorCode = "#E4EF00"
+                ColorCode = "#000000",
+                Image = null
             },
             new()
             {
                 MasterTemplateId = masterTemplateId,
-                Type = TemplateDetailType.StatisticBackground,
+                Type = TemplateDetailType.AchievementBackground,
+                ColorCode = "#000000",
+                Image = "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/Mặc định-1740775121.png"
             },
             new()
             {
                 MasterTemplateId = masterTemplateId,
                 Type = TemplateDetailType.StatisticBorder,
-                ColorCode = "#cccccc"
+                ColorCode = "#000000",
+                Image = null
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.StatisticBackground,
+                ColorCode = "#000000",
+                Image = "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/Mặc định-1740775390.png"
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.AchievementTitleBackground,
+                ColorCode = "#000000",
+                Image = "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/Mặc định-1740774525.png"
+            },
+            new()
+            {
+                MasterTemplateId = masterTemplateId,
+                Type = TemplateDetailType.StatisticTitleBackground,
+                ColorCode = "#000000",
+                Image = "https://s3-hcm5-r1.longvan.net/poemtown.staging/templates/Mặc định-1740774752.png"
             },
         };
         return userTemplateDetails;
@@ -124,7 +150,7 @@ public class ThemeService : IThemeService
         IList<UserTemplateDetail> defaultUserTemplateDetails = await _unitOfWork
             .GetRepository<UserTemplateDetail>()
             .AsQueryable()
-            .Where(p => p.UserTemplate.TagName == "Default")
+            .Where(p => p.UserTemplate.TagName == "DEFAULT" && p.UserTemplate.UserId == userId)
             .ToListAsync();
 
         // Check if default user template details exist, then create default user template details
@@ -141,7 +167,7 @@ public class ThemeService : IThemeService
         else
         {
             MasterTemplate? masterTemplate =
-                await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.TagName == "Default");
+                await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.TagName == "DEFAULT");
 
             if (masterTemplate != null)
             {
@@ -395,12 +421,12 @@ public class ThemeService : IThemeService
 
         // Create default user template exist
         UserTemplate? userTemplate = await _unitOfWork.GetRepository<UserTemplate>()
-            .FindAsync(p => p.UserId == userId && p.TagName == "Default");
+            .FindAsync(p => p.UserId == userId && p.TagName == "DEFAULT");
 
         if (userTemplate == null)
         {
             MasterTemplate? masterTemplate =
-                await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.TagName == "Default");
+                await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.TagName == "DEFAULT");
 
             IList<UserTemplateDetail> userTemplateDetails;
             // Create master template and master template detail if not exist
@@ -411,7 +437,7 @@ public class ThemeService : IThemeService
                     TemplateName = "Template mặc định",
                     Status = TemplateStatus.Active,
                     Price = 0,
-                    TagName = "Default",
+                    TagName = "DEFAULT",
                     Type = TemplateType.Bundle,
                 };
                 await _unitOfWork.GetRepository<MasterTemplate>().InsertAsync(masterTemplate);

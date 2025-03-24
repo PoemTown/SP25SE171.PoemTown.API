@@ -5,4 +5,5 @@ public enum PoemStatus
     Draft = 0,
     Posted = 1,
     Suspended = 2,
+    Rejected = 3
 }

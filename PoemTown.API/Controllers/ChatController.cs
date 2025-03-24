@@ -25,6 +25,5 @@ namespace PoemTown.API.Controllers
             return Ok(new { status = "sent" });
         }
 
-
     }
 }

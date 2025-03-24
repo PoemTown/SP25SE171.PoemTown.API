@@ -14,6 +14,7 @@ using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AuthenticationRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AuthenResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TokenResponses;
+using PoemTown.Service.Events.AuthenticationEvents;
 using PoemTown.Service.Events.EmailEvents;
 
 namespace PoemTown.Service.Services
@@ -63,7 +64,7 @@ namespace PoemTown.Service.Services
         /// <exception cref="CoreException"></exception>
         public async Task<LoginResponse> Login(LoginRequest request, string userAgent, string ipAddress)
         {
-            User? user = await _userManager.FindByEmailAsync(request.Email);
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Email == request.Email);
             if (user == null)
             {
                 throw new CoreException(StatusCodes.Status401Unauthorized, "User not found");
@@ -112,18 +113,30 @@ namespace PoemTown.Service.Services
             }
 
             var signInResult = await _signInManager.PasswordSignInAsync(user, hashedPassword, true, false);
+            //check if login success
             if (!signInResult.Succeeded)
             {
                 throw new CoreException(StatusCodes.Status401Unauthorized, "Login failed");
             }
 
+            // Tracking user login by date
+            await _publishEndpoint.Publish(new TrackingUserLoginEvent()
+            {
+                UserId = user.Id,
+            });
+            
+            //generate token
             var token = await _tokenService.GenerateTokens(user, userAgent, ipAddress);
+            
             return new LoginResponse()
             {
                 AccessToken = token.AccessToken,
                 RefreshToken = token.RefreshToken,
                 Role = await _userManager.GetRolesAsync(user)
             };
+
+            
+            
         }
 
 
@@ -212,7 +225,7 @@ namespace PoemTown.Service.Services
 
         public async Task<LoginResponse> LoginWithGoogle(string googleId, string email, string userAgent, string ipAddress)
         {
-            User? user = await _userManager.FindByEmailAsync(email);
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Email == email);
             TokenResponse token;
             
             //User already exists
@@ -267,7 +280,7 @@ namespace PoemTown.Service.Services
 
         public async Task Logout(Guid userId, string userAgent, string ipAddress)
         {
-            User? user = await _userManager.FindByIdAsync(userId.ToString());
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
             
             if (user == null)
             {

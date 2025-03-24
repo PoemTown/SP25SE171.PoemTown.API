@@ -7,6 +7,7 @@ using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.PlagiarismDetector.PDModels;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
@@ -428,6 +429,28 @@ public class PoemsController : BaseController
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Enable selling poem successfully"));
     }
 
+ 
+    
+    /// <summary>
+    /// AI gợi ý hoàn thiện bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
+    ///
+    /// maxToken: Số lượng token tối đa mà AI sẽ hoàn thiện (100 token xấp xỉ 750 chữ)
+    /// </remarks>
     /// <summary>
     /// Mua bản quyền của một bài thơ, yêu cầu đăng nhập
     /// </summary>
@@ -558,7 +581,7 @@ public class PoemsController : BaseController
         var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(fluxSchnellEnhancedRequest);
         return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK, "Poem text to image with The Hive AI successfully", response));
     }
-    
+
     /// <summary>
     /// Chuyển đổi văn bản thành hình ảnh (NÊN XÀI CÁI NÀY) (Sử dụng The Hive AI với model SDXL Enhanced), yêu cầu đăng nhập
     /// </summary>
@@ -591,9 +614,42 @@ public class PoemsController : BaseController
     [Route("v1/text-to-image/the-hive-ai/sdxl-enhanced")]
     [Authorize]
     public async Task<ActionResult<BaseResponse<TheHiveAiResponse>>>
-        PoemTextToImageWithTheHiveAiSdxlEnhanced(ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest fluxSchnellEnhancedRequest)
+        PoemTextToImageWithTheHiveAiSdxlEnhanced(
+            ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest fluxSchnellEnhancedRequest)
     {
         var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(fluxSchnellEnhancedRequest);
-        return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK, "Poem text to image with The Hive AI successfully", response));
+        return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK,
+            "Poem text to image with The Hive AI successfully", response));
+    }
+
+    
+    /// <summary>
+    /// Chuyển đổi thơ sang vector embedding, lưu vào QDrant database (Mục đích dùng để train trong việc phát hiện ĐẠO VĂN, có thể không cần lên giao diện), yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/store/{poemId}")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> ConvertPoemIntoEmbeddingAndSaveToQdrant(Guid poemId)
+    {
+        await _poemService.ConvertPoemIntoEmbeddingAndSaveToQdrant(poemId);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "Store poem embedding successfully"));
+    }
+    
+    /// <summary>
+    /// Kiểm tra bài thơ có bị đạo văn không, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="poemContent"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/plagiarism")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<PoemPlagiarismResponse>>>
+        SearchSimilarPoemEmbeddingPoint([FromQuery]string poemContent)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _poemService.CheckPoemPlagiarism(userId, poemContent);
+        return Ok(new BaseResponse<PoemPlagiarismResponse>(StatusCodes.Status200OK, "Check poem plagiarism successfully", response));
     }
 }

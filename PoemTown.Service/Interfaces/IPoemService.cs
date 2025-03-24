@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+using PoemTown.Service.PlagiarismDetector.PDModels;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
@@ -34,6 +35,7 @@ public interface IPoemService
     Task PurchasePoemCopyRight(Guid userId, Guid poemId);
     Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request);
     Task DeletePoemInCommunity(Guid userId, Guid poemId);
+
     Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request);
     Task<string> ConvertPoemTextToImage(ConvertPoemTextToImageRequest request);
 
@@ -42,5 +44,8 @@ public interface IPoemService
 
     Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
         ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request);
-    
+
+    Task ConvertPoemIntoEmbeddingAndSaveToQdrant(Guid poemId);
+    Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, string text);
+    bool IsPoemPlagiarism(double score);
 }

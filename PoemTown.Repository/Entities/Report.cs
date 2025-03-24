@@ -21,12 +21,13 @@ namespace PoemTown.Repository.Entities
         public string ReportReason { get; set; } = default!;
         public ReportStatus Status { get; set; } = ReportStatus.Pending;
         public bool? IsSystem { get; set; } = false;
-
+        public double? PlagiarismScore { get; set; }
+        public string? ResolveResponse { get; set; }
         public Guid? ReportUserId { get; set; }
         public Guid? ReportedUserId { get; set; }
 
         public Guid? PoemId { get; set; }
-
+        public Guid? PlagiarismFromPoemId { get; set; }
 
 
         [ForeignKey("ReportUserId")] 
@@ -36,5 +37,6 @@ namespace PoemTown.Repository.Entities
         public virtual User? ReportedUser { get; set; }
 
         public virtual Poem? Poem { get; set; }
+        public virtual Poem? PlagiarismFromPoem { get; set; }
     }
 }

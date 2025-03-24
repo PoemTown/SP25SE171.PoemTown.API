@@ -6,4 +6,5 @@ public interface IEmailService
 {
     Task SendOtp(EmailOtp emailOtp);
     Task SendEmailForgotPassword(EmailForgotPassword emailForgotPassword);
+    Task SendEmailModeratorAccountPassword(SendPasswordToModeratorAccount model);
 }

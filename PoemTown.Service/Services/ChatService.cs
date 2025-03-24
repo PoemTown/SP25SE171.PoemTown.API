@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 namespace PoemTown.Service.Services
 {
+
     public class ChatService : IChatService
     {
         private readonly IHubContext<ChatHub> _hubContext;

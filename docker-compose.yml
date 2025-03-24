@@ -35,6 +35,16 @@ services:
     networks:
       - poemtown.rabbitmq_network
 
+  poemtown.qdrant:
+    image: qdrant/qdrant
+    container_name: poemtown.qdrant
+    restart: unless-stopped
+    ports:
+        - "6333:6333"
+    environment:
+        - QDRANT__SERVICE__API_KEY=1233897123879217893218931289321789321789123897321897123897321
+    volumes:
+    - poemtown.qdrant_data:/qdrant/storage
           
 networks:
     poemtown-network:
@@ -43,3 +53,4 @@ networks:
         driver: bridge
 volumes:
     poemtown-sqlserver:
+    poemtown.qdrant_data:

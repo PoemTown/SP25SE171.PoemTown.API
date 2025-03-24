@@ -12,15 +12,23 @@ using PoemTown.Service.BusinessModels.ConfigurationModels.Email;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Payment;
 using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
 using PoemTown.Service.BusinessModels.MappingModels;
+using PoemTown.Service.BusinessModels.ViewTemplateModels;
+using PoemTown.Service.Consumers.AuthenticationConsumers;
 using PoemTown.Service.Consumers.CollectionConsumers;
 using PoemTown.Service.Consumers.EmailConsumers;
 using PoemTown.Service.Consumers.OrderConsumers;
+using PoemTown.Service.Consumers.PoemConsumers;
 using PoemTown.Service.Consumers.TemplateConsumers;
 using PoemTown.Service.Consumers.ThemeConsumers;
 using PoemTown.Service.Consumers.TransactionConsumers;
 using PoemTown.Service.Consumers.UserEWalletConsumers;
 using PoemTown.Service.Events.ThemeEvents;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.Scheduler.AchievementJobs;
+using PoemTown.Service.Scheduler.LeaderBoardJobs;
+using PoemTown.Service.PlagiarismDetector.Interfaces;
+using PoemTown.Service.PlagiarismDetector.Services;
+using PoemTown.Service.PlagiarismDetector.Settings;
 using PoemTown.Service.Scheduler.PaymentJobs;
 using PoemTown.Service.Services;
 using PoemTown.Service.ThirdParties.Interfaces;
@@ -28,6 +36,7 @@ using PoemTown.Service.ThirdParties.Services;
 using PoemTown.Service.ThirdParties.Settings.AwsS3;
 using PoemTown.Service.ThirdParties.Settings.TheHiveAi;
 using PoemTown.Service.ThirdParties.Settings.ZaloPay;
+using Qdrant.Client;
 using Quartz;
 using RazorLight;
 
@@ -48,9 +57,11 @@ public static class ConfigureService
         services.AddZaloPayConfig(configuration);
         services.AddPaymentRedirectConfig(configuration);
         services.AddQuartzConfig();
-        services.AddSignalRConfig();
+
         services.AddBetalgoOpenAI(configuration);
         services.AddTheHiveAiSettings(configuration);
+        services.AddSignalRConfig();
+        services.AddQDrantConfig(configuration);
     }
     
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -80,8 +91,13 @@ public static class ConfigureService
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IRecordFileService, RecordFileService>();
         services.AddScoped<IChatService, ChatService>();
+        services.AddScoped<ILeaderBoardService, LeaderBoardService>();
+        services.AddScoped<IAchievementService, AchievementService>();
 
 
+        //Plagiarism detector
+        services.AddScoped<IEmbeddingService, EmbeddingService>();
+        services.AddScoped<IQDrantService, QDrantService>();
 
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
@@ -111,6 +127,9 @@ public static class ConfigureService
             config.AddConsumer<CreateDonateTransactionConsumer>();
             config.AddConsumer<CreateOrderConsumer>();
             config.AddConsumer<CreateTransactionConsumer>();
+            config.AddConsumer<SendPasswordToModeratorAccountConsumer>();
+            config.AddConsumer<CheckPoemPlagiarismConsumer>();
+            config.AddConsumer<TrackingUserLoginConsumer>();
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {
@@ -245,16 +264,45 @@ public static class ConfigureService
     
     private static void AddQuartzConfig(this IServiceCollection services)
     {
-        services.AddQuartz(p => p.UseMicrosoftDependencyInjectionJobFactory());
+        services.AddQuartz(q =>
+        {
+            q.UseMicrosoftDependencyInjectionJobFactory();
+
+            // Define job keys.
+            var leaderBoardJobKey = new JobKey("LeaderBoardCalculationJob", "LeaderBoard");
+            var achievementJobKey = new JobKey("MonthlyAchievementJob", "Achievement");
+
+            // Register the jobs.
+            q.AddJob<MonthlyAchievementJob>(opts => opts.WithIdentity(achievementJobKey));
+            q.AddJob<LeaderBoardCalculationJob>(opts => opts.WithIdentity(leaderBoardJobKey));
+
+            // Trigger for LeaderBoardCalculationJob: fire immediately and every 30 seconds.
+            q.AddTrigger(opts => opts
+                .ForJob(leaderBoardJobKey)
+                .WithIdentity("LeaderBoardCalculationJobTrigger", "LeaderBoard")
+                .StartNow()
+                .WithSimpleSchedule(x => x
+                    .WithIntervalInSeconds(30)
+                    .RepeatForever()));
+
+            // Trigger for MonthlyAchievementJob: for testing, fire every 1 minute.
+            q.AddTrigger(opts => opts
+                .ForJob(achievementJobKey)
+                .WithIdentity("MonthlyAchievementJobTrigger", "Achievement")
+                .WithCronSchedule("0 59 23 L * ?"));
+        });
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
         
         services.AddScoped<PaymentTimeOutJob>();
+        services.AddScoped<LeaderBoardCalculationJob>();
+        services.AddScoped<MonthlyAchievementJob>();
     }
 
     private static void AddSignalRConfig(this IServiceCollection services)
     {
         services.AddSignalR();
     }
+
     private static void AddBetalgoOpenAI(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOpenAIService(options =>
@@ -275,6 +323,28 @@ public static class ConfigureService
             };
             return theHiveAiSettings;
         });
+    }
 
+    
+    private static void AddQDrantConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        var qdrantConfig = configuration.GetSection("QDrant");
+        services.AddSingleton<QDrantSettings>(options =>
+        {
+            var qdrantSettings = new QDrantSettings
+            {
+                Host = qdrantConfig.GetSection("Host").Value,
+                Port = int.Parse(qdrantConfig.GetSection("Port").Value),
+                ApiKey = qdrantConfig.GetSection("ApiKey").Value
+            };
+            return qdrantSettings;
+        });
+
+        services.AddSingleton<QdrantClient>(options =>
+        {
+            var qdrantSettings = options.GetRequiredService<QDrantSettings>();
+            return new QdrantClient(host: qdrantSettings.Host, port: qdrantSettings.Port,
+                apiKey: qdrantSettings.ApiKey);
+        });
     }
 }

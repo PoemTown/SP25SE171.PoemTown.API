@@ -42,6 +42,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<UserTemplateDetail> UserTemplateDetails => Set<UserTemplateDetail>();
     public virtual DbSet<ThemeUserTemplateDetail> ThemeUserTemplateDetails => Set<ThemeUserTemplateDetail>();
     public virtual DbSet<Theme> Themes => Set<Theme>();
+    public virtual DbSet<LoginTracking> LoginTrackings => Set<LoginTracking>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
     */
@@ -64,6 +65,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
         builder.Entity<User>().HasData(AccountDataSeeding.DefaultUsers);
         builder.Entity<Role>().HasData(RoleDataSeeding.DefaultRoles);
         builder.Entity<UserRole>().HasData(UserRoleDataSeeding.DefaultUserRoles);
+        builder.Entity<LeaderBoard>().HasData(LeaderBoardDataSeeding.DefaultLeaderBoards);
 
         builder.Entity<UserToken>()
             .HasKey(ut => ut.Id);
@@ -80,6 +82,12 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
             .HasForeignKey(t => t.UserEWalletId)
             .OnDelete(DeleteBehavior.Restrict); // Thay Cascade bằng Restrict
 
+        builder.Entity<Report>()
+            .HasOne(p => p.Poem)
+            .WithMany(r => r.Reports)
+            .HasForeignKey(p => p.PoemId)
+            .OnDelete(DeleteBehavior.Restrict); // Thay Cascade bằng Restrict
+        
         /*// Transactions -> Users
         builder.Entity<Transaction>()
             .HasOne(t => t.User)
@@ -226,7 +234,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
         .HasForeignKey(uc => uc.UserId) // Khóa ngoại trong UserCopyRight
         .OnDelete(DeleteBehavior.Restrict);*/
 
-        builder.Entity<UserLeaderBoard>()
+       builder.Entity<UserLeaderBoard>()
        .HasOne(uc => uc.LeaderBoard) // Một UserCopyRight liên kết với một CopyRight
        .WithMany(c => c.UserLeaderBoards) // Một CopyRight có nhiều UserCopyRight
        .HasForeignKey(uc => uc.LeaderBoardId) // Khóa ngoại trong UserCopyRight
@@ -237,7 +245,19 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
         .WithMany(u => u.UserLeaderBoards) // Một User có nhiều UserCopyRight
         .HasForeignKey(uc => uc.UserId) // Khóa ngoại trong UserCopyRight
         .OnDelete(DeleteBehavior.Restrict);
-        
+
+        builder.Entity<LeaderBoard>()
+        .HasMany(lb => lb.LeaderBoardDetails)
+        .WithOne(d => d.LeaderBoard)
+        .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<LeaderBoardDetail>()
+        .HasOne(d => d.Poem)
+        .WithMany(p => p.LeaderBoardDetails)
+        .HasForeignKey(d => d.PoemId)
+        .OnDelete(DeleteBehavior.Restrict);
+
+
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

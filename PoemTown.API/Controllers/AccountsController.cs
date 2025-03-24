@@ -228,4 +228,32 @@ public class AccountsController : BaseController
         await _accountService.UpdateAccountRole(userId, roleId);
         return Accepted(String.Empty, new BaseResponse(StatusCodes.Status202Accepted, "Account role updated"));
     }
+    
+    /// <summary>
+    /// Tạo tài khoản cho Moderator, yêu cầu quyền ADMIN
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/accounts/moderator")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> CreateModeratorAccount(CreateModeratorAccountRequest request)
+    {
+        await _accountService.CreateModeratorAccount(request);
+        return Created(String.Empty, new BaseResponse(StatusCodes.Status201Created, "Moderator account created"));
+    }
+    
+    /// <summary>
+    /// Xóa tài khoản, yêu cầu quyền ADMIN
+    /// </summary>
+    /// <param name="accountId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/accounts/{accountId}")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> DeleteAccount(Guid accountId)
+    {
+        await _accountService.DeleteAccount(accountId);
+        return Accepted(String.Empty, new BaseResponse(StatusCodes.Status202Accepted, "Account deleted"));
+    }
 }

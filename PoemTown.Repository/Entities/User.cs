@@ -25,7 +25,6 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public AccountStatus? Status { get; set; } = AccountStatus.InActive;
 
     public virtual UserEWallet? EWallet { get; set; }
-    public virtual LeaderBoardDetail? LeaderBoardDetail {  get; set; }
     public virtual ICollection<UserLeaderBoard>? UserLeaderBoards { get; set; }
 
     public virtual ICollection<Collection>? Collections { get; set; }
@@ -61,6 +60,7 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public virtual ICollection<Achievement> Achievements { get; set; }
     public virtual ICollection<Theme> Themes { get; set; }
     public virtual ICollection<UserRole> UserRoles { get; set; }
+    public virtual ICollection<LoginTracking>? LoginTrackings { get; set; }
     public string? CreatedBy { get; set; }
     public string? LastUpdatedBy { get; set; }
     public string? DeletedBy { get; set; }

@@ -60,4 +60,9 @@ public interface IAccountService
         Task AddAccountRole(Guid userId, Guid roleId);
         Task RemoveAccountRole(Guid userId, Guid roleId);
         Task UpdateAccountRole(Guid userId, Guid roleId);
+        Task CreateModeratorAccount(CreateModeratorAccountRequest request);
+        Task DeleteAccount(Guid accountId);
+        /*
+        Task DeleteAccountPermanent(Guid accountId);
+    */
     }

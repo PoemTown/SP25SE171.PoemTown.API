@@ -28,7 +28,7 @@ public class AddUserTemplateDetailConsumer : IConsumer<AddUserTemplateDetailEven
         // Get all user templates that have the default tag name
         IEnumerable<UserTemplate> userTemplates = await _unitOfWork.GetRepository<UserTemplate>()
             .AsQueryable()
-            .Where(ut => ut.TagName == "Default" && users.Select(u => u.Id).Contains(ut.UserId))
+            .Where(ut => ut.TagName == "DEFAULT" && users.Select(u => u.Id).Contains(ut.UserId))
             .ToListAsync();
 
         // Get all master template details that are selected

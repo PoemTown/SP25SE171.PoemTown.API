@@ -585,6 +585,9 @@ public class ThemeService : IThemeService
             {
                 userTemplateDetail.IsInUse = themeEntity.ThemeUserTemplateDetails
                     .Any(p => p.UserTemplateDetailId == userTemplateDetail.Id);
+
+                userTemplateDetail.Name =
+                    userTemplateDetail.Type + userTemplateDetail.UserTemplate.TemplateName;
             }
 
             ;

@@ -9,6 +9,7 @@ using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.StatisticResponse;
 using PoemTown.Service.Interfaces;
 using System.Security.Claims;
+using PoemTown.Service.QueryOptions.FilterOptions.StatisticFilters;
 
 namespace PoemTown.API.Controllers
 {
@@ -38,6 +39,42 @@ namespace PoemTown.API.Controllers
             Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
             var result = await _service.GetStatisticsAsync(userId);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get statistic user successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê trên trang dashbaord, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/total")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetTotalStatisticResponse>>> GetTotalStatistic()
+        {
+            var result = await _service.GetTotalStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get total statistic successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê người dùng online, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// period:
+        ///
+        /// - ByDate = 1 (lấy theo 30 ngày gần nhất),
+        /// - ByMonth = 2 (lấy theo tháng chỉ trong năm hiện tại),
+        /// - ByYear = 3 (lấy theo 5 năm gần nhất)
+        /// </remarks>
+        /// <remarks></remarks>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/online-users")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetOnlineUserStatisticResponse>>>
+            GetOnlineUserStatistic(GetOnlineUserFilterOption filter)
+        {
+            var result = await _service.GetOnlineUserStatistic(filter);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get online user statistic successfully", result));
         }
     }
 }

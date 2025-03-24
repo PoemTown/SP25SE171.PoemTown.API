@@ -15,5 +15,6 @@ public class GetUserProfileResponse
     public string PhoneNumber { get; set; }
     public string DisplayName { get; set; }
     public string Avatar { get; set; }
+    public int TotalFollower { get; set; }
     public AccountStatus Status { get; set; }
 }

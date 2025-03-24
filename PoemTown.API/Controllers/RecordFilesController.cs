@@ -156,6 +156,7 @@ namespace PoemTown.API.Controllers
             {
                 userId = Guid.Parse(userClaim.Value);
             }
+
             var paginationResponse = await _service.GetMyRecord(userId, request);
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetRecordFileResponse>>(paginationResponse);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;
@@ -164,7 +165,7 @@ namespace PoemTown.API.Controllers
             return Ok(basePaginationResponse);
         }
         /// <summary>
-        /// Lấy danh sách bản ngâm thơ cua toi, yêu cầu đăng nhập
+        /// Lấy danh sách bản ngâm thơ public, yêu cầu đăng nhập
         /// </summary>
         /// <remarks>
         /// </remarks>

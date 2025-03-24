@@ -48,4 +48,26 @@ public class UserEWalletsController : BaseController
         await _userEWalletService.DonateUserEWalletAsync(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Donate successfully"));
     }
+    
+    /// <summary>
+    /// Lấy thông tin ví điện tử của bản thân, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// WalletStatus:
+    ///
+    /// - InActive = 1,
+    /// - Active = 2
+    /// </remarks>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/mine")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<GetUserEWalletResponse>>> GetUserEWalletAsync()
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(x => x.Type == "UserId")!.Value);
+        
+        var response = await _userEWalletService.GetUserEWalletAsync(userId);
+        return Ok(response);
+    }
+    
 }

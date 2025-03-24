@@ -1,26 +1,37 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using PoemTown.Repository.Base;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Achievements;
 using PoemTown.Repository.Enums.LeaderBoards;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
+using PoemTown.Service.BusinessModels.ResponseModels.AchievementRespponses;
+using PoemTown.Service.BusinessModels.ResponseModels.CommentResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.QueryOptions.FilterOptions.AchievementFilters;
+using PoemTown.Service.QueryOptions.RequestOptions;
+using PoemTown.Service.QueryOptions.SortOptions.AchievementSorts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace PoemTown.Service.Services
 {
     public class AchievementService : IAchievementService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public AchievementService(IUnitOfWork unitOfWork)
+        public AchievementService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
         public async Task CreateMonthlyAchievementsAsync()
         {
@@ -31,7 +42,7 @@ namespace PoemTown.Service.Services
 
             // Process Poem Leaderboard
             var poemLeaderboard = await leaderBoardRepo.AsQueryable()
-               .Include(lb => lb.LeaderBoardDetails)
+               .Include(lb => lb.PoemLeaderBoards)
                .FirstOrDefaultAsync(lb =>
                    lb.Type == LeaderBoardType.Poem &&
                    lb.Status == LeaderBoardStatus.InProgress &&
@@ -40,15 +51,17 @@ namespace PoemTown.Service.Services
             if (poemLeaderboard != null)
             {
                 // Create achievements for each leaderboard detail entry.
-                foreach (var detail in poemLeaderboard.LeaderBoardDetails)
+                foreach (var detail in poemLeaderboard.PoemLeaderBoards)
                 {
                     // Format the month/year string (e.g., "3/2025")
                     string monthYear = poemLeaderboard.StartDate?.ToString("M/yyyy", CultureInfo.InvariantCulture) ?? "";
                     string achievementName = $"Top {detail.Rank} bài thơ tháng {monthYear}";
                     string achievementDescription = "Đây là phần thưởng bạn nhận được trong bảng xếp hạng bài thơ";
 
-                    var record = detail.Poem?.UserPoemRecordFiles
-                        .FirstOrDefault(p => p.Type == UserPoemType.CopyRightHolder && p.PoemId == detail.Poem?.Id);
+                    /*var record = detail.Poem?.UserPoemRecordFiles
+                        .FirstOrDefault(p => p.Type == UserPoemType.CopyRightHolder && p.PoemId == detail.Poem?.Id);*/
+
+                    var record = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == detail.PoemId); // Nhớ coi xem đúng ko rồi sửa khúc này nha khôi
                     if (record == null || record.UserId == null)
                     {
                         // Skip awarding achievement if no owner or owner UserId is null.
@@ -61,6 +74,8 @@ namespace PoemTown.Service.Services
                         Id = Guid.NewGuid(),
                         Name = achievementName,
                         Description = achievementDescription,
+                        Type = AchievementType.Poem,
+                        Rank = detail.Rank,
                         EarnedDate = now, // or use poemLeaderboard.EndDate if desired
                         UserId = userIDE // if you want to use the Poem's owner,                                                                                                    // you may need to adjust this to the author's Id
                     };
@@ -95,6 +110,8 @@ namespace PoemTown.Service.Services
                         Id = Guid.NewGuid(),
                         Name = achievementName,
                         Description = achievementDescription,
+                        Type = AchievementType.User,
+                        Rank = userEntry.Rank,
                         EarnedDate = now,
                         UserId = userEntry.UserId ?? Guid.Empty
                     };
@@ -106,6 +123,50 @@ namespace PoemTown.Service.Services
                 userLeaderboard.Status = LeaderBoardStatus.Done;
                 await _unitOfWork.SaveChangesAsync();
             }
+        }
+
+        public async Task<PaginationResponse<GetAchievementResponse>> GetMyAchievements(Guid userId, RequestOptionsBase<GetAchievementFilterOption, GetAchievementSortOption> request)
+        {
+            var achievementQuery = _unitOfWork.GetRepository<Achievement>().AsQueryable();
+
+            achievementQuery = achievementQuery.Where(a => a.UserId == userId);
+
+            if (request.IsDelete == true)
+            {
+                achievementQuery = achievementQuery.Where(p => p.DeletedTime != null);
+            }
+            else
+            {
+                achievementQuery = achievementQuery.Where(p => p.DeletedTime == null);
+            }
+
+            if (request.FilterOptions != null)
+            {
+                if (request.FilterOptions.Type != null)
+                {
+                    achievementQuery = achievementQuery.Where(a => a.Type == request.FilterOptions.Type);
+                }
+
+                if (request.FilterOptions.Rank != null)
+                {
+                    achievementQuery = achievementQuery.Where(a => a.Rank == request.FilterOptions.Rank);
+                }
+            }
+
+            if (request.SortOptions == GetAchievementSortOption.EarnedDateAscending)
+            {
+                achievementQuery = achievementQuery.OrderBy(a => a.EarnedDate);
+            } else
+            {
+                achievementQuery = achievementQuery.OrderByDescending(a => a.EarnedDate);
+            }
+
+            var queryPaging = await _unitOfWork.GetRepository<Achievement>()
+                .GetPagination(achievementQuery, request.PageNumber, request.PageSize);
+            var achievements = _mapper.Map<IList<GetAchievementResponse>>(queryPaging.Data);
+
+            return new PaginationResponse<GetAchievementResponse>(achievements, queryPaging.PageNumber, queryPaging.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
     }
 }

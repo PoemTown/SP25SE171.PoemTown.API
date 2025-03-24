@@ -31,11 +31,8 @@ public interface IPoemService
         GetTrendingPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 
     Task<string> UploadPoemImage(Guid userId, IFormFile file);
-    Task EnableSellingPoem(Guid userId, EnableSellingPoemRequest request);
-    Task PurchasePoemCopyRight(Guid userId, Guid poemId);
-    Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request);
-    Task DeletePoemInCommunity(Guid userId, Guid poemId);
 
+    Task SellingSaleVersionPoem(Guid userId, SellingSaleVersionPoemRequest request);
     Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request);
     Task<string> ConvertPoemTextToImage(ConvertPoemTextToImageRequest request);
 
@@ -45,7 +42,11 @@ public interface IPoemService
     Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
         ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request);
 
+    Task PurchasePoemCopyRight(Guid userId, Guid saleVersionId);
+    Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request);
+    Task DeletePoemInCommunity(Guid userId, Guid poemId);
     Task ConvertPoemIntoEmbeddingAndSaveToQdrant(Guid poemId);
-    Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, string text);
+    Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, CheckPoemPlagiarismRequest request);
     bool IsPoemPlagiarism(double score);
+    Task FreeSaleVersionPoem(Guid userId, Guid poemId);
 }

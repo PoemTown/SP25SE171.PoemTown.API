@@ -186,4 +186,22 @@ public class UserEWalletService : IUserEWalletService
         
         await _publishEndpoint.Publish(createDonateTransactionEvent);
     }
+    
+    public async Task<GetUserEWalletResponse> GetUserEWalletAsync(Guid userId)
+    {
+        UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>().FindAsync(p => p.UserId == userId);
+        
+        // Check user e-wallet exist
+        if (userEWallet == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet not found");
+        }
+        
+        return new GetUserEWalletResponse()
+        {
+            Id = userEWallet.Id,
+            WalletBalance = userEWallet.WalletBalance,
+            WalletStatus = userEWallet.WalletStatus
+        };
+    }
 }

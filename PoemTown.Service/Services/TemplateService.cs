@@ -852,7 +852,7 @@ public class TemplateService : ITemplateService
     public async Task CreateDefaultMasterTemplate(CreateDefaultMasterTemplateRequest request)
     {
         // Check if Default MasterTemplate already exists
-        MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.TagName == "Default");
+        MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>().FindAsync(p => p.TagName == "DEFAULT");
         if(masterTemplate != null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Default MasterTemplate already exists");
@@ -861,7 +861,7 @@ public class TemplateService : ITemplateService
         masterTemplate = _mapper.Map<MasterTemplate>(request);
         masterTemplate.Price = 0;
         masterTemplate.Status = TemplateStatus.Active;
-        masterTemplate.TagName = "Default";
+        masterTemplate.TagName = "DEFAULT";
 
         // Check if MasterTemplateDetails is null then insert MasterTemplate only
         if (request.MasterTemplateDetails == null)
@@ -890,7 +890,7 @@ public class TemplateService : ITemplateService
         AddMasterTemplateDetailIntoDefaultMasterTemplateRequest request)
     {
         MasterTemplate? masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
-            .FindAsync(p => p.TagName == "Default");
+            .FindAsync(p => p.TagName == "DEFAULT");
 
         // Check if Default MasterTemplate exists
         if (masterTemplate == null)

@@ -17,7 +17,7 @@ namespace PoemTown.Repository.Entities
         public DateTimeOffset? StartDate { get; set; }
         public DateTimeOffset? EndDate { get; set;}
         public LeaderBoardStatus Status { get; set; }
-        public virtual ICollection<LeaderBoardDetail> LeaderBoardDetails { get; set; }
+        public virtual ICollection<PoemLeaderBoard> PoemLeaderBoards { get; set; }
         public virtual ICollection<UserLeaderBoard> UserLeaderBoards { get; set; }
     }
 }

@@ -28,15 +28,13 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public virtual ICollection<UserLeaderBoard>? UserLeaderBoards { get; set; }
 
     public virtual ICollection<Collection>? Collections { get; set; }
-    public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }
+    public virtual ICollection<UsageRight>? UsageRights { get; set; }
     public virtual ICollection<TargetMark>? MarkByUsers { get; set; }
     public virtual ICollection<Follower>? FollowUser { get; set; }
     public virtual ICollection<Follower>? FollowedUser { get; set; }
     public virtual ICollection<Report>? ReportUsers { get; set; }
     public virtual ICollection<Report>? ReportedUsers { get; set; }
-    /*
     public virtual ICollection<RecordFile>? RecordFiles { get; set; }
-    */
 
     public virtual ICollection<Comment>? AuthorComments { get; set; }
  /*   public virtual ICollection<Comment> ParentComments { get; set; }*/
@@ -61,6 +59,7 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public virtual ICollection<Theme> Themes { get; set; }
     public virtual ICollection<UserRole> UserRoles { get; set; }
     public virtual ICollection<LoginTracking>? LoginTrackings { get; set; }
+    public virtual ICollection<Poem>? Poems { get; set; }
     public string? CreatedBy { get; set; }
     public string? LastUpdatedBy { get; set; }
     public string? DeletedBy { get; set; }

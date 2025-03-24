@@ -1,4 +1,6 @@
-﻿namespace PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
+﻿using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+
+namespace PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 
 public class GetRecordFileResponse
 {
@@ -6,4 +8,5 @@ public class GetRecordFileResponse
     public string FileName { get; set; }
     public string FileUrl { get; set; }
     public bool IsPublic { get; set; }
+    public GetPoemDetailResponse Poem {  get; set; }    
 }

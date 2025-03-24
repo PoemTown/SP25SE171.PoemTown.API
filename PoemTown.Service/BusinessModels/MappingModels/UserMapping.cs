@@ -13,7 +13,9 @@ public class UserMapping : Profile
     public UserMapping()
     {
         CreateMap<User, GetBasicUserInformationResponse>().ReverseMap();
-        CreateMap<User, GetUserProfileResponse>().ReverseMap();
+        CreateMap<User, GetUserProfileResponse>()
+            .ForMember(desc => desc.TotalFollower, opt => opt.MapFrom(src => src.FollowedUser.Count))
+            .ReverseMap();
         CreateMap<User, GetUserInTransactionResponse>().ReverseMap();
         CreateMap<User, GetUserInOrderResponse>().ReverseMap();
         CreateMap<UpdateMyProfileRequest, User>();

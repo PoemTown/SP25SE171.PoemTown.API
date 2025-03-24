@@ -3,6 +3,7 @@ using PoemTown.Repository.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,13 +28,16 @@ namespace PoemTown.Repository.Entities
         public decimal Price { get; set; }
         public Guid? SourceCopyRightId { get; set; }
         public Guid? CollectionId { get; set; }
-        public bool? IsSellCopyRight { get; set; } = false;
+        public Guid? UserId { get; set; }
+        public bool? IsSellUsageRight { get; set; } = false;
+        [ForeignKey("UserId")]
+        public virtual User? User { get; set; }
         public virtual Collection? Collection { get; set; }
-        public virtual OrderDetail? OrderDetail { get; set; }
-        public virtual ICollection<LeaderBoardDetail> LeaderBoardDetails { get; set; }
+        //public virtual OrderDetail? OrderDetail { get; set; }
+        public virtual ICollection<PoemLeaderBoard> PoemLeaderBoards { get; set; }
         public virtual ICollection<Like>? Likes { get; set; }
         /*        public virtual CopyRight CopyRight { get; set; }*/
-        public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }
+        //public virtual ICollection<UserPoemRecordFile>? UserPoemRecordFiles { get; set; }
 
         public virtual ICollection<PoemHistory>? PoemHistories { get; set; }
         public virtual ICollection<RecordFile>? RecordFiles { get; set; }
@@ -41,6 +45,7 @@ namespace PoemTown.Repository.Entities
         public virtual ICollection<Report>? Reports { get; set; }
         public virtual ICollection<Report>? PlagiarismReports { get; set; }
         public virtual ICollection<Comment>? Comments { get; set; }
+        public virtual ICollection<SaleVersion>? SaleVersions { get; set; }
         /*
         public virtual ICollection<UserCopyRight>? UserCopyRights { get; set; }
     */

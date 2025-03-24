@@ -124,7 +124,7 @@ public class ThemeService : IThemeService
         IList<UserTemplateDetail> defaultUserTemplateDetails = await _unitOfWork
             .GetRepository<UserTemplateDetail>()
             .AsQueryable()
-            .Where(p => p.UserTemplate.TagName == "Default" && p.UserTemplate.UserId == userId)
+            .Where(p => p.UserTemplate.TagName == "Default")
             .ToListAsync();
 
         // Check if default user template details exist, then create default user template details

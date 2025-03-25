@@ -1495,4 +1495,129 @@ public class PoemService : IPoemService
             IsPlagiarism = IsPoemPlagiarism(averageScore)
         };
     }
+
+    public async Task<PaginationResponse<GetUserPoemResponse>> 
+        GetUserPoems(Guid userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+    {
+        var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
+
+        poemQuery = poemQuery.Where(p => p.UserId == userId && p.Status == PoemStatus.Posted);
+
+        if (request.IsDelete == true)
+        {
+            poemQuery = poemQuery.Where(p => p.DeletedTime != null);
+        }
+        else
+        {
+            poemQuery = poemQuery.Where(p => p.DeletedTime == null);
+        }
+
+        if (request.FilterOptions != null)
+        {
+            if (!String.IsNullOrWhiteSpace(request.FilterOptions.Title))
+            {
+                poemQuery = poemQuery.Where(p =>
+                    p.Title!.Contains(request.FilterOptions.Title, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!String.IsNullOrWhiteSpace(request.FilterOptions.ChapterName))
+            {
+                poemQuery = poemQuery.Where(p =>
+                    p.ChapterName!.Contains(request.FilterOptions.ChapterName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (request.FilterOptions.Type != null)
+            {
+                poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
+            }
+
+            if (request.FilterOptions.AudioStatus != null)
+            {
+                if (request.FilterOptions.AudioStatus == PoemAudio.HaveAudio)
+                {
+                    poemQuery = poemQuery.Where(p => p.RecordFiles.Any());
+                }
+
+                if (request.FilterOptions.AudioStatus == PoemAudio.NoAudio)
+                {
+                    poemQuery = poemQuery.Where(p => !p.RecordFiles.Any());
+                }
+            }
+        }
+
+        //apply sort
+        switch (request.SortOptions)
+        {
+            case GetPoemsSortOption.LikeCountAscending:
+                poemQuery = poemQuery.OrderBy(p => p.Likes!.Count(l => l.PoemId == p.Id));
+                break;
+            case GetPoemsSortOption.LikeCountDescending:
+                poemQuery = poemQuery.OrderByDescending(p => p.Likes!.Count(l => l.PoemId == p.Id));
+                break;
+            case GetPoemsSortOption.CommentCountAscending:
+                poemQuery = poemQuery.OrderBy(p => p.Comments!.Count(c => c.PoemId == p.Id));
+                break;
+            case GetPoemsSortOption.CommentCountDescending:
+                poemQuery = poemQuery.OrderByDescending(p => p.Comments!.Count(c => c.PoemId == p.Id));
+                break;
+            case GetPoemsSortOption.TypeAscending:
+                poemQuery = poemQuery.OrderBy(p => p.Type);
+                break;
+            case GetPoemsSortOption.TypeDescending:
+                poemQuery = poemQuery.OrderByDescending(p => p.Type);
+                break;
+            default:
+                poemQuery = poemQuery.OrderByDescending(p => p.CreatedTime).ThenByDescending(p => p.Type);
+                break;
+        }
+
+        var queryPaging = await _unitOfWork.GetRepository<Poem>()
+            .GetPagination(poemQuery, request.PageNumber, request.PageSize);
+
+        //var poems = _mapper.Map<IList<GetPoemResponse>>(queryPaging.Data);
+
+        IList<GetUserPoemResponse> poems = new List<GetUserPoemResponse>();
+        foreach (var poem in queryPaging.Data)
+        {
+            var poemEntity = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poem.Id);
+            if (poemEntity == null)
+            {
+                continue;
+            }
+
+            poems.Add(_mapper.Map<GetUserPoemResponse>(poemEntity));
+            // Assign author to poem by adding into the last element of the list
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+
+            // Assign like to poem by adding into the last element of the list
+            poems.Last().Like =
+                _mapper.Map<GetLikeResponse>(
+                    poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+            (poemEntity.TargetMarks!.FirstOrDefault(tm =>
+                tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
+            
+            // Check if user is able to upload record file for this poem
+            bool isAbleToUploadRecordFile =
+                // Allow to upload record file if poem is free
+                await _unitOfWork.GetRepository<SaleVersion>()
+                    .AsQueryable()
+                    .AnyAsync(p => p.IsInUse == true
+                                   && p.PoemId == poemEntity.Id
+                                   && p.Status == SaleVersionStatus.Free) ||
+            
+                // Allow to upload record file if user is copy right holder
+                await _unitOfWork.GetRepository<UsageRight>()
+                    .AsQueryable()
+                    .AnyAsync(p => p.SaleVersion != null
+                                   && p.SaleVersion.PoemId == poemEntity.Id
+                                   && p.UserId == userId
+                                   && p.Status == UsageRightStatus.StillValid);
+            
+            poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
+        }
+
+        return new PaginationResponse<GetUserPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+    }
 }

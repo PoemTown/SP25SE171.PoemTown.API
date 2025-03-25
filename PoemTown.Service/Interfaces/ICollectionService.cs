@@ -27,5 +27,8 @@ namespace PoemTown.Service.Interfaces
         Task<PaginationResponse<GetCollectionResponse>>GetTrendingCollections(Guid? userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
         Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid userId);
         Task<string> UploadCollectionImage(Guid userId, IFormFile file);
+
+        Task<PaginationResponse<GetUserCollectionResponse>>
+            GetUserCollections(Guid userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
     }
 }

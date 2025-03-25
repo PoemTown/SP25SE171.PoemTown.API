@@ -722,4 +722,60 @@ public class PoemsController : BaseController
         await _poemService.FreeSaleVersionPoem(userId, poemId);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Free sale version poem successfully"));
     }
+
+    /// <summary>
+    /// Lấy danh sách bài thơ của một user, không yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
+    ///
+    /// SortOptions: Sắp xếp bài thơ theo thứ tự
+    ///
+    /// - 1: LikeCountAscending (Lượt thích tăng dần)
+    /// - 2: LikeCountDescending (Lượt thích giảm dần)
+    /// - 3: CommentCountAscending (Lượt bình luận tăng dần)
+    /// - 4: CommentCountDescending (Lượt bình luận giảm dần)
+    /// - 5: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
+    /// - 6: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    ///
+    /// TargetMark Type:
+    ///
+    /// - Poem = 1,
+    /// - Collection = 2
+    ///
+    /// SaleVersion Status:
+    /// 
+    /// - InSale = 1,
+    /// - NotInSale = 2,
+    /// - Free = 3,
+    /// - Default = 4
+    /// </remarks>
+    /// <param name="userId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/user/{userId}")]
+    public async Task<ActionResult<BasePaginationResponse<GetUserPoemResponse>>>
+        GetUserPoems(Guid userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+    {
+        var paginationResponse = await _poemService.GetUserPoems(userId, request);
+
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetUserPoemResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get user poems successfully";
+
+        return Ok(basePaginationResponse);
+    }
 }

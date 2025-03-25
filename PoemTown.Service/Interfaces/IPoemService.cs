@@ -48,4 +48,7 @@ public interface IPoemService
     Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, CheckPoemPlagiarismRequest request);
     bool IsPoemPlagiarism(double score);
     Task FreeSaleVersionPoem(Guid userId, Guid poemId);
+
+    Task<PaginationResponse<GetUserPoemResponse>>
+        GetUserPoems(Guid userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 }

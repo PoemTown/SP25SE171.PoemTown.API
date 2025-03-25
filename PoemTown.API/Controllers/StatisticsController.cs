@@ -76,5 +76,55 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetOnlineUserStatistic(filter);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get online user statistic successfully", result));
         }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng bài thơ được tải lên, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// period:
+        ///
+        /// - ByDate = 1 (lấy theo 30 ngày gần nhất),
+        /// - ByMonth = 2 (lấy theo tháng chỉ trong năm hiện tại),
+        /// - ByYear = 3 (lấy theo 5 năm gần nhất)
+        /// </remarks>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/poem-uploads")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetPoemUploadStatisticResponse>>>
+            GetUploadPoemStatistic(GetPoemUploadFilterOption filter)
+        {
+            var result = await _service.GetUploadPoemStatistic(filter);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get upload poem statistic successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng bài thơ theo từng loại, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// Type:
+        ///
+        /// - ThoTuDo = 1,
+        /// - ThoLucBat = 2,
+        /// - ThoSongThatLucBat = 3,
+        /// - ThoThatNgonTuTuyet = 4,
+        /// - ThoNguNgonTuTuyet = 5,
+        /// - ThoThatNgonBatCu = 6,
+        /// - ThoBonChu = 7,
+        /// - ThoNamChu = 8,
+        /// - ThoSauChu = 9,
+        /// - ThoBayChu = 10,
+        /// - ThoTamChu = 11,
+        /// </remarks>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/poem-types")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetPoemTypeStatisticResponse>>> GetPoemTypeStatistic()
+        {
+            var result = await _service.GetPoemTypeStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get poem type statistic successfully", result));
+        }
     }
 }

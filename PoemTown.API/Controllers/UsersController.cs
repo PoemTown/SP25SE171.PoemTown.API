@@ -89,4 +89,37 @@ public class UsersController : BaseController
         var response = await _userService.GetOwnOnlineProfile(userId);
         return Ok(new BaseResponse<GetOwnOnlineProfileResponse>(StatusCodes.Status200OK, "User online profile retrieved successfully", response));
     }
+    
+    /// <summary>
+    /// Lấy thông tin cá nhân của người dùng (kèm theo decoration), không cần đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Type (template detail): 
+    ///
+    /// - Header = 1,
+    /// - NavBackground = 2,
+    /// - NavBorder = 3,
+    /// - MainBackground = 4,
+    /// - AchievementBorder = 5,
+    /// - AchievementBackground = 6,
+    /// - StatisticBorder = 7,
+    /// - StatisticBackground = 8,
+    /// - AchievementTitleBackground = 9,
+    /// - StatisticTitleBackground = 10,
+    /// 
+    /// templateType (user template):
+    ///
+    /// - Bundle = 1,
+    /// - Single = 2
+    /// </remarks>
+    /// <param name="userId"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/profile/online/{userId}")]
+    public async Task<ActionResult<BaseResponse<GetUserOnlineProfileResponse>>>  GetUserOnlineProfile(Guid userId)
+    {
+        var response = await _userService.GetUserOnlineProfileResponse(userId);
+        return Ok(new BaseResponse<GetUserOnlineProfileResponse>(StatusCodes.Status200OK, "User online profile retrieved successfully", response));
+    }
+    
 }

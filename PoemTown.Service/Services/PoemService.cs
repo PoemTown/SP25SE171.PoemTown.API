@@ -1497,11 +1497,11 @@ public class PoemService : IPoemService
     }
 
     public async Task<PaginationResponse<GetUserPoemResponse>> 
-        GetUserPoems(Guid userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+        GetUserPoems(string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
 
-        poemQuery = poemQuery.Where(p => p.UserId == userId && p.Status == PoemStatus.Posted);
+        poemQuery = poemQuery.Where(p => p.User!.UserName == userName && p.Status == PoemStatus.Posted);
 
         if (request.IsDelete == true)
         {
@@ -1592,10 +1592,10 @@ public class PoemService : IPoemService
             // Assign like to poem by adding into the last element of the list
             poems.Last().Like =
                 _mapper.Map<GetLikeResponse>(
-                    poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
+                    poemEntity.Likes!.FirstOrDefault(l => l.UserId == poemEntity.UserId && l.PoemId == poemEntity.Id));
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
             (poemEntity.TargetMarks!.FirstOrDefault(tm =>
-                tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
+                tm.MarkByUserId == poemEntity.UserId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
             
             // Check if user is able to upload record file for this poem
             bool isAbleToUploadRecordFile =
@@ -1611,7 +1611,7 @@ public class PoemService : IPoemService
                     .AsQueryable()
                     .AnyAsync(p => p.SaleVersion != null
                                    && p.SaleVersion.PoemId == poemEntity.Id
-                                   && p.UserId == userId
+                                   && p.UserId == poemEntity.UserId
                                    && p.Status == UsageRightStatus.StillValid);
             
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;

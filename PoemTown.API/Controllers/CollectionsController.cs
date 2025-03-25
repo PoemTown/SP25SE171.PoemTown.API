@@ -272,15 +272,15 @@ namespace PoemTown.API.Controllers
         /// - 1: CreateTimeAscending (Thời gian cũ đến mới)
         /// - 2: CreateTimeDescending (Thời gian mới đến cũ)
         /// </remarks>
-        /// <param name="userId"></param>
+        /// <param name="userName"></param>
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet]
-        [Route("v1/user/{userId}")]
+        [Route("v1/user/{userName}")]
         public async Task<ActionResult<BasePaginationResponse<GetUserCollectionResponse>>>
-            GetUserCollections(Guid userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+            GetUserCollections(string userName, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
-            var result = await _service.GetUserCollections(userId, request);
+            var result = await _service.GetUserCollections(userName, request);
             
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetUserCollectionResponse>>(result);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;

@@ -117,13 +117,13 @@ public class UsersController : BaseController
     /// - Poem = 1,
     /// - User = 2,
     /// </remarks>
-    /// <param name="userId"></param>
+    /// <param name="userName"></param>
     /// <returns></returns>
     [HttpGet]
-    [Route("v1/profile/online/{userId}")]
-    public async Task<ActionResult<BaseResponse<GetUserOnlineProfileResponse>>>  GetUserOnlineProfile(Guid userId)
+    [Route("v1/profile/online/{userName}")]
+    public async Task<ActionResult<BaseResponse<GetUserOnlineProfileResponse>>>  GetUserOnlineProfile(string userName)
     {
-        var response = await _userService.GetUserOnlineProfileResponse(userId);
+        var response = await _userService.GetUserOnlineProfileResponse(userName);
         return Ok(new BaseResponse<GetUserOnlineProfileResponse>(StatusCodes.Status200OK, "User online profile retrieved successfully", response));
     }
     

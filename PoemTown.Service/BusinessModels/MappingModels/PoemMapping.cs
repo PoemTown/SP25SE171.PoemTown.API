@@ -53,6 +53,11 @@ public class PoemMapping : Profile
             .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
             .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
 
+        CreateMap<GetUserPoemResponse, Poem>().ReverseMap()
+            .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
+            .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
+            .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true))); 
         
         // poem in target mark
         CreateMap<GetPoemInTargetMarkResponse, Poem>().ReverseMap()

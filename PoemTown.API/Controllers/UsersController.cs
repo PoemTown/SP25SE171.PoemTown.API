@@ -111,6 +111,11 @@ public class UsersController : BaseController
     ///
     /// - Bundle = 1,
     /// - Single = 2
+    ///
+    /// AchievementType:
+    ///
+    /// - Poem = 1,
+    /// - User = 2,
     /// </remarks>
     /// <param name="userId"></param>
     /// <returns></returns>

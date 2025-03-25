@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.MappingModels
 {
@@ -14,6 +15,8 @@ namespace PoemTown.Service.BusinessModels.MappingModels
         public AchievementMapping()
         {
             CreateMap<Achievement, GetAchievementResponse>().ReverseMap();
+
+            CreateMap<GetAchievementResponse, GetUserProfileResponse>();
         }
     }
 }

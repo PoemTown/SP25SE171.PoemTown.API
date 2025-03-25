@@ -1,0 +1,16 @@
+﻿using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
+
+namespace PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
+
+public class GetUserOnlineProfileResponse
+{
+    public Guid Id { get; set; }
+    public string UserName { get; set; }
+    public string DisplayName { get; set; }
+    public string Avatar { get; set; }
+    public string Email { get; set; }
+    public int TotalFollowers { get; set; }
+    public int TotalFollowings { get; set; }
+    public IList<GetUserTemplateDetailInUserThemeResponse>? UserTemplateDetails { get; set; }
+
+}

@@ -9,6 +9,7 @@ using PoemTown.Repository.Enums.Accounts;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.UserRequests;
+using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.ThirdParties.Interfaces;
@@ -21,15 +22,18 @@ public class UserService : IUserService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IAwsS3Service _awsS3Service;
+    private readonly ITemplateService _templateService;
     
     public UserService(IUnitOfWork unitOfWork,
         IMapper mapper,
-        IAwsS3Service awsS3Service
+        IAwsS3Service awsS3Service,
+        ITemplateService templateService
         )
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _awsS3Service = awsS3Service;
+        _templateService = templateService;
     }
 
     public async Task<GetUserProfileResponse> GetMyProfile(Guid userId)
@@ -119,5 +123,30 @@ public class UserService : IUserService
         
         
         return _mapper.Map<GetOwnOnlineProfileResponse>(user);
+    }
+
+    public async Task<GetUserOnlineProfileResponse> GetUserOnlineProfileResponse(Guid userId)
+    {
+        var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+        
+        // Check if user is not found
+        if (user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+
+        // Check if this user account is inActive, then throw exception
+        if (user.Status != AccountStatus.Active)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User is not active");
+        }
+
+        // Map user to GetUserOnlineProfileResponse
+        GetUserOnlineProfileResponse userOnlineProfileResponse = _mapper.Map<GetUserOnlineProfileResponse>(user);
+
+        // Get user template details
+        userOnlineProfileResponse.UserTemplateDetails = await _templateService.GetUserTemplateDetailInOnlineUserProfile(user.Id);
+        
+        return userOnlineProfileResponse;
     }
 }

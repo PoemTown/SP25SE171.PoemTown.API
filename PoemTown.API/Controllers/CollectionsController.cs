@@ -257,5 +257,36 @@ namespace PoemTown.API.Controllers
             var response = await _service.UploadCollectionImage(userId, file);
             return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Profile image uploaded successfully", response));
         }
+        
+        /// <summary>
+        /// Lấy danh sách tất cả bộ sưu tập của một người dùng, không yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        /// TargetMark Type:
+        /// 
+        /// - Poem = 1,
+        /// - Collection = 2
+        ///
+        /// SortOptions: Sắp xếp bộ sưu tập theo thứ tự
+        ///
+        /// - 1: CreateTimeAscending (Thời gian cũ đến mới)
+        /// - 2: CreateTimeDescending (Thời gian mới đến cũ)
+        /// </remarks>
+        /// <param name="userId"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/user/{userId}")]
+        public async Task<ActionResult<BasePaginationResponse<GetUserCollectionResponse>>>
+            GetUserCollections(Guid userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        {
+            var result = await _service.GetUserCollections(userId, request);
+            
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetUserCollectionResponse>>(result);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get user collections successfully";
+            
+            return Ok(basePaginationResponse);
+        }
     }
 }

@@ -8,4 +8,6 @@ public interface IStatisticService
     Task<StatisticResponse> GetStatisticsAsync(Guid userId);
     Task<GetTotalStatisticResponse> GetTotalStatistic();
     Task<GetOnlineUserStatisticResponse> GetOnlineUserStatistic(GetOnlineUserFilterOption filter);
+    Task<GetPoemUploadStatisticResponse> GetUploadPoemStatistic(GetPoemUploadFilterOption filter);
+    Task<GetPoemTypeStatisticResponse> GetPoemTypeStatistic();
 }

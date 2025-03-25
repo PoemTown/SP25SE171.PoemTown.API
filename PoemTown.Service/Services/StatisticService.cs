@@ -153,4 +153,87 @@ public class StatisticService : IStatisticService
             Samples = samples
         };
     }
+    
+    public async Task<GetPoemUploadStatisticResponse> GetUploadPoemStatistic(GetPoemUploadFilterOption filter)
+    {
+        var poemQuery = _unitOfWork.GetRepository<Poem>()
+            .AsQueryable();
+
+        // Filter by condition: Poem is active, not yet deleted and upload date is less than or equal to current date (UTC + 7)
+        poemQuery = poemQuery.Where(p => p.Status == PoemStatus.Posted
+                                         && p.DeletedTime == null
+                                         && p.CreatedTime <= DateTimeHelper.SystemTimeNow);
+
+        var samples = await (filter.Period switch
+        {
+            // Filter by date (last 30 days)
+            PeriodEnum.ByDate => poemQuery
+                .Where(p => p.CreatedTime.Date >= DateTimeHelper.SystemTimeNow.Date.AddDays(-30)) // Filter last 30 days
+                .GroupBy(p => p.CreatedTime.Date)
+                .Select(res => new GetSampleStatisticResponse()
+                {
+                    Year = res.Key.Year,
+                    Month = res.Key.Month,
+                    Day = res.Key.Day,
+                    TotalSamples = res.Count()
+                })
+                .ToListAsync(),
+
+            // Filter by month (within this year)
+            PeriodEnum.ByMonth => poemQuery
+                .GroupBy(p => new { p.CreatedTime.Year, p.CreatedTime.Month })
+                .Select(res => new GetSampleStatisticResponse
+                {
+                    Year = res.Key.Year,
+                    Month = res.Key.Month,
+                    TotalSamples = res.Count()
+                })
+                .ToListAsync(),
+
+            // Filter by year (last 5 years)
+            PeriodEnum.ByYear => poemQuery
+                .Where(p => p.CreatedTime.Year >= DateTimeHelper.SystemTimeNow.Year - 5)
+                .GroupBy(p => p.CreatedTime.Year)
+                .Select(res => new GetSampleStatisticResponse
+                {
+                    Year = res.Key,
+                    TotalSamples = res.Count()
+                })
+                .ToListAsync(),
+
+            _ => throw new ArgumentOutOfRangeException()
+        });
+
+        return new GetPoemUploadStatisticResponse()
+        {
+            TotalDataSamples = samples.Select(p => p.TotalSamples).Sum(),
+            Samples = samples
+        };
+    }
+
+    public async Task<GetPoemTypeStatisticResponse> GetPoemTypeStatistic()
+    {
+        var poemQuery = _unitOfWork.GetRepository<Poem>()
+            .AsQueryable();
+
+        // Filter by condition: Poem is active, not yet deleted and upload date is less than or equal to current date (UTC + 7)
+        poemQuery = poemQuery.Where(p => p.Status == PoemStatus.Posted
+                                         && p.DeletedTime == null
+                                         && p.CreatedTime <= DateTimeHelper.SystemTimeNow);
+
+        var samples = await poemQuery
+            .GroupBy(p => p.Type)
+            .Select(res => new GetPoemTypeSampleResponse
+            {
+                Type = res.Key,
+                TotalPoems = res.Count()
+            })
+            .ToListAsync();
+
+        return new GetPoemTypeStatisticResponse()
+        {
+            TotalDataSamples = samples.Select(p => p.TotalPoems).Sum(),
+            Samples = samples
+        };
+    }
 }

@@ -33,17 +33,20 @@ public class TemplateService : ITemplateService
     private readonly IMapper _mapper;
     private readonly IAwsS3Service _awsS3Service;
     private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IThemeService _themeService;
 
     public TemplateService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IAwsS3Service awsS3Service,
-        IPublishEndpoint publishEndpoint
+        IPublishEndpoint publishEndpoint,
+        IThemeService themeService
     )
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _awsS3Service = awsS3Service;
         _publishEndpoint = publishEndpoint;
+        _themeService = themeService;
     }
 
     /*public async Task CreateMasterTemplate(CreateMasterTemplateRequest request)
@@ -618,6 +621,43 @@ public class TemplateService : ITemplateService
         if (theme == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Theme not found");
+        }
+
+        IList<ThemeUserTemplateDetail>? themeUserTemplateDetails = await _unitOfWork
+            .GetRepository<ThemeUserTemplateDetail>()
+            .AsQueryable()
+            .Where(p => p.ThemeId == theme.Id && p.Theme.UserId == userId)
+            .ToListAsync();
+
+        // Get UserTemplateDetail in ThemeUserTemplateDetail
+        IList<UserTemplateDetail> userTemplateDetail = await _unitOfWork.GetRepository<UserTemplateDetail>()
+            .AsQueryable()
+            .Where(p => themeUserTemplateDetails.Select(t => t.UserTemplateDetailId).Contains(p.Id))
+            .OrderBy(p => p.Type)
+            .ToListAsync();
+
+        return _mapper.Map<IList<GetUserTemplateDetailInUserThemeResponse>>(userTemplateDetail);
+    }
+    
+    
+    public async Task<IList<GetUserTemplateDetailInUserThemeResponse>?> GetUserTemplateDetailInOnlineUserProfile(Guid userId)
+    {
+        Theme? theme = await _unitOfWork.GetRepository<Theme>()
+            .FindAsync(p => p.UserId == userId && p.IsInUse == true);
+
+        
+        // Check if userTheme exists
+        if (theme == null)
+        {
+            await _themeService.CreateDefaultThemeAndUserTemplate(userId, true);
+            
+            theme = await _unitOfWork.GetRepository<Theme>()
+                .FindAsync(p => p.UserId == userId && p.IsInUse == true);
+
+            if (theme == null)
+            {
+                return new List<GetUserTemplateDetailInUserThemeResponse>(); // Return empty list instead of null
+            }
         }
 
         IList<ThemeUserTemplateDetail>? themeUserTemplateDetails = await _unitOfWork

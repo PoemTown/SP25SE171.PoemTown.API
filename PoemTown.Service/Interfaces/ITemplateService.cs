@@ -49,4 +49,5 @@ public interface ITemplateService
 
     Task CreateDefaultMasterTemplate(CreateDefaultMasterTemplateRequest request);
     Task<string> UploadMasterTemplateCoverImage(IFormFile file);
+    Task<IList<GetUserTemplateDetailInUserThemeResponse>?> GetUserTemplateDetailInOnlineUserProfile(Guid userId);
 }

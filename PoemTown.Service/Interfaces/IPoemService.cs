@@ -50,5 +50,5 @@ public interface IPoemService
     Task FreeSaleVersionPoem(Guid userId, Guid poemId);
 
     Task<PaginationResponse<GetUserPoemResponse>>
-        GetUserPoems(Guid userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
+        GetUserPoems(string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 }

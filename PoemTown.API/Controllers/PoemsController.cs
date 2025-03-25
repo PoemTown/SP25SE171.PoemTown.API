@@ -762,15 +762,15 @@ public class PoemsController : BaseController
     /// - Free = 3,
     /// - Default = 4
     /// </remarks>
-    /// <param name="userId"></param>
+    /// <param name="userName"></param>
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
-    [Route("v1/user/{userId}")]
+    [Route("v1/user/{userName}")]
     public async Task<ActionResult<BasePaginationResponse<GetUserPoemResponse>>>
-        GetUserPoems(Guid userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+        GetUserPoems(string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
-        var paginationResponse = await _poemService.GetUserPoems(userId, request);
+        var paginationResponse = await _poemService.GetUserPoems(userName, request);
 
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetUserPoemResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;

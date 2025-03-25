@@ -400,10 +400,10 @@ namespace PoemTown.Service.Services
         }
 
         public async Task<PaginationResponse<GetUserCollectionResponse>>
-            GetUserCollections(Guid userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+            GetUserCollections(string userName, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-            collectionQuery = collectionQuery.Where(a => a.UserId == userId);
+            collectionQuery = collectionQuery.Where(a => a.User.UserName == userName);
             
             if (request.IsDelete == true)
             {
@@ -458,7 +458,7 @@ namespace PoemTown.Service.Services
 
                 collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
                 (collection.TargetMarks!.FirstOrDefault(tm =>
-                    tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id &&
+                    tm.MarkByUserId == collection.User.Id && tm.CollectionId == collectionEntity.Id &&
                     tm.Type == TargetMarkType.Collection));
             }
 

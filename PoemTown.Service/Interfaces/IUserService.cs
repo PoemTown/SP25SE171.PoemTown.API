@@ -11,5 +11,5 @@ public interface IUserService
     Task UpdateMyProfile(Guid userId, UpdateMyProfileRequest request);
     Task<string> UploadProfileImage(Guid userId, IFormFile file);
     Task<GetOwnOnlineProfileResponse> GetOwnOnlineProfile(Guid userId);
-    Task<GetUserOnlineProfileResponse> GetUserOnlineProfileResponse(Guid userId);
+    Task<GetUserOnlineProfileResponse> GetUserOnlineProfileResponse(string userName);
 }

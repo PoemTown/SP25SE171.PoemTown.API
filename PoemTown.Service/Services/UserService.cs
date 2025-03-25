@@ -125,9 +125,9 @@ public class UserService : IUserService
         return _mapper.Map<GetOwnOnlineProfileResponse>(user);
     }
 
-    public async Task<GetUserOnlineProfileResponse> GetUserOnlineProfileResponse(Guid userId)
+    public async Task<GetUserOnlineProfileResponse> GetUserOnlineProfileResponse(string userName)
     {
-        var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+        var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.UserName == userName);
         
         // Check if user is not found
         if (user == null)

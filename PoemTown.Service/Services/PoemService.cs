@@ -1516,6 +1516,10 @@ public class PoemService : IPoemService
             // Map to response
             plagiarismFromResponses.Add(_mapper.Map<PoemPlagiarismFromResponse>(poemPlagiarismEntity));
 
+            // Assign author to poem by adding into the last element of the list
+            plagiarismFromResponses.Last().User =
+                _mapper.Map<GetBasicUserInformationResponse>(poemPlagiarismEntity.UserId);
+            
             // Map source plagiarism
             plagiarismFromResponses.Last().Score = poem.Score;
         }

@@ -165,7 +165,7 @@ public class PoemService : IPoemService
                 };
                 // Create default sale version for poem
                 await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);
-                
+
                 // Create usage right for user as copy right holder
                 var now = DateTimeHelper.SystemTimeNow.DateTime;
                 await _unitOfWork.GetRepository<UsageRight>().InsertAsync(new UsageRight()
@@ -256,7 +256,7 @@ public class PoemService : IPoemService
                     Price = 0,
                 };
                 await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);
-                
+
                 // Create usage right for user as copy right holder
                 var now = DateTimeHelper.SystemTimeNow.DateTime;
                 await _unitOfWork.GetRepository<UsageRight>().InsertAsync(new UsageRight()
@@ -308,7 +308,7 @@ public class PoemService : IPoemService
                 .AnyAsync(p => p.IsInUse == true
                                && p.PoemId == poemId
                                && p.Status == SaleVersionStatus.Free) ||
-            
+
             // Allow to upload record file if user is copy right holder
             await _unitOfWork.GetRepository<UsageRight>()
                 .AsQueryable()
@@ -466,7 +466,7 @@ public class PoemService : IPoemService
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
             (poemEntity.TargetMarks!.FirstOrDefault(tm =>
                 tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
-            
+
             // Check if user is able to upload record file for this poem
             bool isAbleToUploadRecordFile =
                 // Allow to upload record file if poem is free
@@ -475,7 +475,7 @@ public class PoemService : IPoemService
                     .AnyAsync(p => p.IsInUse == true
                                    && p.PoemId == poemEntity.Id
                                    && p.Status == SaleVersionStatus.Free) ||
-            
+
                 // Allow to upload record file if user is copy right holder
                 await _unitOfWork.GetRepository<UsageRight>()
                     .AsQueryable()
@@ -483,7 +483,7 @@ public class PoemService : IPoemService
                                    && p.SaleVersion.PoemId == poemEntity.Id
                                    && p.UserId == userId
                                    && p.Status == UsageRightStatus.StillValid);
-            
+
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
         }
 
@@ -574,7 +574,7 @@ public class PoemService : IPoemService
                     Price = 0,
                 };
                 await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);
-                
+
                 // Create usage right for user as copy right holder
                 var now = DateTimeHelper.SystemTimeNow.DateTime;
                 await _unitOfWork.GetRepository<UsageRight>().InsertAsync(new UsageRight()
@@ -784,7 +784,7 @@ public class PoemService : IPoemService
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
             (poemEntity.TargetMarks!.FirstOrDefault(tm =>
                 tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
-            
+
             // Check if user is able to upload record file for this poem
             bool isAbleToUploadRecordFile =
                 // Allow to upload record file if poem is free
@@ -793,7 +793,7 @@ public class PoemService : IPoemService
                     .AnyAsync(p => p.IsInUse == true
                                    && p.PoemId == poemEntity.Id
                                    && p.Status == SaleVersionStatus.Free) ||
-            
+
                 // Allow to upload record file if user is copy right holder
                 await _unitOfWork.GetRepository<UsageRight>()
                     .AsQueryable()
@@ -801,7 +801,7 @@ public class PoemService : IPoemService
                                    && p.SaleVersion.PoemId == poemEntity.Id
                                    && p.UserId == userId
                                    && p.Status == UsageRightStatus.StillValid);
-            
+
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
         }
 
@@ -915,7 +915,7 @@ public class PoemService : IPoemService
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
             (poemEntity.TargetMarks!.FirstOrDefault(tm =>
                 tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
-            
+
             // Check if user is able to upload record file for this poem
             bool isAbleToUploadRecordFile =
                 // Allow to upload record file if poem is free
@@ -924,7 +924,7 @@ public class PoemService : IPoemService
                     .AnyAsync(p => p.IsInUse == true
                                    && p.PoemId == poemEntity.Id
                                    && p.Status == SaleVersionStatus.Free) ||
-            
+
                 // Allow to upload record file if user is copy right holder
                 await _unitOfWork.GetRepository<UsageRight>()
                     .AsQueryable()
@@ -932,7 +932,7 @@ public class PoemService : IPoemService
                                    && p.SaleVersion.PoemId == poemEntity.Id
                                    && p.UserId == userId
                                    && p.Status == UsageRightStatus.StillValid);
-            
+
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
         }
 
@@ -1057,7 +1057,7 @@ public class PoemService : IPoemService
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
             (poemEntity.TargetMarks!.FirstOrDefault(tm =>
                 tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
-            
+
             // Check if user is able to upload record file for this poem
             bool isAbleToUploadRecordFile =
                 // Allow to upload record file if poem is free
@@ -1066,7 +1066,7 @@ public class PoemService : IPoemService
                     .AnyAsync(p => p.IsInUse == true
                                    && p.PoemId == poemEntity.Id
                                    && p.Status == SaleVersionStatus.Free) ||
-            
+
                 // Allow to upload record file if user is copy right holder
                 await _unitOfWork.GetRepository<UsageRight>()
                     .AsQueryable()
@@ -1074,7 +1074,7 @@ public class PoemService : IPoemService
                                    && p.SaleVersion.PoemId == poemEntity.Id
                                    && p.UserId == userId
                                    && p.Status == UsageRightStatus.StillValid);
-            
+
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
         }
 
@@ -1482,21 +1482,52 @@ public class PoemService : IPoemService
             .Select(p => p.Score)
             .DefaultIfEmpty(0.0)
             .Max();
-        
+
         // If the score is not greater than 0.9 then return the average score
         if (averageScore == 0.0)
         {
             averageScore = response.Results.Select(p => p.Score).Average();
-        } 
+        }
+
+        // Get source plagiarism
+        IList<PoemPlagiarismFromResponse> plagiarismFromResponses = new List<PoemPlagiarismFromResponse>();
+
+        // Assign top 3 source plagiarism to annonymous object
+        var poemPlagiarism = response.Results
+            .Take(3)
+            .Select(p => new
+            {
+                Id = p.Id,
+                Score = p.Score
+            }).ToList();
+
+        foreach (var poem in poemPlagiarism)
+        {
+            var poemPlagiarismEntity =
+                await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == Guid.Parse(poem.Id));
+
+            // If poem not found then continue to next
+            if (poemPlagiarismEntity == null)
+            {
+                continue;
+            }
+
+            // Map to response
+            plagiarismFromResponses.Add(_mapper.Map<PoemPlagiarismFromResponse>(poemPlagiarismEntity));
+
+            // Map source plagiarism
+            plagiarismFromResponses.Last().Score = poem.Score;
+        }
 
         return new PoemPlagiarismResponse()
         {
             Score = averageScore,
-            IsPlagiarism = IsPoemPlagiarism(averageScore)
+            IsPlagiarism = IsPoemPlagiarism(averageScore),
+            PlagiarismFrom = plagiarismFromResponses,
         };
     }
 
-    public async Task<PaginationResponse<GetUserPoemResponse>> 
+    public async Task<PaginationResponse<GetUserPoemResponse>>
         GetUserPoems(string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
@@ -1596,7 +1627,7 @@ public class PoemService : IPoemService
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
             (poemEntity.TargetMarks!.FirstOrDefault(tm =>
                 tm.MarkByUserId == poemEntity.UserId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
-            
+
             // Check if user is able to upload record file for this poem
             bool isAbleToUploadRecordFile =
                 // Allow to upload record file if poem is free
@@ -1605,7 +1636,7 @@ public class PoemService : IPoemService
                     .AnyAsync(p => p.IsInUse == true
                                    && p.PoemId == poemEntity.Id
                                    && p.Status == SaleVersionStatus.Free) ||
-            
+
                 // Allow to upload record file if user is copy right holder
                 await _unitOfWork.GetRepository<UsageRight>()
                     .AsQueryable()
@@ -1613,7 +1644,7 @@ public class PoemService : IPoemService
                                    && p.SaleVersion.PoemId == poemEntity.Id
                                    && p.UserId == poemEntity.UserId
                                    && p.Status == UsageRightStatus.StillValid);
-            
+
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
         }
 

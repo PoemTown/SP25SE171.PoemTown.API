@@ -1,8 +1,9 @@
-﻿using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+﻿using PoemTown.Repository.Base;
+using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 
-public class GetRecordFileResponse
+public class GetRecordFileResponse : BaseEntity
 {
     public Guid Id { get; set; }
     public string FileName { get; set; }

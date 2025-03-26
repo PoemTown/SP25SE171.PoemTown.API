@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Castle.Core.Logging;
 using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.RecordFile;
+using PoemTown.Repository.Enums.SaleVersions;
 using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
@@ -24,6 +26,7 @@ using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
 using PoemTown.Service.ThirdParties.Interfaces;
+using PoemTown.Service.ThirdParties.Models.AwsS3;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -39,11 +42,11 @@ namespace PoemTown.Service.Services
         private readonly IMapper _mapper;
         private readonly IAwsS3Service _awsS3Service;
         private readonly IPublishEndpoint _publishEndpoint;
-
         public RecordFileService(IUnitOfWork unitOfWork,
             IMapper mapper,
             IAwsS3Service awsS3Service,
-            IPublishEndpoint publishEndpoint)
+            IPublishEndpoint publishEndpoint
+            )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -54,38 +57,39 @@ namespace PoemTown.Service.Services
         public async Task CreateNewRecord(Guid userId, Guid poemID, CreateNewRecordFileRequest request)
         {
             RecordFile recordFile = _mapper.Map<RecordFile>(request);
-            Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemID);
+            Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemID); 
             if(poem == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
-            if(poem.UserId == userId)
+            SaleVersion saleVersion =await _unitOfWork.GetRepository<SaleVersion>().FindAsync(s => s.IsInUse == true && s.PoemId == poemID);
+            if(saleVersion.Status == SaleVersionStatus.Free)
             {
                 recordFile.UserId = userId;
                 recordFile.PoemId = poemID;
+                recordFile.IsPublic = true;
+                recordFile.SaleVersionId = saleVersion.Id;
+                recordFile.Price = 0;
+                await _unitOfWork.GetRepository<RecordFile>().InsertAsync(recordFile);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            else
+            {
+                var purchase = _unitOfWork.GetRepository<UsageRight>().AsQueryable();
+                var matchedUsageRight = purchase.FirstOrDefault(ur => ur.UserId == userId && ur.SaleVersionId == saleVersion.Id && ur.DeletedTime == null);
+                if (matchedUsageRight == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Poem has not purchased");
+                }
+                recordFile.UserId = userId;
+                recordFile.PoemId = poemID;
+                recordFile.SaleVersionId = matchedUsageRight.SaleVersionId;
                 recordFile.IsPublic = true;
                 recordFile.Price = 0;
                 await _unitOfWork.GetRepository<RecordFile>().InsertAsync(recordFile);
                 await _unitOfWork.SaveChangesAsync();
             }
-            var purchase = _unitOfWork.GetRepository<UsageRight>().AsQueryable();
-            var matchedUsageRight = purchase.FirstOrDefault(ur => ur.UserId == userId && ur.SaleVersion.PoemId == poemID && ur.DeletedTime == null);
-            if (matchedUsageRight == null)
-            {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Poem has not purchased");
-            }
-            recordFile.UserId = userId;
-            recordFile.PoemId = poemID;
-            recordFile.SaleVersionId = matchedUsageRight.SaleVersionId;
-            recordFile.IsPublic = true;
-            recordFile.Price = 0;
-            await _unitOfWork.GetRepository<RecordFile>().InsertAsync(recordFile);
-            await _unitOfWork.SaveChangesAsync();
-
         }
-
-
-
         public async Task UpdateNewRecord(Guid userId, UpdateRecordRequest request)
         {
             RecordFile? recordFile = await _unitOfWork.GetRepository<RecordFile>().FindAsync(r => r.Id == request.Id);
@@ -297,26 +301,31 @@ namespace PoemTown.Service.Services
       GetBoughtRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
         {
             //Get all records that user have
-            var records = _unitOfWork.GetRepository<UsageRight>()
+            var usageRight = _unitOfWork.GetRepository<UsageRight>()
            .AsQueryable()
            .Where(p => p.UserId == userId && p.RecordFileId != null && p.Type == UserPoemType.RecordBuyer && p.DeletedTime == null);
 
+            var poem = _unitOfWork.GetRepository<Poem>()
+    .AsQueryable()
+    .FirstOrDefault(p => usageRight.Select(s => s.SaleVersion.PoemId).Contains(p.Id));
+
             //Get all records have been bought
-            var result = records.Select(s => new GetBoughtRecordResponse
+            var result = usageRight.Select(s => new GetBoughtRecordResponse
             {
                 FileName = s.RecordFile.FileName,
                 Price = s.RecordFile.Price,
+                OriginalPoem = _mapper.Map<GetPoemDetailResponse>(poem),
                 Buyer = _mapper.Map<GetBasicUserInformationResponse>(s.User),
                 Owner = _mapper.Map<GetBasicUserInformationResponse>(
-    _unitOfWork.GetRepository<User>()
-        .AsQueryable()
-        .Where(u => u.Id == s.SaleVersion.Poem.UserId  && u.DeletedTime == null)
-        .FirstOrDefault() // Chỉ lấy 1 user
+                    _unitOfWork.GetRepository<User>()
+                        .AsQueryable()
+                        .Where(u => u.Id == s.SaleVersion.Poem.UserId  && u.DeletedTime == null)
+                        .FirstOrDefault() // Chỉ lấy 1 user
+               
 )
             }).ToList();
-            var queryPaging = await _unitOfWork.GetRepository<UsageRight>()
-                .GetPagination(records, request.PageNumber, request.PageSize);
-
+           var queryPaging = await _unitOfWork.GetRepository<UsageRight>()
+                .GetPagination(usageRight, request.PageNumber, request.PageSize);
             return new PaginationResponse<GetBoughtRecordResponse>(result, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
@@ -433,5 +442,31 @@ namespace PoemTown.Service.Services
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,
                 queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
+
+        public async Task<string> UploadRecordFile(Guid userId, IFormFile file)
+        {
+            var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+
+            if (user == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+            }
+
+            // Validate audio file
+            FileAudioHelper.ValidateAudio(file);
+
+            // Upload audio file to AWS S3
+            var fileExtension = Path.GetExtension(file.FileName);
+            var fileName = $"recordings/{StringHelper.CapitalizeString(userId.ToString())}-{DateTime.UtcNow.Ticks}{fileExtension}";
+
+            UploadFileToAwsS3Model s3Model = new UploadFileToAwsS3Model()
+            {
+                File = file,
+                FolderName = fileName
+            };
+
+            return await _awsS3Service.UploadAudioToAwsS3Async(s3Model);
+        }
+
     }
 }

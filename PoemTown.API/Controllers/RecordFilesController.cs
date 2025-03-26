@@ -217,5 +217,21 @@ namespace PoemTown.API.Controllers
             await _service.PurchaseRecordFile(userId, recordId);
             return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Purchase record file successfully"));
         }
+
+
+        /// <summary>
+        /// Upload file ghi âm cho bài thơ, yêu cầu đăng nhập
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("v1/audio")]
+        [Authorize]
+        public async Task<ActionResult<BaseResponse<string>>> UploadPoemAudio(IFormFile file)
+        {
+            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            var response = await _service.UploadRecordFile(userId, file);
+            return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Upload audio successfully", response));
+        }
     }
 }

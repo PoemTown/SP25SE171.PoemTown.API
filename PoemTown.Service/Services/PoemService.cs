@@ -65,7 +65,7 @@ public class PoemService : IPoemService
         _awsS3Service = awsS3Service;
         _openAiService = openAiService;
         _theHiveAiService = theHiveAiService;
-        _publishEndpoint = publishEndpoint;
+        _publishEndpoint = publishEndpoint; 
         _qDrantService = qDrantService;
     }
 

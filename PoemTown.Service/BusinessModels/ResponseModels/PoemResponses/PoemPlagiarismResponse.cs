@@ -1,4 +1,5 @@
 ﻿using PoemTown.Repository.Enums.Poems;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 
@@ -19,4 +20,5 @@ public class PoemPlagiarismFromResponse
     public string Description { get; set; }
     public string? PoemImage { get; set; }
     public double Score { get; set; }
+    public GetBasicUserInformationResponse User { get; set; }
 }

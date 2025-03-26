@@ -10,4 +10,7 @@ public interface IStatisticService
     Task<GetOnlineUserStatisticResponse> GetOnlineUserStatistic(GetOnlineUserFilterOption filter);
     Task<GetPoemUploadStatisticResponse> GetUploadPoemStatistic(GetPoemUploadFilterOption filter);
     Task<GetPoemTypeStatisticResponse> GetPoemTypeStatistic();
+    Task<GetReportPoemStatisticResponse> GetReportPoemStatistic();
+    Task<GetReportUserStatisticResponse> GetReportUserStatistic();
+    Task<GetReportPoemStatisticResponse> GetReportPlagiarismPoemStatistic();
 }

@@ -1494,6 +1494,7 @@ public class PoemService : IPoemService
 
         // Assign top 3 source plagiarism to annonymous object
         var poemPlagiarism = response.Results
+            .OrderByDescending(p => p.Score)
             .Take(3)
             .Select(p => new
             {

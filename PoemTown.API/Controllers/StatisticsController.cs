@@ -149,6 +149,7 @@ namespace PoemTown.API.Controllers
         
         /// <summary>
         /// Lấy thống kê số lượng người dùng bị báo cáo, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
         /// <remarks>
         /// ReportStatus:
         /// 
@@ -156,7 +157,6 @@ namespace PoemTown.API.Controllers
         /// - Approved = 2,
         /// - Rejected = 3
         /// </remarks>
-        /// </summary>
         /// <returns></returns>
         [HttpGet]
         [Route("v1/report-users")]

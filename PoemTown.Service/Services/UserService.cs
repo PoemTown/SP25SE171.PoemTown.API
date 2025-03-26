@@ -125,7 +125,7 @@ public class UserService : IUserService
         return _mapper.Map<GetOwnOnlineProfileResponse>(user);
     }
 
-    public async Task<GetUserOnlineProfileResponse> GetUserOnlineProfileResponse(string userName)
+    public async Task<GetUserOnlineProfileResponse> GetUserOnlineProfileResponse(Guid? userId, string userName)
     {
         var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.UserName == userName);
         
@@ -140,10 +140,17 @@ public class UserService : IUserService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "User is not active");
         }
-
+        
         // Map user to GetUserOnlineProfileResponse
         GetUserOnlineProfileResponse userOnlineProfileResponse = _mapper.Map<GetUserOnlineProfileResponse>(user);
-
+        
+        // Check if this user is the same as the logged in user
+        var loginUser = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+        if (loginUser != null && loginUser.UserName == userName)
+        {
+            userOnlineProfileResponse.IsMine = true;
+        }
+        
         // Get user template details
         userOnlineProfileResponse.UserTemplateDetails = await _templateService.GetUserTemplateDetailInOnlineUserProfile(user.Id);
         

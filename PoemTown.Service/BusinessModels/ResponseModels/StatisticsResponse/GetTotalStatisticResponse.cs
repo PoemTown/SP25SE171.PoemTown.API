@@ -1,4 +1,4 @@
-﻿namespace PoemTown.Service.BusinessModels.ResponseModels.StatisticResponse;
+﻿namespace PoemTown.Service.BusinessModels.ResponseModels.StatisticsResponse;
 
 public class GetTotalStatisticResponse
 {

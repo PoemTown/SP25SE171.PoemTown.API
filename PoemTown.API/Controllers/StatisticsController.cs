@@ -6,7 +6,7 @@ using PoemTown.Service.BusinessModels.RequestModels.CollectionRequest;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
-using PoemTown.Service.BusinessModels.ResponseModels.StatisticResponse;
+using PoemTown.Service.BusinessModels.ResponseModels.StatisticsResponse;
 using PoemTown.Service.Interfaces;
 using System.Security.Claims;
 using PoemTown.Service.QueryOptions.FilterOptions.StatisticFilters;

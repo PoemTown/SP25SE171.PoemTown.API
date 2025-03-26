@@ -1523,7 +1523,7 @@ public class PoemService : IPoemService
         {
             Score = averageScore,
             IsPlagiarism = IsPoemPlagiarism(averageScore),
-            PlagiarismFrom = plagiarismFromResponses,
+            PlagiarismFrom = IsPoemPlagiarism(averageScore) ? plagiarismFromResponses : null,
         };
     }
 

@@ -8,6 +8,7 @@ public class GetReportResponse
     public Guid Id { get; set; }
     public string ReportReason { get; set; }
     public ReportStatus Status { get; set; }
+    public ReportType Type { get; set; }
     public bool? IsSystem { get; set; }
     public double? PlagiarismScore { get; set; }
     public string? ResolveResponse { get; set; }

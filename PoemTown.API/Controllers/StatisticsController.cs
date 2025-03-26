@@ -126,5 +126,66 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetPoemTypeStatistic();
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get poem type statistic successfully", result));
         }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng bài thơ bị báo cáo, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// ReportStatus:
+        /// 
+        /// - Pending = 1,
+        /// - Approved = 2,
+        /// - Rejected = 3
+        /// </remarks>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/report-poems")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetReportPoemStatisticResponse>>> GetReportPoemStatistic()
+        {
+            var result = await _service.GetReportPoemStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get report poem statistic successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng người dùng bị báo cáo, yêu cầu đăng nhập dưới quyền ADMIN
+        /// <remarks>
+        /// ReportStatus:
+        /// 
+        /// - Pending = 1,
+        /// - Approved = 2,
+        /// - Rejected = 3
+        /// </remarks>
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/report-users")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetReportUserStatisticResponse>>> GetReportUserStatistic()
+        {
+            var result = await _service.GetReportUserStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get report user statistic successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng bài thơ bị báo cáo là ĐẠO VĂN, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// ReportStatus:
+        /// 
+        /// - Pending = 1,
+        /// - Approved = 2,
+        /// - Rejected = 3
+        /// </remarks>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/report-plagiarism-poems")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetReportPoemStatisticResponse>>>
+            GetReportPlagiarismPoemStatistic()
+        {
+            var result = await _service.GetReportPlagiarismPoemStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get report plagiarism poem statistic successfully", result));
+        }
     }
 }

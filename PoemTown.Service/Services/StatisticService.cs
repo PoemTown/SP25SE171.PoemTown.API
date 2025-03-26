@@ -236,4 +236,78 @@ public class StatisticService : IStatisticService
             Samples = samples
         };
     }
+
+    public async Task<GetReportPoemStatisticResponse> GetReportPoemStatistic()
+    {
+        // query by poem report
+        var reportPoemQuery = _unitOfWork.GetRepository<Report>()
+            .AsQueryable()
+            .Where(p => p.Poem != null && p.ReportedUser == null);
+
+        // group by status
+        var samples = await reportPoemQuery
+            .GroupBy(p => p.Status)
+            .Select(p => new GetReportPoemSampleResponse()
+            {
+                Type = p.Key,
+                TotalPoems = p.Count()
+            })
+            .ToListAsync();
+
+        return new GetReportPoemStatisticResponse()
+        {
+            TotalDataSamples = samples.Select(p => p.TotalPoems).Sum(),
+            Samples = samples,
+        };
+    }
+
+    public async Task<GetReportUserStatisticResponse> GetReportUserStatistic()
+    {
+        // query by user report
+        var reportUserQuery = _unitOfWork.GetRepository<Report>()
+            .AsQueryable()
+            .Where(p => p.Poem == null && p.ReportedUser != null);
+
+        // group by status
+        var samples = await reportUserQuery
+            .GroupBy(p => p.Status)
+            .Select(p => new GetReportUserSampleResponse()
+            {
+                Type = p.Key,
+                TotalUsers = p.Count()
+            })
+            .ToListAsync();
+
+        return new GetReportUserStatisticResponse()
+        {
+            TotalDataSamples = samples.Select(p => p.TotalUsers).Sum(),
+            Samples = samples,
+        };
+    }
+    
+    public async Task<GetReportPoemStatisticResponse> GetReportPlagiarismPoemStatistic()
+    {
+        // query by plagiarism poem report
+        var reportPoemQuery = _unitOfWork.GetRepository<Report>()
+            .AsQueryable()
+            .Where(p => p.Poem != null 
+                        && p.PlagiarismFromPoem != null
+                        && p.ReportedUser == null);
+
+        // group by status
+        var samples = await reportPoemQuery
+            .GroupBy(p => p.Status)
+            .Select(p => new GetReportPoemSampleResponse()
+            {
+                Type = p.Key,
+                TotalPoems = p.Count()
+            })
+            .ToListAsync();
+
+        return new GetReportPoemStatisticResponse()
+        {
+            TotalDataSamples = samples.Select(p => p.TotalPoems).Sum(),
+            Samples = samples,
+        };
+    }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Accounts;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.Reports;
 using PoemTown.Repository.Interfaces;
@@ -46,7 +47,7 @@ public class ReportService : IReportService
         }
         
         // Check if the user reported his own poem, if so, throw an exception
-        if(poem.Collection!.UserId == userId)
+        if(poem.UserId == userId)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "You can't report your own poem");
         }
@@ -55,6 +56,7 @@ public class ReportService : IReportService
         {
             PoemId = request.PoemId,
             ReportReason = request.ReportReason,
+            Type = ReportType.Poem,
             ReportUserId = userId,
         };
         
@@ -175,41 +177,91 @@ public class ReportService : IReportService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Report not found");
         }
-        
-        Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == report.PoemId);
+
+        // Resolve the report of the poem
+        if (report.Type == ReportType.Poem)
+        {
+            Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == report.PoemId);
                 
-        // Check if the poem exists
-        if(poem == null)
-        {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
-        }
+            // Check if the poem exists
+            if(poem == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+            }
         
-        // Check if the poem is not suspended
-        if (poem.Status != PoemStatus.Suspended)
-        {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Can not approve report of poem which is not suspended");
-        }
+            // Check if the poem is not suspended
+            if (poem.Status != PoemStatus.Suspended)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Can not approve report of poem which is not suspended");
+            }
         
-        switch (request.Status)
-        {
-            case ReportStatus.Approved:
-                poem.Status = PoemStatus.Posted;
+            switch (request.Status)
+            {
+                case ReportStatus.Approved:
+                    poem.Status = PoemStatus.Posted;
                 
-                // Store the poem embedding
-                await _qDrantService.StorePoemEmbeddingAsync(poem.Id, poem.UserId!.Value, poem.Content!);
-                break;
+                    // Store the poem embedding
+                    await _qDrantService.StorePoemEmbeddingAsync(poem.Id, poem.UserId!.Value, poem.Content!);
+                    break;
             
-            case ReportStatus.Rejected:
-                poem.Status = PoemStatus.Draft;
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+                case ReportStatus.Rejected:
+                    poem.Status = PoemStatus.Draft;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+        
+        // Resolve the report of the user
+        else if (report.Type == ReportType.User)
+        {
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == report.ReportedUserId);
+            
+            // Check if the user exists
+            if (user == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+            }
         }
 
         // Update the report
         report.ResolveResponse = request.ResolveResponse;
+        report.Status = request.Status;
         
         _unitOfWork.GetRepository<Report>().Update(report);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task CreateReportUser(Guid userId, CreateReportUserRequest request)
+    {
+        // Check if the user exists
+        var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == request.UserId);
+        if (user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "user not found");
+        }
+
+        // Check if the reported user is not active
+        if (user.Status != AccountStatus.Active)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Can not report user which is not active");
+        }
+        
+        // Check if the user reported his own profile, if so, throw an exception
+        if(user.Id == userId)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "You can't report your own profile");
+        }
+        
+        var report = new Report
+        {
+            ReportedUserId = request.UserId,
+            ReportReason = request.ReportReason,
+            Type = ReportType.User,
+            ReportUserId = userId,
+        };
+        
+        await _unitOfWork.GetRepository<Report>().InsertAsync(report);
         await _unitOfWork.SaveChangesAsync();
     }
 }

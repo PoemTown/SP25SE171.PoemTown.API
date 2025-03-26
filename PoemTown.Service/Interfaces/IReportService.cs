@@ -18,4 +18,5 @@ public interface IReportService
         GetMyReports(Guid userId, RequestOptionsBase<GetMyReportFilterOption, GetMyReportSortOption> request);
 
     Task ResolveReport(ResolveReportRequest request);
+    Task CreateReportUser(Guid userId, CreateReportUserRequest request);
 }

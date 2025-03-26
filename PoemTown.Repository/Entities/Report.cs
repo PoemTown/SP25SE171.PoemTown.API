@@ -23,6 +23,7 @@ namespace PoemTown.Repository.Entities
         public bool? IsSystem { get; set; } = false;
         public double? PlagiarismScore { get; set; }
         public string? ResolveResponse { get; set; }
+        public ReportType Type { get; set; }
         public Guid? ReportUserId { get; set; }
         public Guid? ReportedUserId { get; set; }
 

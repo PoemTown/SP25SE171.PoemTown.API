@@ -13,6 +13,7 @@ public class GetUserOnlineProfileResponse
     public string Email { get; set; }
     public int TotalFollowers { get; set; }
     public int TotalFollowings { get; set; }
+    public bool IsMine { get; set; }
     public IList<GetUserTemplateDetailInUserThemeResponse>? UserTemplateDetails { get; set; }
     public IList<GetAchievementResponse>? Achievements { get; set; }
 }

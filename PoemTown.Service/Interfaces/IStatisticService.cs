@@ -1,4 +1,4 @@
-﻿using PoemTown.Service.BusinessModels.ResponseModels.StatisticResponse;
+﻿using PoemTown.Service.BusinessModels.ResponseModels.StatisticsResponse;
 using PoemTown.Service.QueryOptions.FilterOptions.StatisticFilters;
 
 namespace PoemTown.Service.Interfaces;

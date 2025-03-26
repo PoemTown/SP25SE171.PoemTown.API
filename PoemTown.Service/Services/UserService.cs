@@ -23,17 +23,20 @@ public class UserService : IUserService
     private readonly IMapper _mapper;
     private readonly IAwsS3Service _awsS3Service;
     private readonly ITemplateService _templateService;
+    private readonly IStatisticService _statisticService;
     
     public UserService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IAwsS3Service awsS3Service,
-        ITemplateService templateService
+        ITemplateService templateService,
+        IStatisticService statisticService
         )
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _awsS3Service = awsS3Service;
         _templateService = templateService;
+        _statisticService = statisticService;
     }
 
     public async Task<GetUserProfileResponse> GetMyProfile(Guid userId)
@@ -153,6 +156,9 @@ public class UserService : IUserService
         
         // Get user template details
         userOnlineProfileResponse.UserTemplateDetails = await _templateService.GetUserTemplateDetailInOnlineUserProfile(user.Id);
+        
+        // Get user statistics
+        userOnlineProfileResponse.UserStatistic = await _statisticService.GetStatisticsAsync(user.Id);
         
         return userOnlineProfileResponse;
     }

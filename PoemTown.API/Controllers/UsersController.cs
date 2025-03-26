@@ -123,7 +123,14 @@ public class UsersController : BaseController
     [Route("v1/profile/online/{userName}")]
     public async Task<ActionResult<BaseResponse<GetUserOnlineProfileResponse>>>  GetUserOnlineProfile(string userName)
     {
-        var response = await _userService.GetUserOnlineProfileResponse(userName);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }        
+        
+        var response = await _userService.GetUserOnlineProfileResponse(userId, userName);
         return Ok(new BaseResponse<GetUserOnlineProfileResponse>(StatusCodes.Status200OK, "User online profile retrieved successfully", response));
     }
     

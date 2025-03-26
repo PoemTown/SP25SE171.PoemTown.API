@@ -126,4 +126,14 @@ public class ReportsController : BaseController
         await _reportService.ResolveReport(request);
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Report resolved successfully"));
     }
+    
+    [HttpPost]
+    [Route("v1/user")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> CreateReportUser([FromBody] CreateReportUserRequest request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _reportService.CreateReportUser(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status201Created, "Report created successfully"));
+    }
 }

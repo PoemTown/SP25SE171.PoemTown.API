@@ -17,6 +17,7 @@ public class PoemMapping : Profile
 {
     public PoemMapping()
     {
+        CreateMap<Poem, PoemPlagiarismFromResponse>().ReverseMap();
         CreateMap<CreateNewPoemRequest, Poem>();
         CreateMap<UpdatePoemRequest, Poem>();
         CreateMap<Poem, GetPoemInOrderDetailResponse>().ReverseMap();

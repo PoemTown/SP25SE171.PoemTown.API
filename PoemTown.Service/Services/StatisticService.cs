@@ -5,7 +5,7 @@ using PoemTown.Repository.Enums.Accounts;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
-using PoemTown.Service.BusinessModels.ResponseModels.StatisticResponse;
+using PoemTown.Service.BusinessModels.ResponseModels.StatisticsResponse;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.StatisticFilters;
 

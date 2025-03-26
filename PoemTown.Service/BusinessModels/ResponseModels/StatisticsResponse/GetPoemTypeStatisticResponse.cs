@@ -1,6 +1,6 @@
 ﻿using PoemTown.Repository.Enums.Poems;
 
-namespace PoemTown.Service.BusinessModels.ResponseModels.StatisticResponse;
+namespace PoemTown.Service.BusinessModels.ResponseModels.StatisticsResponse;
 
 public class GetPoemTypeStatisticResponse
 {

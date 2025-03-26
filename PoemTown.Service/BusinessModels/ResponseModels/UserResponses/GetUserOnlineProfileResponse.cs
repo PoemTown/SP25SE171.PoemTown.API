@@ -1,5 +1,6 @@
 ﻿using PoemTown.Service.BusinessModels.ResponseModels.AchievementRespponses;
 using PoemTown.Service.BusinessModels.ResponseModels.LeaderBoardResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.StatisticsResponse;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
@@ -16,4 +17,5 @@ public class GetUserOnlineProfileResponse
     public bool IsMine { get; set; }
     public IList<GetUserTemplateDetailInUserThemeResponse>? UserTemplateDetails { get; set; }
     public IList<GetAchievementResponse>? Achievements { get; set; }
+    public StatisticResponse? UserStatistic { get; set; }
 }

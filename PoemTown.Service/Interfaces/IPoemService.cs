@@ -51,4 +51,7 @@ public interface IPoemService
 
     Task<PaginationResponse<GetUserPoemResponse>>
         GetUserPoems(string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
+
+    IList<SearchPointsResult> GetListQDrantSearchPoint(QDrantResponse<SearchPointsResult> response, int top);
+    
 }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
@@ -23,7 +24,8 @@ public class ReportService : IReportService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IQDrantService _qDrantService;
-    public ReportService(IUnitOfWork unitOfWork, 
+
+    public ReportService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IQDrantService qDrantService)
     {
@@ -45,13 +47,13 @@ public class ReportService : IReportService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Can not report poem which is not posted");
         }
-        
+
         // Check if the user reported his own poem, if so, throw an exception
-        if(poem.UserId == userId)
+        if (poem.UserId == userId)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "You can't report your own poem");
         }
-        
+
         var report = new Report
         {
             PoemId = request.PoemId,
@@ -59,7 +61,7 @@ public class ReportService : IReportService
             Type = ReportType.Poem,
             ReportUserId = userId,
         };
-        
+
         await _unitOfWork.GetRepository<Report>().InsertAsync(report);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -68,7 +70,7 @@ public class ReportService : IReportService
         GetReports(RequestOptionsBase<GetReportFilterOption, GetReportSortOption> request)
     {
         var reportQuery = _unitOfWork.GetRepository<Report>().AsQueryable();
-        
+
         // Filter the reports
         if (request.FilterOptions != null)
         {
@@ -91,7 +93,7 @@ public class ReportService : IReportService
             GetReportSortOption.CreatedTimeDescending => reportQuery.OrderByDescending(r => r.CreatedTime),
             _ => reportQuery.OrderBy(r => r.CreatedTime).ThenBy(p => p.ReportedUser)
         };
-        
+
         // Pagination
         var queryPaging = await _unitOfWork.GetRepository<Report>()
             .GetPagination(reportQuery, request.PageNumber, request.PageSize);
@@ -105,26 +107,46 @@ public class ReportService : IReportService
             {
                 continue;
             }
-            
+
             reports.Add(_mapper.Map<GetReportResponse>(reportEntity));
-            
+
             // Get information of the user who reported the report
             reports.Last().ReportReportUser = _mapper.Map<GetReportUserInReportResponse>(reportEntity.ReportUser);
             reports.Last().Poem = _mapper.Map<GetPoemInReportResponse>(reportEntity.Poem);
-            reports.Last().PlagiarismFromPoem = _mapper.Map<GetPoemInReportResponse>(reportEntity.PlagiarismFromPoem);
+
+            IList<PlagiarismPoemReport>? plagiarismPoemReports = await _unitOfWork.GetRepository<PlagiarismPoemReport>()
+                .AsQueryable()
+                .Where(p => p.ReportId == reportEntity.Id)
+                .ToListAsync();
+
+            reports.Last().PlagiarismFromPoems = _mapper.Map<IList<GetPoemInReportResponse>>
+                (plagiarismPoemReports.Select(p => p.PlagiarismFromPoem));
+
+            // Get the plagiarism score in the plagiarism poems
+            var getPoemInReportResponses = reports.Last().PlagiarismFromPoems;
+
+            getPoemInReportResponses?.ToList().ForEach(p =>
+            {
+                var plagiarismPoemReport =
+                    plagiarismPoemReports.FirstOrDefault(pr => pr.PlagiarismFromPoemId == p.Id);
+                if (plagiarismPoemReport != null)
+                {
+                    p.Score = plagiarismPoemReport.Score;
+                }
+            });
         }
-        
+
         return new PaginationResponse<GetReportResponse>
-            (reports, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
-                queryPaging.CurrentPageRecords);
-    } 
-    
-    
+        (reports, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
+            queryPaging.CurrentPageRecords);
+    }
+
+
     public async Task<PaginationResponse<GetMyReportResponse>>
         GetMyReports(Guid userId, RequestOptionsBase<GetMyReportFilterOption, GetMyReportSortOption> request)
     {
         var reportQuery = _unitOfWork.GetRepository<Report>().AsQueryable();
-        
+
         reportQuery = reportQuery.Where(p => p.ReportUserId == userId);
         // Filter the reports
         if (request.FilterOptions != null)
@@ -142,7 +164,7 @@ public class ReportService : IReportService
             GetMyReportSortOption.CreatedTimeDescending => reportQuery.OrderByDescending(r => r.CreatedTime),
             _ => reportQuery.OrderBy(r => r.CreatedTime)
         };
-        
+
         // Pagination
         var queryPaging = await _unitOfWork.GetRepository<Report>()
             .GetPagination(reportQuery, request.PageNumber, request.PageSize);
@@ -156,22 +178,22 @@ public class ReportService : IReportService
             {
                 continue;
             }
-            
+
             reports.Add(_mapper.Map<GetMyReportResponse>(reportEntity));
-            
+
             // Get information of the user who reported the report
             reports.Last().Poem = _mapper.Map<GetPoemInReportResponse>(reportEntity.Poem);
         }
-        
+
         return new PaginationResponse<GetMyReportResponse>
-            (reports, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
-                queryPaging.CurrentPageRecords);
+        (reports, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
+            queryPaging.CurrentPageRecords);
     }
 
     public async Task ResolveReport(ResolveReportRequest request)
     {
         var report = await _unitOfWork.GetRepository<Report>().FindAsync(r => r.Id == request.Id);
-        
+
         // Check if the report exists
         if (report == null)
         {
@@ -182,41 +204,19 @@ public class ReportService : IReportService
         if (report.Type == ReportType.Poem)
         {
             Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == report.PoemId);
-                
+
             // Check if the poem exists
-            if(poem == null)
+            if (poem == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
-        
-            // Check if the poem is not suspended
-            if (poem.Status != PoemStatus.Suspended)
-            {
-                throw new CoreException(StatusCodes.Status400BadRequest, "Can not approve report of poem which is not suspended");
-            }
-        
-            switch (request.Status)
-            {
-                case ReportStatus.Approved:
-                    poem.Status = PoemStatus.Posted;
-                
-                    // Store the poem embedding
-                    await _qDrantService.StorePoemEmbeddingAsync(poem.Id, poem.UserId!.Value, poem.Content!);
-                    break;
-            
-                case ReportStatus.Rejected:
-                    poem.Status = PoemStatus.Draft;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
         }
-        
+
         // Resolve the report of the user
         else if (report.Type == ReportType.User)
         {
             User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == report.ReportedUserId);
-            
+
             // Check if the user exists
             if (user == null)
             {
@@ -224,14 +224,48 @@ public class ReportService : IReportService
             }
         }
 
+        // Resolve the report of the plagiarism
+        else if (report.Type == ReportType.Plagiarism)
+        {
+            Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == report.PoemId);
+
+            // Check if the poem exists
+            if (poem == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+            }
+
+            // Check if the poem is not suspended
+            if (poem.Status != PoemStatus.Pending)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest,
+                    "Can not approve report of poem which is not pending");
+            }
+
+            switch (request.Status)
+            {
+                case ReportStatus.Approved:
+                    poem.Status = PoemStatus.Posted;
+
+                    // Store the poem embedding
+                    await _qDrantService.StorePoemEmbeddingAsync(poem.Id, poem.UserId!.Value, poem.Content!);
+                    break;
+                case ReportStatus.Rejected:
+                    poem.Status = PoemStatus.Draft;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
         // Update the report
         report.ResolveResponse = request.ResolveResponse;
         report.Status = request.Status;
-        
+
         _unitOfWork.GetRepository<Report>().Update(report);
         await _unitOfWork.SaveChangesAsync();
     }
-    
+
     public async Task CreateReportUser(Guid userId, CreateReportUserRequest request)
     {
         // Check if the user exists
@@ -246,13 +280,13 @@ public class ReportService : IReportService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Can not report user which is not active");
         }
-        
+
         // Check if the user reported his own profile, if so, throw an exception
-        if(user.Id == userId)
+        if (user.Id == userId)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "You can't report your own profile");
         }
-        
+
         var report = new Report
         {
             ReportedUserId = request.UserId,
@@ -260,7 +294,7 @@ public class ReportService : IReportService
             Type = ReportType.User,
             ReportUserId = userId,
         };
-        
+
         await _unitOfWork.GetRepository<Report>().InsertAsync(report);
         await _unitOfWork.SaveChangesAsync();
     }

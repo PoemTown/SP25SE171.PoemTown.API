@@ -1471,6 +1471,27 @@ public class PoemService : IPoemService
         return score > 0.5;
     }
 
+    public IList<SearchPointsResult> GetListQDrantSearchPoint(QDrantResponse<SearchPointsResult> response, int top)
+    {
+        var poemPlagiarism = response.Results
+            .OrderByDescending(p => p.Score)
+            .Take(top)
+            .Select(p => new
+            {
+                Id = p.Id,
+                Score = p.Score
+            }).ToList();
+
+        // Map to response
+        IList<SearchPointsResult> plagiarismFromResponses = poemPlagiarism.Select(p => new SearchPointsResult()
+        {
+            Id = p.Id,
+            Score = p.Score
+        }).ToList();
+
+        return plagiarismFromResponses;
+    }
+
     public async Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, CheckPoemPlagiarismRequest request)
     {
         // Search similar poem embedding point
@@ -1492,7 +1513,7 @@ public class PoemService : IPoemService
         // Get source plagiarism
         IList<PoemPlagiarismFromResponse> plagiarismFromResponses = new List<PoemPlagiarismFromResponse>();
 
-        // Assign top 3 source plagiarism to annonymous object
+        /*// Assign top 3 source plagiarism to annonymous object
         var poemPlagiarism = response.Results
             .OrderByDescending(p => p.Score)
             .Take(3)
@@ -1500,9 +1521,10 @@ public class PoemService : IPoemService
             {
                 Id = p.Id,
                 Score = p.Score
-            }).ToList();
+            }).ToList();*/
+        var qDrantSearchPoint = GetListQDrantSearchPoint(response, 3);
 
-        foreach (var poem in poemPlagiarism)
+        foreach (var poem in qDrantSearchPoint)
         {
             var poemPlagiarismEntity =
                 await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == Guid.Parse(poem.Id));
@@ -1519,7 +1541,7 @@ public class PoemService : IPoemService
             // Assign author to poem by adding into the last element of the list
             plagiarismFromResponses.Last().User =
                 _mapper.Map<GetBasicUserInformationResponse>(poemPlagiarismEntity.User);
-            
+
             // Map source plagiarism
             plagiarismFromResponses.Last().Score = poem.Score;
         }
@@ -1655,5 +1677,21 @@ public class PoemService : IPoemService
 
         return new PaginationResponse<GetUserPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+    }
+
+    public async Task AdminUpdatePoemStatus(Guid poemId, PoemStatus status)
+    {
+        Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
+        
+        // If poem not found then throw exception
+        if (poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+        
+        poem.Status = status;
+        
+        _unitOfWork.GetRepository<Poem>().Update(poem);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

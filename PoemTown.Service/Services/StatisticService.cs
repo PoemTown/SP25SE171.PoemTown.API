@@ -291,7 +291,7 @@ public class StatisticService : IStatisticService
         var reportPoemQuery = _unitOfWork.GetRepository<Report>()
             .AsQueryable()
             .Where(p => p.Poem != null 
-                        && p.PlagiarismFromPoem != null
+                        && p.PlagiarismPoemReports != null
                         && p.ReportedUser == null);
 
         // group by status

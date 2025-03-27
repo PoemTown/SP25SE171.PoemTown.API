@@ -1,11 +1,14 @@
 ﻿using MassTransit;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.Reports;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.Events.PoemEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.PlagiarismDetector.Interfaces;
+using PoemTown.Service.PlagiarismDetector.PDModels;
 
 namespace PoemTown.Service.Consumers.PoemConsumers;
 
@@ -50,17 +53,12 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
                 return;
             }
             
-            // Get the poem that the current poem is plagiarism from
-            var plagiarismFromPoem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == new Guid(response.Results.First().Id));
             
-            // If the plagiarism from poem is not found, return
-            if(plagiarismFromPoem == null)
-            {
-                return;
-            }
+            // Get the list of poems that the current poem is plagiarism from
+            IList<SearchPointsResult> plagiarismFromPoems = _poemService.GetListQDrantSearchPoint(response, 3);;
             
             // Suspend the poem
-            poem.Status = PoemStatus.Suspended;
+            poem.Status = PoemStatus.Pending;
             _unitOfWork.GetRepository<Poem>().Update(poem);
             
             // Send the report to the admin
@@ -72,7 +70,12 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
                 Status = ReportStatus.Pending,
                 PlagiarismScore = averageScore,
                 Poem = poem,
-                PlagiarismFromPoem = plagiarismFromPoem
+                Type = ReportType.Plagiarism,
+                PlagiarismPoemReports = plagiarismFromPoems.Select(p => new PlagiarismPoemReport
+                {
+                    PlagiarismFromPoemId = Guid.Parse(p.Id),
+                    Score = p.Score
+                }).ToList()
             };
             
             await _unitOfWork.GetRepository<Report>().InsertAsync(report);

@@ -1678,4 +1678,20 @@ public class PoemService : IPoemService
         return new PaginationResponse<GetUserPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
+
+    public async Task AdminUpdatePoemStatus(Guid poemId, PoemStatus status)
+    {
+        Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
+        
+        // If poem not found then throw exception
+        if (poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+        
+        poem.Status = status;
+        
+        _unitOfWork.GetRepository<Poem>().Update(poem);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

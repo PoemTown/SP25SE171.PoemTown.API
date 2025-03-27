@@ -1,6 +1,7 @@
 ﻿using Betalgo.Ranul.OpenAI.ObjectModels.ResponseModels;
 using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.Base;
+using PoemTown.Repository.Enums.Poems;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.PlagiarismDetector.PDModels;
@@ -53,5 +54,5 @@ public interface IPoemService
         GetUserPoems(string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 
     IList<SearchPointsResult> GetListQDrantSearchPoint(QDrantResponse<SearchPointsResult> response, int top);
-    
+    Task AdminUpdatePoemStatus(Guid poemId, PoemStatus status);
 }

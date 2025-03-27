@@ -3,5 +3,6 @@
 public enum ReportType
 {
     Poem = 1,
-    User = 2
+    User = 2,
+    Plagiarism = 3
 }

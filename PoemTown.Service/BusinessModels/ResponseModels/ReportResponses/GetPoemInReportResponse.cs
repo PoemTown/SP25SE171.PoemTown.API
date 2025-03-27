@@ -5,5 +5,5 @@ public class GetPoemInReportResponse
     public Guid Id { get; set; }
     public string Title { get; set; }
     public string? Description { get; set; }
-    
+    public double? Score { get; set; }
 }

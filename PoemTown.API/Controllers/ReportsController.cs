@@ -45,6 +45,12 @@ public class ReportsController : BaseController
     /// Lấy danh sách các report, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
     /// <remarks>
+    /// type:
+    ///
+    /// - Poem = 1,
+    /// - User = 2,
+    /// - Plagiarism = 3
+    /// 
     /// reportStatus:
     ///
     /// - Pending = 1,
@@ -77,6 +83,12 @@ public class ReportsController : BaseController
     /// Lấy danh sách các report của bản thân, yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
+    /// type:
+    ///
+    /// - Poem = 1,
+    /// - User = 2,
+    /// - Plagiarism = 3
+    /// 
     /// reportStatus:
     ///
     /// - Pending = 1,
@@ -127,6 +139,11 @@ public class ReportsController : BaseController
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Report resolved successfully"));
     }
     
+    /// <summary>
+    /// Report người dùng, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost]
     [Route("v1/user")]
     [Authorize]

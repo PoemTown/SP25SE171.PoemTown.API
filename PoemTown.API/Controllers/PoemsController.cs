@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
+using PoemTown.Repository.Enums.Poems;
 using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
@@ -36,6 +37,7 @@ public class PoemsController : BaseController
     /// - 0: Draft (Nháp)
     /// - 1: Posted (Đã đăng)
     /// - 2: Suspended (Không sử dụng)
+    /// - 3: Pending
     ///
     /// Type: Loại bài thơ, thể thơ:
     ///
@@ -76,6 +78,7 @@ public class PoemsController : BaseController
     /// - 0: Draft
     /// - 1: Posted
     /// - 2: Suspended
+    /// - 3: Pending
     ///
     /// Type:
     ///
@@ -142,6 +145,7 @@ public class PoemsController : BaseController
     /// - 0: Draft (Nháp)
     /// - 1: Posted (Đã đăng)
     /// - 2: Suspended (Không sử dụng)
+    /// - 3: Pending
     ///
     /// Type: Loại bài thơ, thể thơ:
     ///
@@ -245,6 +249,7 @@ public class PoemsController : BaseController
     /// - 0: Draft
     /// - 1: Posted
     /// - 2: Suspended
+    /// - 3: Pending
     ///
     /// Type:
     ///
@@ -299,6 +304,7 @@ public class PoemsController : BaseController
     /// - 0: Draft
     /// - 1: Posted
     /// - 2: Suspended
+    /// - 3: Pending
     ///
     /// Type:
     ///
@@ -367,6 +373,7 @@ public class PoemsController : BaseController
     /// - 0: Draft
     /// - 1: Posted
     /// - 2: Suspended
+    /// - 3: Pending
     ///
     /// Type:
     ///
@@ -777,5 +784,28 @@ public class PoemsController : BaseController
         basePaginationResponse.Message = "Get user poems successfully";
 
         return Ok(basePaginationResponse);
+    }
+    
+    /// <summary>
+    /// Admin update trạng thái của bài thơ, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <remarks>
+    /// status:
+    ///
+    /// - Draft = 0,
+    /// - Posted = 1,
+    /// - Suspended = 2,
+    /// - Pending = 3,
+    /// </remarks>
+    /// <param name="poemId"></param>
+    /// <param name="status"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/admin/{poemId}")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> AdminUpdatePoemStatus(Guid poemId, [FromQuery] PoemStatus status)
+    {
+        await _poemService.AdminUpdatePoemStatus(poemId, status);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem updated by admin successfully"));
     }
 }

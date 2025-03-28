@@ -526,24 +526,38 @@ public class PoemsController : BaseController
         await _poemService.SellingSaleVersionPoem(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Enable selling poem successfully"));
     }
+ 
     
+
     /// <summary>
-    /// Mua quyền sử dụng của một bài thơ, yêu cầu đăng nhập
+    /// Mua bản quyền của một bài thơ, yêu cầu đăng nhập
     /// </summary>
-    /// <param name="saleVersionId"></param>
+    /// <param name="poemId"></param>
     /// <returns></returns>
     [HttpPut]
     [Route("v1/purchase")]
     [Authorize]
-    public async Task<ActionResult<BaseResponse>> PurchasePoem([FromQuery]Guid saleVersionId)
+    public async Task<ActionResult<BaseResponse>> PurchasePoem([FromQuery]Guid poemId)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-        await _poemService.PurchasePoemCopyRight(userId, saleVersionId);
+        await _poemService.PurchasePoemCopyRight(userId, poemId);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Purchase poem successfully"));
     }
 
-    
-    
+    /// <summary>
+    /// Tạo mới một bài thơ, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// Tất cả thuộc tính đều có thể NULL
+    ///
+    /// Status: Trạng thái của bài thơ, mặc định là Draft
+    /// 
+    /// - 0: Draft (Nháp)
+    /// - 1: Posted (Đã đăng)
+    /// - 2: Suspended (Không sử dụng)
+    ///
+    /// Type: Loại bài thơ, thể thơ:
+
     /// <summary>
     /// AI gợi ý hoàn thiện bài thơ, yêu cầu đăng nhập
     /// </summary>
@@ -564,11 +578,17 @@ public class PoemsController : BaseController
     ///
     /// maxToken: Số lượng token tối đa mà AI sẽ hoàn thiện (100 token xấp xỉ 750 chữ)
     /// </remarks>
-    /// <summary>
-    /// Mua bản quyền của một bài thơ, yêu cầu đăng nhập
-    /// </summary>
-    /// <param name="poemId"></param>
+    /// <param name="request"></param>
     /// <returns></returns>
+    [HttpPost]
+    [Route("v1/community")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> CreatePoemInCommunity(CreateNewPoemRequest request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.CreatePoemInCommunity(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Create poem in community successfully"));
+    }
     [HttpPost]
     [Route("v1/ai-chat-completion")]
     [Authorize]
@@ -680,15 +700,6 @@ public class PoemsController : BaseController
             "Poem text to image with The Hive AI successfully", response));
     }
 
-    [HttpPost]
-    [Route("v1/community")]
-    [Authorize]
-    public async Task<ActionResult<BaseResponse>> CreatePoemInCommunity(CreateNewPoemRequest request)
-    {
-        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-        await _poemService.CreatePoemInCommunity(userId, request);
-        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Create poem in community successfully"));
-    }
     
     /// <summary>
     /// Chuyển đổi thơ sang vector embedding, lưu vào QDrant database (Mục đích dùng để train trong việc phát hiện ĐẠO VĂN, có thể không cần lên giao diện), yêu cầu đăng nhập dưới quyền ADMIN

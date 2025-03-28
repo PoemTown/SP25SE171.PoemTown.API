@@ -117,6 +117,31 @@ namespace PoemTown.API.Controllers
         }
 
         /// <summary>
+        /// Lấy danh sách tất cả bộ sưu tập của người user bạn trỏ tới, không yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        /// SortOptions: Sắp xếp bộ sưu tập theo thứ tự
+        ///
+        /// - 1: CreateTimeAscending (Thời gian cũ đến mới)
+        /// - 2: CreateTimeDescending (Thời gian mới đến cũ)
+        ///
+        /// </remarks>
+        /// <param name="request"></param>
+        /// <param name="targetUserId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/user-collection")]
+        public async Task<ActionResult<BasePaginationResponse<GetCollectionResponse>>>
+        GetUserCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request, [FromQuery] Guid targetUserId)
+        {
+            var result = await _service.GetUserCollections(targetUserId, request);
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetCollectionResponse>>(result);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get Collection successfully";
+            return Ok(basePaginationResponse);
+        }
+
+        /// <summary>
         /// Lấy danh sách tất cả bộ sưu tập cộng đông, không yêu cầu đăng nhập
         /// </summary>
         /// <remarks>
@@ -221,7 +246,7 @@ namespace PoemTown.API.Controllers
 
 
         /// <summary>
-        /// Lấy chi tiết của một bộ sưu tập, yêu cầu đăng nhập
+        /// Lấy chi tiết của một bộ sưu tập, không yêu cầu đăng nhập
         /// </summary>
         /// <remarks>
         ///
@@ -231,7 +256,6 @@ namespace PoemTown.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("v1/{collectionId}/detail")]
-        [Authorize]
         public async Task<ActionResult<BaseResponse<GetPoemDetailResponse>>>
             GetPoemDetail(Guid collectionId)
         {

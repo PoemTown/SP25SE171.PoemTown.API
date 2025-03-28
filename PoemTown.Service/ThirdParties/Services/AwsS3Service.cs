@@ -97,4 +97,31 @@ public class AwsS3Service : IAwsS3Service
         await UploadFileAsync(output, fileName);
         return $"{_awsS3Settings.ServiceUrl}/{_awsS3Settings.BucketName}/{fileName}";
     }
+
+    public async Task<string> UploadAudioToAwsS3Async(UploadFileToAwsS3Model s3Model)
+    {
+        // Save file to temp folder
+        var filePath = Path.GetTempFileName();
+        await using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await s3Model.File.CopyToAsync(stream);
+        }
+
+        // Generate new file name with timestamp
+        string fileName = s3Model.File.FileName;
+        var fileExtension = Path.GetExtension(fileName);
+        var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+        string unixTimeStamp = TimeStampHelper.GenerateUnixTimeStampNow().ToString();
+
+        fileName = $"{s3Model.FolderName}/"
+                   + fileNameWithoutExtension + "-" + unixTimeStamp + fileExtension;
+
+        // Upload file to AWS S3
+        await using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+        await UploadFileAsync(fileStream, fileName);
+
+        // Return file URL
+        return $"{_awsS3Settings.ServiceUrl}/{_awsS3Settings.BucketName}/{fileName}";
+    }
+
 }

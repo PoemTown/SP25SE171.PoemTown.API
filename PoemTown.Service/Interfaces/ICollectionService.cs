@@ -30,5 +30,7 @@ namespace PoemTown.Service.Interfaces
 
         Task<PaginationResponse<GetUserCollectionResponse>>
             GetUserCollections(string userName, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
+        Task<PaginationResponse<GetCollectionResponse>> GetUserCollections(Guid userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
+
     }
 }

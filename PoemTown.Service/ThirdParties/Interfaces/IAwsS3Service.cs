@@ -7,4 +7,6 @@ public interface IAwsS3Service
     Task UploadFileAsync(Stream filePath, string fileName);
     Task DeleteFileAsync(string fileName);
     Task<string> UploadImageToAwsS3Async(UploadImageToAwsS3Model s3Model);
+    Task<string> UploadAudioToAwsS3Async(UploadFileToAwsS3Model s3Model);
+
 }

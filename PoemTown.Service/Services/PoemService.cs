@@ -1,9 +1,8 @@
 ﻿using AutoMapper;
+using MassTransit;
 using Betalgo.Ranul.OpenAI.Interfaces;
 using Betalgo.Ranul.OpenAI.ObjectModels;
 using Betalgo.Ranul.OpenAI.ObjectModels.RequestModels;
-using Betalgo.Ranul.OpenAI.ObjectModels.ResponseModels;
-using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
@@ -46,6 +45,7 @@ public class PoemService : IPoemService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IAwsS3Service _awsS3Service;
+
     private readonly IOpenAIService _openAiService;
     private readonly ITheHiveAiService _theHiveAiService;
     private readonly IPublishEndpoint _publishEndpoint;
@@ -54,6 +54,7 @@ public class PoemService : IPoemService
     public PoemService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IAwsS3Service awsS3Service,
+
         IOpenAIService openAiService,
         ITheHiveAiService theHiveAiService,
         IPublishEndpoint publishEndpoint,
@@ -64,7 +65,7 @@ public class PoemService : IPoemService
         _awsS3Service = awsS3Service;
         _openAiService = openAiService;
         _theHiveAiService = theHiveAiService;
-        _publishEndpoint = publishEndpoint;
+        _publishEndpoint = publishEndpoint; 
         _qDrantService = qDrantService;
     }
 
@@ -646,6 +647,7 @@ public class PoemService : IPoemService
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
     }
+
 
 
     public async Task DeletePoemInCommunity(Guid userId, Guid poemId)
@@ -1730,4 +1732,5 @@ public class PoemService : IPoemService
         _unitOfWork.GetRepository<Poem>().Update(poem);
         await _unitOfWork.SaveChangesAsync();
     }
+
 }

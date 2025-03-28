@@ -35,7 +35,6 @@ public static class ConfigureService
 
     public static void AddApplicationApi(this WebApplication app)
     {
-
         app.UseForwardedHeaders(new ForwardedHeadersOptions
         {
             ForwardedHeaders = ForwardedHeaders.XForwardedFor |
@@ -51,16 +50,13 @@ public static class ConfigureService
         app.UseHttpsRedirection();
         app.UseAuthentication();
         app.UseAuthorization();
-
         app.AddMiddlewareConfigs();
-
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "Service API v1");
         });
 
-        // ✅ Map SignalR Hub
         app.MapHub<ChatHub>("/chatHub");
     }
 

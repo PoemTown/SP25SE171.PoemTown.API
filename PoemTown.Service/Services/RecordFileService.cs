@@ -43,11 +43,12 @@ namespace PoemTown.Service.Services
         private readonly IMapper _mapper;
         private readonly IAwsS3Service _awsS3Service;
         private readonly IPublishEndpoint _publishEndpoint;
+
         public RecordFileService(IUnitOfWork unitOfWork,
             IMapper mapper,
             IAwsS3Service awsS3Service,
             IPublishEndpoint publishEndpoint
-            )
+        )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -63,6 +64,7 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
+
             //check user own poem create without sale version
             if (poem.UserId == userId)
             {
@@ -75,7 +77,8 @@ namespace PoemTown.Service.Services
             }
             else
             {
-                SaleVersion? saleVersion = await _unitOfWork.GetRepository<SaleVersion>().FindAsync(s => s.IsInUse == true && s.PoemId == poemID);
+                SaleVersion? saleVersion = await _unitOfWork.GetRepository<SaleVersion>()
+                    .FindAsync(s => s.IsInUse == true && s.PoemId == poemID);
                 //check sale version to create record 
                 if (saleVersion.Status == SaleVersionStatus.Free)
                 {
@@ -91,13 +94,14 @@ namespace PoemTown.Service.Services
                 {
                     var purchase = _unitOfWork.GetRepository<UsageRight>().AsQueryable();
                     var matchedUsageRight = purchase.FirstOrDefault(ur => ur.UserId == userId
-                                                                && ur.SaleVersionId == saleVersion.Id
-                                                                && ur.DeletedTime == null
-                                                                && ur.Status == UsageRightStatus.StillValid);
+                                                                          && ur.SaleVersionId == saleVersion.Id
+                                                                          && ur.DeletedTime == null
+                                                                          && ur.Status == UsageRightStatus.StillValid);
                     if (matchedUsageRight == null)
                     {
                         throw new CoreException(StatusCodes.Status400BadRequest, "Poem has not purchased");
                     }
+
                     recordFile.UserId = userId;
                     recordFile.PoemId = poemID;
                     recordFile.SaleVersionId = matchedUsageRight.SaleVersionId;
@@ -107,8 +111,8 @@ namespace PoemTown.Service.Services
                     await _unitOfWork.SaveChangesAsync();
                 }
             }
-           
         }
+
         public async Task UpdateNewRecord(Guid userId, UpdateRecordRequest request)
         {
             RecordFile? recordFile = await _unitOfWork.GetRepository<RecordFile>().FindAsync(r => r.Id == request.Id);
@@ -125,13 +129,15 @@ namespace PoemTown.Service.Services
                 throw new CoreException(StatusCodes.Status400BadRequest, "Can not set price with public record file");
             }
 
-            var userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>().FindAsync(r => r.RecordFileId == request.Id && r.Type == UserPoemType.RecordBuyer);
+            var userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
+                .FindAsync(r => r.RecordFileId == request.Id && r.Type == UserPoemType.RecordBuyer);
 
             //Check if record file has been bought, cannot update
             if (userPoemRecordFile != null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file has been bought, cannot update");
             }
+
             _mapper.Map(request, recordFile);
             _unitOfWork.GetRepository<RecordFile>().Update(recordFile);
             await _unitOfWork.SaveChangesAsync();
@@ -146,13 +152,16 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file not found");
             }
-            var userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>().FindAsync(r => r.RecordFileId == recordId && r.Type == UserPoemType.RecordBuyer);
+
+            var userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
+                .FindAsync(r => r.RecordFileId == recordId && r.Type == UserPoemType.RecordBuyer);
 
             //Check if record file has been bought, cannot update
             if (userPoemRecordFile != null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file has been bought, cannot delete");
             }
+
             _unitOfWork.GetRepository<RecordFile>().Delete(recordFile);
             await _unitOfWork.SaveChangesAsync();
         }
@@ -160,12 +169,14 @@ namespace PoemTown.Service.Services
 
         public async Task AssigntToPrivate(Guid userId, AssignPrivateRequest request)
         {
-            RecordFile? recordFile = await _unitOfWork.GetRepository<RecordFile>().FindAsync(r => r.Id == request.RecordId);
+            RecordFile? recordFile =
+                await _unitOfWork.GetRepository<RecordFile>().FindAsync(r => r.Id == request.RecordId);
             //Check if record file not found
             if (recordFile == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file not found");
             }
+
             //Check if record file already set to be private
             if (recordFile.IsPublic == false)
             {
@@ -178,6 +189,7 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "This record file is not yours");
             }
+
             recordFile.IsPublic = false;
             recordFile.Price = request.Price;
             _unitOfWork.GetRepository<RecordFile>().Update(recordFile);
@@ -202,12 +214,13 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file is public, cannot purchase");
             }
+
             // If recordFile is yours 
             if (recordFile.UserId == userId)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "This record file is yours, cannot buy");
-
             }
+
             // Find user by id
             UsageRight? userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
                 .FindAsync(p => p.UserId == userId && p.RecordFileId == recordId);
@@ -219,13 +232,13 @@ namespace PoemTown.Service.Services
             }
 
             UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>()
-          .FindAsync(p => p.UserId == userId);
+                .FindAsync(p => p.UserId == userId);
 
             UserEWallet? userEWalletPoemOwner = await _unitOfWork.GetRepository<UserEWallet>()
-          .FindAsync(p => p.UserId == recordFile.Poem.UserId);
+                .FindAsync(p => p.UserId == recordFile.Poem.UserId);
 
             UserEWallet? userEWalletRecordOwner = await _unitOfWork.GetRepository<UserEWallet>()
-          .FindAsync(p => p.UserId == recordFile.UserId);
+                .FindAsync(p => p.UserId == recordFile.UserId);
             // If user e-wallet not found then throw exception
             if (userEWallet == null)
             {
@@ -257,9 +270,8 @@ namespace PoemTown.Service.Services
             await _unitOfWork.SaveChangesAsync();
 
 
-
             // Deduct user e-wallet balance
-            if(recordFile.SaleVersion == null)
+            if (recordFile.SaleVersion == null)
             {
                 userEWallet.WalletBalance -= recordFile.Price;
                 userEWalletRecordOwner.WalletBalance += recordFile.Price;
@@ -270,15 +282,14 @@ namespace PoemTown.Service.Services
             else
             {
                 userEWallet.WalletBalance -= recordFile.Price;
-                userEWalletPoemOwner.WalletBalance += recordFile.Price * recordFile.SaleVersion.CommissionPercentage / 100;
-                userEWalletRecordOwner.WalletBalance += recordFile.Price * (100 - recordFile.SaleVersion.CommissionPercentage)/100;
+                userEWalletPoemOwner.WalletBalance +=
+                    recordFile.Price * recordFile.SaleVersion.CommissionPercentage / 100;
+                userEWalletRecordOwner.WalletBalance +=
+                    recordFile.Price * (100 - recordFile.SaleVersion.CommissionPercentage) / 100;
                 _unitOfWork.GetRepository<UserEWallet>().Update(userEWalletPoemOwner);
                 _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
                 await _unitOfWork.SaveChangesAsync();
             }
-           
-
-
 
 
             CreateOrderEvent message = new CreateOrderEvent()
@@ -297,12 +308,13 @@ namespace PoemTown.Service.Services
         }
 
         public async Task<PaginationResponse<GetSoldRecordResponse>>
-       GetSoldRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+            GetSoldRecord(Guid? userId,
+                RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
         {
             //Get all records that user have
             var records = _unitOfWork.GetRepository<RecordFile>()
-           .AsQueryable()
-           .Where(p => p.UserId == userId && p.DeletedTime == null);
+                .AsQueryable()
+                .Where(p => p.UserId == userId && p.DeletedTime == null);
 
             //Get all usage record roi chuyen thanh list khong trung
             var usageRecordIds = _unitOfWork.GetRepository<UsageRight>()
@@ -312,10 +324,10 @@ namespace PoemTown.Service.Services
 
             //lay ra record cua minh co trong usage right
             var soldRecord = records
-                 .Where(r => usageRecordIds.Contains(r.Id));
+                .Where(r => usageRecordIds.Contains(r.Id));
 
             var queryPaging = await _unitOfWork.GetRepository<RecordFile>()
-              .GetPagination(soldRecord, request.PageNumber, request.PageSize);
+                .GetPagination(soldRecord, request.PageNumber, request.PageSize);
 
             soldRecord.ToList();
             //Get all records have been sold
@@ -325,28 +337,29 @@ namespace PoemTown.Service.Services
                 Price = s.Price,
                 Owner = _mapper.Map<GetBasicUserInformationResponse>(s.User),
                 Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
-                            .Where(u => u.RecordFileId == s.Id && u.DeletedTime == null)
-                            .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
-                            .ToList()
+                    .Where(u => u.RecordFileId == s.Id && u.DeletedTime == null)
+                    .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
+                    .ToList()
             }).ToList();
 
 
-
             return new PaginationResponse<GetSoldRecordResponse>(result, queryPaging.PageNumber, queryPaging.PageSize,
-            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 
         public async Task<PaginationResponse<GetBoughtRecordResponse>>
-      GetBoughtRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+            GetBoughtRecord(Guid? userId,
+                RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
         {
             //Get all records that user have
             var usageRight = _unitOfWork.GetRepository<UsageRight>()
-           .AsQueryable()
-           .Where(p => p.UserId == userId && p.RecordFileId != null && p.Type == UserPoemType.RecordBuyer && p.DeletedTime == null);
+                .AsQueryable()
+                .Where(p => p.UserId == userId && p.RecordFileId != null && p.Type == UserPoemType.RecordBuyer &&
+                            p.DeletedTime == null);
 
             var poem = _unitOfWork.GetRepository<Poem>()
-    .AsQueryable()
-    .FirstOrDefault(p => usageRight.Select(s => s.RecordFile.PoemId).Contains(p.Id));
+                .AsQueryable()
+                .FirstOrDefault(p => usageRight.Select(s => s.RecordFile.PoemId).Contains(p.Id));
 
             //Get all records have been bought
             var result = usageRight.Select(s => new GetBoughtRecordResponse
@@ -360,23 +373,23 @@ namespace PoemTown.Service.Services
                         .AsQueryable()
                         .Where(u => u.Id == s.RecordFile.UserId && u.DeletedTime == null)
                         .FirstOrDefault() // Chỉ lấy 1 user
-
-)
+                )
             }).ToList();
             var queryPaging = await _unitOfWork.GetRepository<UsageRight>()
-                 .GetPagination(usageRight, request.PageNumber, request.PageSize);
+                .GetPagination(usageRight, request.PageNumber, request.PageSize);
             return new PaginationResponse<GetBoughtRecordResponse>(result, queryPaging.PageNumber, queryPaging.PageSize,
-            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 
 
         public async Task<PaginationResponse<GetRecordFileResponse>>
-      GetAllRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+            GetAllRecord(Guid? userId,
+                RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
         {
             //Get all records
             var recordsQuery = _unitOfWork.GetRepository<RecordFile>()
-                    .AsQueryable()
-                    .Where(r => r.DeletedTime == null && r.IsPublic == true);
+                .AsQueryable()
+                .Where(r => r.DeletedTime == null && r.IsPublic == true);
 
             if (request.IsDelete == true)
             {
@@ -386,6 +399,7 @@ namespace PoemTown.Service.Services
             {
                 recordsQuery = recordsQuery.Where(p => p.DeletedTime == null);
             }
+
             // Apply filter
             if (request.FilterOptions != null)
             {
@@ -394,7 +408,6 @@ namespace PoemTown.Service.Services
                     recordsQuery = recordsQuery.Where(p =>
                         p.FileName!.Contains(request.FilterOptions.FileName, StringComparison.OrdinalIgnoreCase));
                 }
-
             }
 
             switch (request.SortOptions)
@@ -420,19 +433,22 @@ namespace PoemTown.Service.Services
                 {
                     throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
                 }
+
                 records.Add(_mapper.Map<GetRecordFileResponse>(poemEntity));
             }
+
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,
                 queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 
 
         public async Task<PaginationResponse<GetRecordFileResponse>>
-      GetMyRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+            GetMyRecord(Guid? userId,
+                RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
         {
             var recordsQuery = _unitOfWork.GetRepository<RecordFile>()
-                    .AsQueryable()
-                    .Where(r => r.UserId == userId && r.DeletedTime == null);
+                .AsQueryable()
+                .Where(r => r.UserId == userId && r.DeletedTime == null);
 
             if (request.IsDelete == true)
             {
@@ -442,6 +458,7 @@ namespace PoemTown.Service.Services
             {
                 recordsQuery = recordsQuery.Where(p => p.DeletedTime == null);
             }
+
             // Apply filter
             if (request.FilterOptions != null)
             {
@@ -450,7 +467,6 @@ namespace PoemTown.Service.Services
                     recordsQuery = recordsQuery.Where(p =>
                         p.FileName!.Contains(request.FilterOptions.FileName, StringComparison.OrdinalIgnoreCase));
                 }
-
             }
 
             switch (request.SortOptions)
@@ -476,8 +492,10 @@ namespace PoemTown.Service.Services
                 {
                     throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
                 }
+
                 records.Add(_mapper.Map<GetRecordFileResponse>(poemEntity));
             }
+
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,
                 queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
@@ -496,7 +514,8 @@ namespace PoemTown.Service.Services
 
             // Upload audio file to AWS S3
             var fileExtension = Path.GetExtension(file.FileName);
-            var fileName = $"recordings/{StringHelper.CapitalizeString(userId.ToString())}-{DateTime.UtcNow.Ticks}{fileExtension}";
+            var fileName =
+                $"recordings/{StringHelper.CapitalizeString(userId.ToString())}-{DateTime.UtcNow.Ticks}{fileExtension}";
 
             UploadFileToAwsS3Model s3Model = new UploadFileToAwsS3Model()
             {
@@ -506,6 +525,5 @@ namespace PoemTown.Service.Services
 
             return await _awsS3Service.UploadAudioToAwsS3Async(s3Model);
         }
-
     }
 }

@@ -14,6 +14,7 @@ using PoemTown.Repository.Enums.Wallets;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
+using PoemTown.Service.BusinessModels.RequestModels.ThemeRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 using PoemTown.Service.Events.OrderEvents;
@@ -978,5 +979,109 @@ public class TemplateService : ITemplateService
             FolderName = fileName
         };
         return await _awsS3Service.UploadImageToAwsS3Async(s3Model);
+    }
+
+    public async Task<IList<GetUserTemplateResponse>> GetUserTemplates(Guid userId)
+    {
+        IList<UserTemplate> userTemplate = await _unitOfWork.GetRepository<UserTemplate>()
+            .AsQueryable()
+            .Where(p => p.UserId == userId)
+            .ToListAsync();
+        
+        return _mapper.Map<IList<GetUserTemplateResponse>>(userTemplate);
+    }
+    
+    public async Task ApplyUserTemplateAsTheme(Guid userId, ApplyUserTemplateAsThemeRequest request)
+    {
+        Theme? theme = await _unitOfWork.GetRepository<Theme>()
+            .FindAsync(p => p.Id == request.ThemeId && p.UserId == userId);
+        
+        // Check if Theme exists
+        if (theme == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Theme not found");
+        }
+
+        // Check if Theme is Default, then cannot update
+        if(theme.IsDefault == true)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Cannot apply Default Theme");
+        }
+                
+        UserTemplate? userTemplate = await _unitOfWork.GetRepository<UserTemplate>()
+            .FindAsync(p => p.Id == request.UserTemplateId && p.UserId == userId);
+        
+        // Check if UserTemplate exists
+        if (userTemplate == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "UserTemplate not found");
+        }
+        
+        // List of UserTemplateDetail in UserTemplate
+        IEnumerable<UserTemplateDetail> userTemplateDetails = await _unitOfWork.GetRepository<UserTemplateDetail>()
+            .AsQueryable()
+            .Where(p => p.UserTemplateId == request.UserTemplateId)
+            .ToListAsync();
+
+        foreach (var userTemplateDetail in userTemplateDetails)
+        {
+            UserTemplateDetail? userTemplateDetailEntity = await _unitOfWork.GetRepository<UserTemplateDetail>()
+                .FindAsync(p => p.Id == userTemplateDetail.Id);
+
+            // Check if UserTemplateDetail exists
+            if (userTemplateDetailEntity == null)
+            {
+                continue;
+            }
+            
+            // Get ThemeUserTemplateDetail by Type of UserTemplateDetail and ThemeId
+            ThemeUserTemplateDetail? themeUserTemplateDetail = await _unitOfWork.GetRepository<ThemeUserTemplateDetail>()
+                .FindAsync(p => p.ThemeId == request.ThemeId && p.UserTemplateDetail.Type == userTemplateDetail.Type);
+
+            // Check if ThemeUserTemplateDetail exists
+            if (themeUserTemplateDetail == null)
+            {
+                continue;
+            }
+            
+            // Update ThemeUserTemplateDetail with new UserTemplateDetail
+            themeUserTemplateDetail.UserTemplateDetailId = userTemplateDetail.Id;
+            _unitOfWork.GetRepository<ThemeUserTemplateDetail>().Update(themeUserTemplateDetail);
+        }
+        
+        /*// Get ThemeUserTemplateDetail by Type of UserTemplateDetail and ThemeId
+        IEnumerable<ThemeUserTemplateDetail> themeUserTemplateDetails = await _unitOfWork
+            .GetRepository<ThemeUserTemplateDetail>()
+            .AsQueryable()
+            .Where(p => p.ThemeId == request.ThemeId)
+            .ToListAsync();
+            
+        // Delete all ThemeUserTemplateDetail in Theme
+        _unitOfWork.GetRepository<ThemeUserTemplateDetail>().DeletePermanentRange(themeUserTemplateDetails);
+        
+        // Create new list of ThemeUserTemplateDetails
+        var newThemeUserTemplateDetails = userTemplateDetails.Select(p => new ThemeUserTemplateDetail
+        {
+            ThemeId = request.ThemeId,
+            UserTemplateDetailId = p.Id, 
+        }).ToList();
+        
+        // Insert new list of ThemeUserTemplateDetails
+        await _unitOfWork.GetRepository<ThemeUserTemplateDetail>().InsertRangeAsync(newThemeUserTemplateDetails);*/
+        
+        // Check if User already has a Theme in use
+        Theme? userTheme = await _unitOfWork.GetRepository<Theme>()
+            .FindAsync(p => p.UserId == userId && p.IsInUse == true);
+        
+        if(userTheme != null)
+        {
+            userTheme.IsInUse = false;
+            _unitOfWork.GetRepository<Theme>().Update(userTheme);
+        }
+        
+        theme.IsInUse = true;
+        _unitOfWork.GetRepository<Theme>().Update(theme);
+        
+        await _unitOfWork.SaveChangesAsync();
     }
 }

@@ -1385,7 +1385,7 @@ public class PoemService : IPoemService
         return response.Choices.FirstOrDefault()?.Message.Content ?? "";
     }
 
-    public async Task<string> ConvertPoemTextToImage(ConvertPoemTextToImageRequest request)
+    public async Task<string> ConvertPoemTextToImage(Guid userId, ConvertPoemTextToImageRequest request)
     {
         // Create image with OpenAI model DALL-E 3
         ImageCreateRequest imageCreateRequest = new ImageCreateRequest()
@@ -1405,8 +1405,13 @@ public class PoemService : IPoemService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
         }
+        
+        // Upload image to AWS S3
+        var folderName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
 
-        return response.Results.FirstOrDefault().Url;
+        string newUrl = await _awsS3Service.DownloadAndUploadToS3Async(response.Results.First().Url, folderName);
+        
+        return newUrl;
     }
 
     public async Task<string> TranslatePoemTextVietnameseIntoEnglish(string poemText)
@@ -1438,7 +1443,7 @@ public class PoemService : IPoemService
     }
 
     public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(
-        ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest request)
+        Guid userId, ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest request)
     {
         // Translate poem text from Vietnamese to English
         string translatedPoemText = await TranslatePoemTextVietnameseIntoEnglish(request.PoemText);
@@ -1455,12 +1460,17 @@ public class PoemService : IPoemService
         };
 
         var response = await _theHiveAiService.ConvertTextToImageWithFluxSchnellEnhanced(model);
+        // Upload image to AWS S3
+        var folderName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
 
+        string newUrl = await _awsS3Service.DownloadAndUploadToS3Async(response.Output.First().Url, folderName);
+        
+        response.Output.First().Url = newUrl;
         return response;
     }
 
     public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
-        ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request)
+        Guid userId, ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request)
     {
         // Translate poem text from Vietnamese to English
         string translatedPoemText = await TranslatePoemTextVietnameseIntoEnglish(request.PoemText);
@@ -1478,7 +1488,12 @@ public class PoemService : IPoemService
         };
 
         var response = await _theHiveAiService.ConvertTextToImageWithSdxlEnhanced(model);
+        // Upload image to AWS S3
+        var folderName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
 
+        string newUrl = await _awsS3Service.DownloadAndUploadToS3Async(response.Output.First().Url, folderName);
+        
+        response.Output.First().Url = newUrl;
         return response;
     }
 

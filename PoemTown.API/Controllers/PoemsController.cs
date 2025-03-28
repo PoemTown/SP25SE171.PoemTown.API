@@ -619,7 +619,8 @@ public class PoemsController : BaseController
     [Authorize]
     public async Task<ActionResult<BaseResponse<string>>> PoemTextToImage(ConvertPoemTextToImageRequest request)
     {
-        var response = await _poemService.ConvertPoemTextToImage(request);
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _poemService.ConvertPoemTextToImage(userId, request);
         return Ok(new BaseResponse<string>(StatusCodes.Status200OK, "Poem text to image successfully", response));
     } 
 
@@ -656,7 +657,8 @@ public class PoemsController : BaseController
     public async Task<ActionResult<BaseResponse<TheHiveAiResponse>>>
         PoemTextToImageWithTheHiveAiFluxSchnellEnhanced(ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest fluxSchnellEnhancedRequest)
     {
-        var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(fluxSchnellEnhancedRequest);
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(userId, fluxSchnellEnhancedRequest);
         return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK, "Poem text to image with The Hive AI successfully", response));
     }
 
@@ -686,16 +688,17 @@ public class PoemsController : BaseController
     /// - Jpeg = 1,
     /// - Png = 2,
     /// </remarks>
-    /// <param name="fluxSchnellEnhancedRequest"></param>
+    /// <param name="hiveAiSdxlEnhancedRequest"></param>
     /// <returns></returns>
     [HttpPost]
     [Route("v1/text-to-image/the-hive-ai/sdxl-enhanced")]
     [Authorize]
     public async Task<ActionResult<BaseResponse<TheHiveAiResponse>>>
         PoemTextToImageWithTheHiveAiSdxlEnhanced(
-            ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest fluxSchnellEnhancedRequest)
+            ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest hiveAiSdxlEnhancedRequest)
     {
-        var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(fluxSchnellEnhancedRequest);
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _poemService.ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(userId, hiveAiSdxlEnhancedRequest);
         return Ok(new BaseResponse<TheHiveAiResponse>(StatusCodes.Status200OK,
             "Poem text to image with The Hive AI successfully", response));
     }

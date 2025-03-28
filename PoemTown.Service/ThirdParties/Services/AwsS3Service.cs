@@ -1,6 +1,7 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Transfer;
+using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Service.ThirdParties.Models.AwsS3;
@@ -15,11 +16,14 @@ public class AwsS3Service : IAwsS3Service
 {
     private readonly AwsS3Settings _awsS3Settings;
     private readonly IAmazonS3 _amazonS3;
-
-    public AwsS3Service(AwsS3Settings awsS3Settings, IAmazonS3 amazonS3)
+    private readonly IHttpClientFactory _httpClientFactory;
+    public AwsS3Service(AwsS3Settings awsS3Settings, 
+        IAmazonS3 amazonS3,
+        IHttpClientFactory httpClientFactory)
     {
         _awsS3Settings = awsS3Settings;
         _amazonS3 = amazonS3;
+        _httpClientFactory = httpClientFactory;
     }
 
     public async Task UploadFileAsync(Stream filePath, string fileName)
@@ -124,4 +128,40 @@ public class AwsS3Service : IAwsS3Service
         return $"{_awsS3Settings.ServiceUrl}/{_awsS3Settings.BucketName}/{fileName}";
     }
 
+    public async Task<string> DownloadAndUploadToS3Async(string imageUrl, string folderName)
+    {
+        try
+        {
+            var httpClient = _httpClientFactory.CreateClient();
+            
+            // Step 1: Download the image from OpenAI URL
+            HttpResponseMessage response = await httpClient.GetAsync(imageUrl);
+            response.EnsureSuccessStatusCode();
+            byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
+
+            // Step 2: Convert image bytes to an IFormFile
+            IFormFile imageFile = ImageHelper.ConvertToIFormFile(imageBytes, $"ai-generated-image-{StringHelper.GenerateRandomString(10)}.png");
+            
+            ImageHelper.ValidateImage(imageFile);
+
+            // Step 3: Upload image using your existing function
+            var s3Model = new UploadImageToAwsS3Model
+            {
+                File = imageFile,
+                FolderName = folderName, // Specify the folder in S3
+                Width = null,  // Resize if needed
+                Height = null, 
+                Quality = 100  // Set quality
+            };
+
+            return await UploadImageToAwsS3Async(s3Model);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            return null;
+        }
+    }
+    
+    
 }

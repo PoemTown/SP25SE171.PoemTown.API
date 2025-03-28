@@ -156,6 +156,7 @@ namespace PoemTown.API.Controllers
             {
                 userId = Guid.Parse(userClaim.Value);
             }
+
             var paginationResponse = await _service.GetMyRecord(userId, request);
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetRecordFileResponse>>(paginationResponse);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;
@@ -164,7 +165,7 @@ namespace PoemTown.API.Controllers
             return Ok(basePaginationResponse);
         }
         /// <summary>
-        /// Lấy danh sách bản ngâm thơ cua toi, yêu cầu đăng nhập
+        /// Lấy danh sách bản ngâm thơ public, yêu cầu đăng nhập
         /// </summary>
         /// <remarks>
         /// </remarks>
@@ -215,6 +216,22 @@ namespace PoemTown.API.Controllers
             Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
             await _service.PurchaseRecordFile(userId, recordId);
             return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Purchase record file successfully"));
+        }
+
+
+        /// <summary>
+        /// Upload file ghi âm cho bài thơ, yêu cầu đăng nhập
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("v1/audio")]
+        [Authorize]
+        public async Task<ActionResult<BaseResponse<string>>> UploadPoemAudio(IFormFile file)
+        {
+            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            var response = await _service.UploadRecordFile(userId, file);
+            return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Upload audio successfully", response));
         }
     }
 }

@@ -64,7 +64,6 @@ public static class ImageHelper
         // Return validation result
         return true;
     }
-
     private static bool IsImage(IFormFile file)
     {
         byte[] buffer = new byte[8];

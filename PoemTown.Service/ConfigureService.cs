@@ -57,6 +57,7 @@ public static class ConfigureService
         services.AddZaloPayConfig(configuration);
         services.AddPaymentRedirectConfig(configuration);
         services.AddQuartzConfig();
+
         services.AddBetalgoOpenAI(configuration);
         services.AddTheHiveAiSettings(configuration);
         services.AddSignalRConfig();
@@ -297,6 +298,11 @@ public static class ConfigureService
         services.AddScoped<MonthlyAchievementJob>();
     }
 
+    private static void AddSignalRConfig(this IServiceCollection services)
+    {
+        services.AddSignalR();
+    }
+
     private static void AddBetalgoOpenAI(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddOpenAIService(options =>
@@ -319,10 +325,6 @@ public static class ConfigureService
         });
     }
 
-    private static void AddSignalRConfig (this IServiceCollection services)
-    {
-        services.AddSignalR();
-    }
     
     private static void AddQDrantConfig(this IServiceCollection services, IConfiguration configuration)
     {

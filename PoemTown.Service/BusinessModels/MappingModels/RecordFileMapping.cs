@@ -17,7 +17,8 @@ public class RecordFileMapping : Profile
         CreateMap<UpdateRecordRequest, RecordFile>();
 
 
-        CreateMap<RecordFile, GetRecordFileResponse>().ReverseMap();
+        CreateMap<RecordFile, GetRecordFileResponse>().ReverseMap()
+            .ForMember(dest => dest.Poem, opt => opt.MapFrom(p => p.Poem));
 
         CreateMap<RecordFile, GetRecordFileInOrderDetailResponse>().ReverseMap();
     }

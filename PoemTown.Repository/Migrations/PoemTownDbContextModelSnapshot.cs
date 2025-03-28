@@ -1610,8 +1610,10 @@ namespace PoemTown.Repository.Migrations
                         {
                             Id = new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"),
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2ce3b9d5-2622-431c-afd8-aea954b3a246",
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 27, 19, 44, 17, 817, DateTimeKind.Unspecified).AddTicks(1888), new TimeSpan(0, 7, 0, 0, 0)),
+
+
+                            ConcurrencyStamp = "3f788232-324e-4e45-b4a3-efafd4a04762",
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 24, 0, 48, 21, 741, DateTimeKind.Unspecified).AddTicks(8289), new TimeSpan(0, 7, 0, 0, 0)),
                             Email = "admin@gmail.com",
                             EmailConfirmed = true,
                             FullName = "admin",
@@ -1648,6 +1650,7 @@ namespace PoemTown.Repository.Migrations
                             TwoFactorEnabled = false,
                             UserName = "user@gmail.com"
                         });
+
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.UserClaim", b =>
@@ -1851,15 +1854,18 @@ namespace PoemTown.Repository.Migrations
                         {
                             UserId = new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"),
                             RoleId = new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 27, 19, 44, 17, 817, DateTimeKind.Unspecified).AddTicks(2147), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 27, 19, 44, 17, 817, DateTimeKind.Unspecified).AddTicks(2147), new TimeSpan(0, 7, 0, 0, 0))
+
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 24, 0, 48, 21, 741, DateTimeKind.Unspecified).AddTicks(8495), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 24, 0, 48, 21, 741, DateTimeKind.Unspecified).AddTicks(8495), new TimeSpan(0, 7, 0, 0, 0))
                         },
                         new
                         {
                             UserId = new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"),
                             RoleId = new Guid("89fca251-f021-425b-de62-08dcdfcdb851"),
-                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 27, 19, 44, 17, 817, DateTimeKind.Unspecified).AddTicks(2155), new TimeSpan(0, 7, 0, 0, 0)),
-                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 27, 19, 44, 17, 817, DateTimeKind.Unspecified).AddTicks(2155), new TimeSpan(0, 7, 0, 0, 0))
+
+
+                            CreatedTime = new DateTimeOffset(new DateTime(2025, 3, 24, 0, 48, 21, 741, DateTimeKind.Unspecified).AddTicks(8503), new TimeSpan(0, 7, 0, 0, 0)),
+                            LastUpdatedTime = new DateTimeOffset(new DateTime(2025, 3, 24, 0, 48, 21, 741, DateTimeKind.Unspecified).AddTicks(8503), new TimeSpan(0, 7, 0, 0, 0))
                         });
                 });
 

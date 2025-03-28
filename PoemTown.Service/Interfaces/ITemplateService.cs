@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
+using PoemTown.Service.BusinessModels.RequestModels.ThemeRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 using PoemTown.Service.QueryOptions.FilterOptions.TemplateFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -50,4 +51,6 @@ public interface ITemplateService
     Task CreateDefaultMasterTemplate(CreateDefaultMasterTemplateRequest request);
     Task<string> UploadMasterTemplateCoverImage(IFormFile file);
     Task<IList<GetUserTemplateDetailInUserThemeResponse>?> GetUserTemplateDetailInOnlineUserProfile(Guid userId);
+    Task<IList<GetUserTemplateResponse>> GetUserTemplates(Guid userId);
+    Task ApplyUserTemplateAsTheme(Guid userId, ApplyUserTemplateAsThemeRequest request);
 }

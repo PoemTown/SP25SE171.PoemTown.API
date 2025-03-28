@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
 using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.TemplateRequests;
+using PoemTown.Service.BusinessModels.RequestModels.ThemeRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
@@ -569,4 +570,43 @@ public class TemplateController : BaseController
         return Ok(new BaseResponse<string>(StatusCodes.Status201Created,
             "Master template cover image uploaded successfully", response));
     }
+    
+    /// <summary>
+    /// Lấy user template của người dùng đăng nhập, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// type:
+    ///
+    /// - Bundle = 1,
+    /// - Single = 2
+    /// </remarks>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/user-templates")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<IList<GetUserTemplateResponse>>>> GetUserTemplates()
+    {
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value!);
+        
+        var response = await _templateService.GetUserTemplates(userId);
+        return Ok(new BaseResponse<IList<GetUserTemplateResponse>>
+            (StatusCodes.Status200OK, "Get user templates successfully", response));
+    }
+    
+    /// <summary>
+    /// Áp dụng user template làm theme, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/user-templates/theme")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> ApplyUserTemplateAsTheme(ApplyUserTemplateAsThemeRequest request)
+    {
+        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value!);
+        
+        await _templateService.ApplyUserTemplateAsTheme(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Apply user template as theme successfully"));
+    }
+    
 }

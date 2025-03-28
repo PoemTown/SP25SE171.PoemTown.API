@@ -483,7 +483,7 @@ public class PoemService : IPoemService
 
             poems.Add(_mapper.Map<GetPoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
-            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.User);
 
             poems.Last().Like =
                 _mapper.Map<GetLikeResponse>(
@@ -800,7 +800,7 @@ public class PoemService : IPoemService
 
             poems.Add(_mapper.Map<GetPostedPoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
-            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.User);
 
             // Assign like to poem by adding into the last element of the list
             poems.Last().Like =
@@ -933,7 +933,7 @@ public class PoemService : IPoemService
 
             poems.Add(_mapper.Map<GetPoemInCollectionResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
-            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.User);
             poems.Last().Like =
                 _mapper.Map<GetLikeResponse>(
                     poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
@@ -1073,7 +1073,7 @@ public class PoemService : IPoemService
 
             poems.Add(_mapper.Map<GetPostedPoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
-            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.User);
 
             // Assign like to poem by adding into the last element of the list
             poems.Last().Like =

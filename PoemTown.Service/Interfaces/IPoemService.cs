@@ -35,13 +35,13 @@ public interface IPoemService
 
     Task SellingSaleVersionPoem(Guid userId, SellingSaleVersionPoemRequest request);
     Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request);
-    Task<string> ConvertPoemTextToImage(ConvertPoemTextToImageRequest request);
+    Task<string> ConvertPoemTextToImage(Guid userId, ConvertPoemTextToImageRequest request);
 
     Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhanced(
-        ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest request);
+        Guid userId, ConvertPoemTextToImageWithTheHiveAiFluxSchnellEnhancedRequest request);
 
     Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
-        ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request);
+        Guid userId, ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request);
 
     Task PurchasePoemCopyRight(Guid userId, Guid saleVersionId);
     Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request);

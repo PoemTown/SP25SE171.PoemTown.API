@@ -81,4 +81,14 @@ public static class ImageHelper
                buffer.Take(4).SequenceEqual(pngSignature) ||
                buffer.Take(4).SequenceEqual(gifSignature);
     }
+    
+    public static IFormFile ConvertToIFormFile(byte[] fileBytes, string fileName)
+    {
+        var stream = new MemoryStream(fileBytes);
+        return new FormFile(stream, 0, fileBytes.Length, "image", fileName)
+        {
+            Headers = new HeaderDictionary(),
+            ContentType = "image/png"
+        };
+    }
 }

@@ -25,7 +25,7 @@ public interface IPoemService
     Task DeletePoem(Guid poemId);
     Task DeletePoemPermanent(Guid poemId);
     Task<GetPoemDetailResponse> 
-        GetPoemDetail(Guid userId, Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
+        GetPoemDetail(Guid? userId, Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
     Task<PaginationResponse<GetPostedPoemResponse>> 
         GetPostedPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
     Task<PaginationResponse<GetPostedPoemResponse>>
@@ -51,7 +51,7 @@ public interface IPoemService
     Task FreeSaleVersionPoem(Guid userId, Guid poemId);
 
     Task<PaginationResponse<GetUserPoemResponse>>
-        GetUserPoems(string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
+        GetUserPoems(Guid? userId, string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 
     IList<SearchPointsResult> GetListQDrantSearchPoint(QDrantResponse<SearchPointsResult> response, int top);
     Task AdminUpdatePoemStatus(Guid poemId, PoemStatus status);

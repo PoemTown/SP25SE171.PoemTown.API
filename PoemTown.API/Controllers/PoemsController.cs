@@ -232,7 +232,7 @@ public class PoemsController : BaseController
     }
 
     /// <summary>
-    /// Lấy chi tiết của một bài thơ (Không bao gồm lịch sử chỉnh sửa), yêu cầu đăng nhập
+    /// Lấy chi tiết của một bài thơ (Không bao gồm lịch sử chỉnh sửa), không yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
     /// Chỉ áp dụng filter, sort cũng như paging cho RecordFiles (Tức là poem không có filter, sort, paging)
@@ -281,11 +281,16 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpGet]
     [Route("v1/{poemId}/detail")]
-    [Authorize]
     public async Task<ActionResult<BaseResponse<GetPoemDetailResponse>>>
         GetPoemDetail(Guid poemId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
     {
-        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }        
+        
         var response = await _poemService.GetPoemDetail(userId, poemId, request);
 
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Get poem detail successfully", response));
@@ -777,7 +782,14 @@ public class PoemsController : BaseController
     public async Task<ActionResult<BasePaginationResponse<GetUserPoemResponse>>>
         GetUserPoems(string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
-        var paginationResponse = await _poemService.GetUserPoems(userName, request);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }        
+        
+        var paginationResponse = await _poemService.GetUserPoems(userId, userName, request);
 
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetUserPoemResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;

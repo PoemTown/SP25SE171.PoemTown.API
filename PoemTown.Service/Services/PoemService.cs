@@ -277,7 +277,7 @@ public class PoemService : IPoemService
 
 
     public async Task<GetPoemDetailResponse>
-        GetPoemDetail(Guid userId, Guid poemId,
+        GetPoemDetail(Guid? userId, Guid poemId,
             RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
     {
         Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
@@ -300,24 +300,49 @@ public class PoemService : IPoemService
         // Assign author to poem
         poemDetail.User = _mapper.Map<GetBasicUserInformationResponse>(poem.User);
 
-        // Check if user is able to upload record file for this poem
-        bool isAbleToUploadRecordFile =
-            // Allow to upload record file if poem is free
-            await _unitOfWork.GetRepository<SaleVersion>()
-                .AsQueryable()
-                .AnyAsync(p => p.IsInUse == true
-                               && p.PoemId == poemId
-                               && p.Status == SaleVersionStatus.Free) ||
+        if (userId != null)
+        {
+            poemDetail.IsMine = false;
+            
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+            // Check if user own this poem
+            if (user == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+            }
+            
+            if(poem.UserId == userId)
+            {
+                poemDetail.IsMine = true;
+            }
+            
+            // Check if user is able to upload record file for this poem
+            bool isAbleToUploadRecordFile =
+                // Allow to upload record file if poem is free
+                await _unitOfWork.GetRepository<SaleVersion>()
+                    .AsQueryable()
+                    .AnyAsync(p => p.IsInUse == true
+                                   && p.PoemId == poemId
+                                   && p.Status == SaleVersionStatus.Free) ||
 
-            // Allow to upload record file if user is copy right holder
-            await _unitOfWork.GetRepository<UsageRight>()
-                .AsQueryable()
-                .AnyAsync(p => p.SaleVersion != null
-                               && p.SaleVersion.PoemId == poemId
-                               && p.UserId == userId
-                               && p.Status == UsageRightStatus.StillValid);
+                // Allow to upload record file if user is copy right holder
+                await _unitOfWork.GetRepository<UsageRight>()
+                    .AsQueryable()
+                    .AnyAsync(p => p.SaleVersion != null
+                                   && p.SaleVersion.PoemId == poemId
+                                   && p.UserId == userId
+                                   && p.Status == UsageRightStatus.StillValid);
 
-        poemDetail.IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
+            poemDetail.IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
+            
+            poemDetail.Like =
+                _mapper.Map<GetLikeResponse>(
+                    poem.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poem.Id));
+            
+            poemDetail.TargetMark = _mapper.Map<GetTargetMarkResponse>(
+                poem.TargetMarks!.FirstOrDefault(tm =>
+                    tm.MarkByUserId == userId && tm.PoemId == poem.Id && tm.Type == TargetMarkType.Poem));
+        }
 
         if (poem.RecordFiles != null && poem.RecordFiles.Count <= 0)
         {
@@ -328,7 +353,7 @@ public class PoemService : IPoemService
         var recordFilesQuery = _unitOfWork.GetRepository<RecordFile>()
             .AsQueryable();
 
-        recordFilesQuery = recordFilesQuery.Where(p => p.PoemId == poemId && p.Poem!.Collection!.UserId == userId);
+        recordFilesQuery = recordFilesQuery.Where(p => p.PoemId == poemId);
 
         switch (request.SortOptions)
         {
@@ -1555,12 +1580,13 @@ public class PoemService : IPoemService
     }
 
     public async Task<PaginationResponse<GetUserPoemResponse>>
-        GetUserPoems(string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+        GetUserPoems(Guid? userId, string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
 
         poemQuery = poemQuery.Where(p => p.User!.UserName == userName && p.Status == PoemStatus.Posted);
 
+        // Is delete
         if (request.IsDelete == true)
         {
             poemQuery = poemQuery.Where(p => p.DeletedTime != null);
@@ -1570,6 +1596,7 @@ public class PoemService : IPoemService
             poemQuery = poemQuery.Where(p => p.DeletedTime == null);
         }
 
+        // Apply filter
         if (request.FilterOptions != null)
         {
             if (!String.IsNullOrWhiteSpace(request.FilterOptions.Title))
@@ -1645,15 +1672,7 @@ public class PoemService : IPoemService
 
             poems.Add(_mapper.Map<GetUserPoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
-            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
-
-            // Assign like to poem by adding into the last element of the list
-            poems.Last().Like =
-                _mapper.Map<GetLikeResponse>(
-                    poemEntity.Likes!.FirstOrDefault(l => l.UserId == poemEntity.UserId && l.PoemId == poemEntity.Id));
-            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
-            (poemEntity.TargetMarks!.FirstOrDefault(tm =>
-                tm.MarkByUserId == poemEntity.UserId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
+            poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.User);
 
             // Check if user is able to upload record file for this poem
             bool isAbleToUploadRecordFile =
@@ -1673,6 +1692,23 @@ public class PoemService : IPoemService
                                    && p.Status == UsageRightStatus.StillValid);
 
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
+            
+            // Search User
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
+            if(user == null)
+            {
+                continue;
+            }
+            
+            // Assign like to poem by adding into the last element of the list
+            poems.Last().Like =
+                _mapper.Map<GetLikeResponse>(
+                    poemEntity.Likes!.FirstOrDefault(l => l.UserId == user.Id && l.PoemId == poemEntity.Id));
+            
+            // Assign target mark to poem by adding into the last element of the list
+            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+            (poemEntity.TargetMarks!.FirstOrDefault(tm =>
+                tm.MarkByUserId == user.Id && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
 
         return new PaginationResponse<GetUserPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,

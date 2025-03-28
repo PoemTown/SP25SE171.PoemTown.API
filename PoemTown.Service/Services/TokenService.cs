@@ -70,6 +70,8 @@ namespace PoemTown.Service.Services
         {
             new Claim("UserId", user.Id.ToString()),
             new Claim("TokenHash", hashJwtToken),
+            new Claim("UserName", user.UserName ?? "")
+                
         };
             claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
 

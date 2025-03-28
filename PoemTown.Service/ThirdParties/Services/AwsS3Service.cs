@@ -137,10 +137,19 @@ public class AwsS3Service : IAwsS3Service
             // Step 1: Download the image from OpenAI URL
             HttpResponseMessage response = await httpClient.GetAsync(imageUrl);
             response.EnsureSuccessStatusCode();
-            byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
+            //byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
+            await using var stream = await response.Content.ReadAsStreamAsync();
 
-            // Step 2: Convert image bytes to an IFormFile
-            IFormFile imageFile = ImageHelper.ConvertToIFormFile(imageBytes, $"ai-generated-image-{StringHelper.GenerateRandomString(10)}.png");
+            /*// Step 2: Convert image bytes to an IFormFile
+            IFormFile imageFile = ImageHelper.ConvertToIFormFile(imageBytes, $"ai-generated-image-{StringHelper.GenerateRandomString(10)}.png");*/
+            
+            // Step 2: Convert stream to an IFormFile
+            string fileName = $"ai-generated-image-{StringHelper.GenerateRandomString(10)}.png";
+            IFormFile imageFile = new FormFile(stream, 0, response.Content.Headers.ContentLength ?? 0, "file", fileName)
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = response.Content.Headers.ContentType?.ToString() ?? "image/png"
+            };
             
             ImageHelper.ValidateImage(imageFile);
 

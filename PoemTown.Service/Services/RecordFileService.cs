@@ -10,6 +10,7 @@ using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.RecordFile;
 using PoemTown.Repository.Enums.SaleVersions;
 using PoemTown.Repository.Enums.TargetMarks;
+using PoemTown.Repository.Enums.UsageRights;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
@@ -57,38 +58,56 @@ namespace PoemTown.Service.Services
         public async Task CreateNewRecord(Guid userId, Guid poemID, CreateNewRecordFileRequest request)
         {
             RecordFile recordFile = _mapper.Map<RecordFile>(request);
-            Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemID); 
-            if(poem == null)
+            Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemID);
+            if (poem == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
             }
-            SaleVersion saleVersion =await _unitOfWork.GetRepository<SaleVersion>().FindAsync(s => s.IsInUse == true && s.PoemId == poemID);
-            if(saleVersion.Status == SaleVersionStatus.Free)
+            //check user own poem create without sale version
+            if (poem.UserId == userId)
             {
                 recordFile.UserId = userId;
                 recordFile.PoemId = poemID;
                 recordFile.IsPublic = true;
-                recordFile.SaleVersionId = saleVersion.Id;
                 recordFile.Price = 0;
                 await _unitOfWork.GetRepository<RecordFile>().InsertAsync(recordFile);
                 await _unitOfWork.SaveChangesAsync();
             }
             else
             {
-                var purchase = _unitOfWork.GetRepository<UsageRight>().AsQueryable();
-                var matchedUsageRight = purchase.FirstOrDefault(ur => ur.UserId == userId && ur.SaleVersionId == saleVersion.Id && ur.DeletedTime == null);
-                if (matchedUsageRight == null)
+                SaleVersion? saleVersion = await _unitOfWork.GetRepository<SaleVersion>().FindAsync(s => s.IsInUse == true && s.PoemId == poemID);
+                //check sale version to create record 
+                if (saleVersion.Status == SaleVersionStatus.Free)
                 {
-                    throw new CoreException(StatusCodes.Status400BadRequest, "Poem has not purchased");
+                    recordFile.UserId = userId;
+                    recordFile.PoemId = poemID;
+                    recordFile.IsPublic = true;
+                    recordFile.SaleVersionId = saleVersion.Id;
+                    recordFile.Price = 0;
+                    await _unitOfWork.GetRepository<RecordFile>().InsertAsync(recordFile);
+                    await _unitOfWork.SaveChangesAsync();
                 }
-                recordFile.UserId = userId;
-                recordFile.PoemId = poemID;
-                recordFile.SaleVersionId = matchedUsageRight.SaleVersionId;
-                recordFile.IsPublic = true;
-                recordFile.Price = 0;
-                await _unitOfWork.GetRepository<RecordFile>().InsertAsync(recordFile);
-                await _unitOfWork.SaveChangesAsync();
+                else
+                {
+                    var purchase = _unitOfWork.GetRepository<UsageRight>().AsQueryable();
+                    var matchedUsageRight = purchase.FirstOrDefault(ur => ur.UserId == userId
+                                                                && ur.SaleVersionId == saleVersion.Id
+                                                                && ur.DeletedTime == null
+                                                                && ur.Status == UsageRightStatus.StillValid);
+                    if (matchedUsageRight == null)
+                    {
+                        throw new CoreException(StatusCodes.Status400BadRequest, "Poem has not purchased");
+                    }
+                    recordFile.UserId = userId;
+                    recordFile.PoemId = poemID;
+                    recordFile.SaleVersionId = matchedUsageRight.SaleVersionId;
+                    recordFile.IsPublic = true;
+                    recordFile.Price = 0;
+                    await _unitOfWork.GetRepository<RecordFile>().InsertAsync(recordFile);
+                    await _unitOfWork.SaveChangesAsync();
+                }
             }
+           
         }
         public async Task UpdateNewRecord(Guid userId, UpdateRecordRequest request)
         {
@@ -152,7 +171,7 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file already set to be private");
             }
-            
+
 
             //Check if record file is not yours
             if (recordFile.UserId != userId)
@@ -204,6 +223,9 @@ namespace PoemTown.Service.Services
 
             UserEWallet? userEWalletPoemOwner = await _unitOfWork.GetRepository<UserEWallet>()
           .FindAsync(p => p.UserId == recordFile.Poem.UserId);
+
+            UserEWallet? userEWalletRecordOwner = await _unitOfWork.GetRepository<UserEWallet>()
+          .FindAsync(p => p.UserId == recordFile.UserId);
             // If user e-wallet not found then throw exception
             if (userEWallet == null)
             {
@@ -222,10 +244,14 @@ namespace PoemTown.Service.Services
                 UserId = userId,
                 RecordFileId = recordId,
                 Type = UserPoemType.RecordBuyer,
-                SaleVersionId = recordFile.SaleVersionId,
                 CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
                 CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(2).DateTime
             };
+
+            if (recordFile.SaleVersion != null)
+            {
+                userPoemRecordFile.SaleVersionId = recordFile.SaleVersionId;
+            }
 
             await _unitOfWork.GetRepository<UsageRight>().InsertAsync(userPoemRecordFile);
             await _unitOfWork.SaveChangesAsync();
@@ -233,11 +259,24 @@ namespace PoemTown.Service.Services
 
 
             // Deduct user e-wallet balance
-            userEWallet.WalletBalance -= recordFile.Price;
-            userEWalletPoemOwner.WalletBalance -= recordFile.Price * recordFile.SaleVersion.CommissionPercentage / 100;
-            _unitOfWork.GetRepository<UserEWallet>().Update(userEWalletPoemOwner);
-            _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
-            await _unitOfWork.SaveChangesAsync();
+            if(recordFile.SaleVersion == null)
+            {
+                userEWallet.WalletBalance -= recordFile.Price;
+                userEWalletRecordOwner.WalletBalance += recordFile.Price;
+                _unitOfWork.GetRepository<UserEWallet>().Update(userEWalletPoemOwner);
+                _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
+                await _unitOfWork.SaveChangesAsync();
+            }
+            else
+            {
+                userEWallet.WalletBalance -= recordFile.Price;
+                userEWalletPoemOwner.WalletBalance += recordFile.Price * recordFile.SaleVersion.CommissionPercentage / 100;
+                userEWalletRecordOwner.WalletBalance += recordFile.Price * (100 - recordFile.SaleVersion.CommissionPercentage)/100;
+                _unitOfWork.GetRepository<UserEWallet>().Update(userEWalletPoemOwner);
+                _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
+                await _unitOfWork.SaveChangesAsync();
+            }
+           
 
 
 
@@ -274,7 +313,7 @@ namespace PoemTown.Service.Services
             //lay ra record cua minh co trong usage right
             var soldRecord = records
                  .Where(r => usageRecordIds.Contains(r.Id));
-                
+
             var queryPaging = await _unitOfWork.GetRepository<RecordFile>()
               .GetPagination(soldRecord, request.PageNumber, request.PageSize);
 
@@ -291,7 +330,7 @@ namespace PoemTown.Service.Services
                             .ToList()
             }).ToList();
 
-          
+
 
             return new PaginationResponse<GetSoldRecordResponse>(result, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
@@ -307,7 +346,7 @@ namespace PoemTown.Service.Services
 
             var poem = _unitOfWork.GetRepository<Poem>()
     .AsQueryable()
-    .FirstOrDefault(p => usageRight.Select(s => s.SaleVersion.PoemId).Contains(p.Id));
+    .FirstOrDefault(p => usageRight.Select(s => s.RecordFile.PoemId).Contains(p.Id));
 
             //Get all records have been bought
             var result = usageRight.Select(s => new GetBoughtRecordResponse
@@ -319,13 +358,13 @@ namespace PoemTown.Service.Services
                 Owner = _mapper.Map<GetBasicUserInformationResponse>(
                     _unitOfWork.GetRepository<User>()
                         .AsQueryable()
-                        .Where(u => u.Id == s.SaleVersion.Poem.UserId  && u.DeletedTime == null)
+                        .Where(u => u.Id == s.RecordFile.UserId && u.DeletedTime == null)
                         .FirstOrDefault() // Chỉ lấy 1 user
-               
+
 )
             }).ToList();
-           var queryPaging = await _unitOfWork.GetRepository<UsageRight>()
-                .GetPagination(usageRight, request.PageNumber, request.PageSize);
+            var queryPaging = await _unitOfWork.GetRepository<UsageRight>()
+                 .GetPagination(usageRight, request.PageNumber, request.PageSize);
             return new PaginationResponse<GetBoughtRecordResponse>(result, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }

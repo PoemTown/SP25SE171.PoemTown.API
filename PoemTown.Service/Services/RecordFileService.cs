@@ -329,7 +329,6 @@ namespace PoemTown.Service.Services
             var queryPaging = await _unitOfWork.GetRepository<RecordFile>()
                 .GetPagination(soldRecord, request.PageNumber, request.PageSize);
 
-            soldRecord.ToList();
             var poem = _unitOfWork.GetRepository<Poem>()
                 .AsQueryable()
                 .FirstOrDefault(p => soldRecord.Select(s => s.PoemId).Contains(p.Id));
@@ -338,7 +337,7 @@ namespace PoemTown.Service.Services
             {
                 FileName = s.FileName,
                 FileUrl = s.FileUrl,
-                Poem = _mapper.Map<GetPoemDetailResponse>(s.Poem),
+                Poem = _mapper.Map<GetPoemDetailResponse>(poem),
                 Price = s.Price,
                 Owner = _mapper.Map<GetBasicUserInformationResponse>(s.User),
                 Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()

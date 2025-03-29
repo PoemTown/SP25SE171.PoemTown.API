@@ -167,7 +167,7 @@ public class AwsS3Service : IAwsS3Service
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error: {ex.Message}");
+            throw new Exception("Failed to download and upload image to S3: ", ex);
             return null;
         }
     }

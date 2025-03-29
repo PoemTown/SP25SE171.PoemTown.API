@@ -844,10 +844,10 @@ public class PoemsController : BaseController
     [Route("v1/image/ai")]
     [Authorize]
     public async Task<ActionResult<BaseResponse<string>>>
-        UploadAiPoemImage([FromQuery] string imageUrl)
+        UploadAiPoemImage(UploadAiPoemImageRequest request)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-        var response = await _poemService.DownloadAiImageAndUploadToS3Storage(imageUrl, userId);
+        var response = await _poemService.DownloadAiImageAndUploadToS3Storage(request, userId);
         return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Upload image with AI successfully", response));
     }
 }

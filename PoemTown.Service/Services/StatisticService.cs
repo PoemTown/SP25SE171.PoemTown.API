@@ -360,8 +360,7 @@ public class StatisticService : IStatisticService
             .AsQueryable();
 
         // Filter by condition: Poem is active, not yet deleted and upload date is less than or equal to current date (UTC + 7)
-        transactionQuery = transactionQuery.Where(p => p.Order!.Status == OrderStatus.Paid
-                                                       && p.CreatedTime <= DateTimeHelper.SystemTimeNow);
+        transactionQuery = transactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow);
 
         // Transaction samples (total transactions)
         var samples = await GetSampleStatisticResponse(

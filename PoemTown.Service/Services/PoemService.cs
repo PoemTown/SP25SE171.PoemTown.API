@@ -1414,13 +1414,8 @@ public class PoemService : IPoemService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, response.Error?.Message);
         }
-        
-        // Upload image to AWS S3
-        var folderName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
 
-        string newUrl = await _awsS3Service.DownloadAndUploadToS3Async(response.Results.First().Url, folderName);
-        
-        return newUrl;
+        return response.Results.First().Url;
     }
 
     public async Task<string> TranslatePoemTextVietnameseIntoEnglish(string poemText)
@@ -1469,15 +1464,17 @@ public class PoemService : IPoemService
         };
 
         var response = await _theHiveAiService.ConvertTextToImageWithFluxSchnellEnhanced(model);
-        // Upload image to AWS S3
-        var folderName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
-
-        string newUrl = await _awsS3Service.DownloadAndUploadToS3Async(response.Output.First().Url, folderName);
         
-        response.Output.First().Url = newUrl;
         return response;
     }
 
+    public async Task<string> DownloadAiImageAndUploadToS3Storage(string imageUrl, Guid userId)
+    {
+        var folderName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
+
+        return  await _awsS3Service.DownloadAndUploadToS3Async(imageUrl, folderName);
+    }
+    
     public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
         Guid userId, ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request)
     {
@@ -1497,12 +1494,7 @@ public class PoemService : IPoemService
         };
 
         var response = await _theHiveAiService.ConvertTextToImageWithSdxlEnhanced(model);
-        // Upload image to AWS S3
-        var folderName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
 
-        string newUrl = await _awsS3Service.DownloadAndUploadToS3Async(response.Output.First().Url, folderName);
-        
-        response.Output.First().Url = newUrl;
         return response;
     }
 

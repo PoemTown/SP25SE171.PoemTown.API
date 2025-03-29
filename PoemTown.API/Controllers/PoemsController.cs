@@ -834,4 +834,20 @@ public class PoemsController : BaseController
         await _poemService.AdminUpdatePoemStatus(poemId, status);
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem updated by admin successfully"));
     }
+    
+    /// <summary>
+    /// Upload ảnh được tạo từ AI lên AWS s3 storage, yêu cầu đăng nhập 
+    /// </summary>
+    /// <param name="imageUrl"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/image/ai")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse<string>>>
+        UploadAiPoemImage([FromQuery] string imageUrl)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var response = await _poemService.DownloadAiImageAndUploadToS3Storage(imageUrl, userId);
+        return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Upload image with AI successfully", response));
+    }
 }

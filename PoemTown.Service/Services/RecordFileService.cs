@@ -331,8 +331,8 @@ namespace PoemTown.Service.Services
 
             soldRecord.ToList();
             var poem = _unitOfWork.GetRepository<Poem>()
-    .AsQueryable()
-    .FirstOrDefault(p => soldRecord.Select(s => s.Poem.Id).Contains(p.Id));
+                .AsQueryable()
+                .FirstOrDefault(p => soldRecord.Select(s => s.PoemId).Contains(p.Id));
             //Get all records have been sold
             var result = soldRecord.Select(s => new GetSoldRecordResponse
             {

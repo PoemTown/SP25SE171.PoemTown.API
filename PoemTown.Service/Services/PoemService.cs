@@ -1468,11 +1468,11 @@ public class PoemService : IPoemService
         return response;
     }
 
-    public async Task<string> DownloadAiImageAndUploadToS3Storage(string imageUrl, Guid userId)
+    public async Task<string> DownloadAiImageAndUploadToS3Storage(UploadAiPoemImageRequest request, Guid userId)
     {
         var folderName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
 
-        return  await _awsS3Service.DownloadAndUploadToS3Async(imageUrl, folderName);
+        return  await _awsS3Service.DownloadAndUploadToS3Async(request.ImageUrl, folderName);
     }
     
     public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(

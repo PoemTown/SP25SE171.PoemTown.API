@@ -318,7 +318,9 @@ namespace PoemTown.Service.Services
               .GetPagination(soldRecord, request.PageNumber, request.PageSize);
 
             soldRecord.ToList();
-            
+            var poem = _unitOfWork.GetRepository<Poem>()
+    .AsQueryable()
+    .FirstOrDefault(p => soldRecord.Select(s => s.Poem.Id).Contains(p.Id));
             //Get all records have been sold
             var result = soldRecord.Select(s => new GetSoldRecordResponse
             {

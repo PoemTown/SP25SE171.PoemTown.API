@@ -330,10 +330,13 @@ namespace PoemTown.Service.Services
                 .GetPagination(soldRecord, request.PageNumber, request.PageSize);
 
             soldRecord.ToList();
+            
             //Get all records have been sold
             var result = soldRecord.Select(s => new GetSoldRecordResponse
             {
                 FileName = s.FileName,
+                FileUrl = s.FileUrl,
+                Poem = _mapper.Map<GetPoemDetailResponse>(s.Poem),
                 Price = s.Price,
                 Owner = _mapper.Map<GetBasicUserInformationResponse>(s.User),
                 Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
@@ -365,8 +368,9 @@ namespace PoemTown.Service.Services
             var result = usageRight.Select(s => new GetBoughtRecordResponse
             {
                 FileName = s.RecordFile.FileName,
+                FileUrl = s.RecordFile.FileUrl,
                 Price = s.RecordFile.Price,
-                OriginalPoem = _mapper.Map<GetPoemDetailResponse>(poem),
+                Poem = _mapper.Map<GetPoemDetailResponse>(poem),
                 Buyer = _mapper.Map<GetBasicUserInformationResponse>(s.User),
                 Owner = _mapper.Map<GetBasicUserInformationResponse>(
                     _unitOfWork.GetRepository<User>()

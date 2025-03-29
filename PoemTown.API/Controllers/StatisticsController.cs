@@ -187,5 +187,27 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetReportPlagiarismPoemStatistic();
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get report plagiarism poem statistic successfully", result));
         }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng giao dịch, tổng số tiền đã giao dịch, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// period:
+        ///
+        /// - ByDate = 1 (lấy theo 30 ngày gần nhất),
+        /// - ByMonth = 2 (lấy theo tháng chỉ trong năm hiện tại),
+        /// - ByYear = 3 (lấy theo 5 năm gần nhất)
+        /// </remarks>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/transactions")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetTransactionStatisticResponse>>>
+            GetTransactionStatistic([FromQuery] GetTransactionStatisticFilterOption filter)
+        {
+            var result = await _service.GetTransactionStatistic(filter);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get transaction statistic successfully", result));
+        }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Accounts;
+using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
@@ -97,6 +98,108 @@ public class StatisticService : IStatisticService
         };
     }
 
+    public async Task<IList<GetSampleStatisticResponse<TValue>>> GetSampleStatisticResponse<T, TValue>(
+        IQueryable<T> queryable,
+        Func<T, DateTimeOffset> dateSelector,
+        Func<T, TValue> valueSelector,
+        Func<IEnumerable<TValue>, TValue> aggregateFunction,
+        GetStatisticFilterOption filter)
+    {
+        List<T> rawData = await queryable.ToListAsync(); // Fetch data from DB first
+
+        List<GetSampleStatisticResponse<TValue>> samples;
+
+        switch (filter.Period)
+        {
+            // Get the last 30 days
+            case PeriodEnum.ByDate:
+            {
+                var startDate = DateTimeHelper.SystemTimeNow.Date.AddDays(-30);
+                var dateRange = Enumerable.Range(0, 31)
+                    .Select(offset => startDate.AddDays(offset))
+                    .ToList();
+
+                var actualData = rawData
+                    .Where(p => dateSelector(p).Date >= startDate)
+                    .GroupBy(p => dateSelector(p).Date)
+                    .Select(res => new GetSampleStatisticResponse<TValue>
+                    {
+                        Year = res.Key.Year,
+                        Month = res.Key.Month,
+                        Day = res.Key.Day,
+                        TotalSamples = aggregateFunction(res.Select(valueSelector))
+                    })
+                    .ToList();
+
+                samples = dateRange
+                    .Select(date =>
+                        actualData.FirstOrDefault(
+                            d => d.Year == date.Year && d.Month == date.Month && d.Day == date.Day)
+                        ?? new GetSampleStatisticResponse<TValue>
+                            { Year = date.Year, Month = date.Month, Day = date.Day, TotalSamples = default })
+                    .ToList();
+                break;
+            }
+
+            // Get the last 12 months
+            case PeriodEnum.ByMonth:
+            {
+                var currentYear = DateTimeHelper.SystemTimeNow.Year;
+                var monthRange = Enumerable.Range(1, 12)
+                    .Select(month => new { Year = currentYear, Month = month })
+                    .ToList();
+
+                var actualData = rawData
+                    .Where(p => dateSelector(p).Year == currentYear)
+                    .GroupBy(p => new { dateSelector(p).Year, dateSelector(p).Month })
+                    .Select(res => new GetSampleStatisticResponse<TValue>
+                    {
+                        Year = res.Key.Year,
+                        Month = res.Key.Month,
+                        TotalSamples = aggregateFunction(res.Select(valueSelector))
+                    })
+                    .ToList();
+
+                samples = monthRange
+                    .Select(monthData =>
+                        actualData.FirstOrDefault(d => d.Year == monthData.Year && d.Month == monthData.Month)
+                        ?? new GetSampleStatisticResponse<TValue>
+                            { Year = monthData.Year, Month = monthData.Month, TotalSamples = default })
+                    .ToList();
+                break;
+            }
+
+            // Get the last 5 years
+            case PeriodEnum.ByYear:
+            {
+                var startYear = DateTimeHelper.SystemTimeNow.Year - 4;
+                var yearRange = Enumerable.Range(startYear, 5).ToList();
+
+                var actualData = rawData
+                    .Where(p => dateSelector(p).Year >= startYear)
+                    .GroupBy(p => dateSelector(p).Year)
+                    .Select(res => new GetSampleStatisticResponse<TValue>
+                    {
+                        Year = res.Key,
+                        TotalSamples = aggregateFunction(res.Select(valueSelector))
+                    })
+                    .ToList();
+
+                samples = yearRange
+                    .Select(year =>
+                        actualData.FirstOrDefault(d => d.Year == year)
+                        ?? new GetSampleStatisticResponse<TValue> { Year = year, TotalSamples = default })
+                    .ToList();
+                break;
+            }
+
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        return samples;
+    }
+
     public async Task<GetOnlineUserStatisticResponse> GetOnlineUserStatistic(GetOnlineUserFilterOption filter)
     {
         var onlineUserQuery = _unitOfWork.GetRepository<LoginTracking>()
@@ -106,54 +209,24 @@ public class StatisticService : IStatisticService
         onlineUserQuery = onlineUserQuery.Where(p => p.User.Status == AccountStatus.Active
                                                      && p.User.DeletedTime == null
                                                      && p.LoginDate <= DateTimeHelper.SystemTimeNow);
-        
-        var samples = await (filter.Period switch
+
+        var samples = await GetSampleStatisticResponse(
+            onlineUserQuery,
+            p => p.LoginDate,
+            p => 1,
+            p => p.Count(),
+            new GetStatisticFilterOption()
         {
-            // Filter by date (last 30 days)
-            PeriodEnum.ByDate => onlineUserQuery
-                .Where(ou => ou.LoginDate.Date >= DateTimeHelper.SystemTimeNow.Date.AddDays(-30)) // Filter last 30 days
-                .GroupBy(ou => ou.LoginDate.Date)
-                .Select(res => new GetSampleOnlineUserStatisticResponse
-                {
-                    Year = res.Key.Year,
-                    Month = res.Key.Month,
-                    Day = res.Key.Day,
-                    TotalOnlineUsers = res.Select(p => p.UserId).Distinct().Count()
-                })
-                .ToListAsync(),
-
-            // Filter by month (within this year)
-            PeriodEnum.ByMonth => onlineUserQuery
-                .GroupBy(ou => new { ou.LoginDate.Year, ou.LoginDate.Month })
-                .Select(res => new GetSampleOnlineUserStatisticResponse
-                {
-                    Year = res.Key.Year,
-                    Month = res.Key.Month,
-                    TotalOnlineUsers = res.Select(p => p.UserId).Distinct().Count()
-                })
-                .ToListAsync(),
-
-            // Filter by year (last 5 years)
-            PeriodEnum.ByYear => onlineUserQuery
-                .Where(ou => ou.LoginDate.Year >= DateTimeHelper.SystemTimeNow.Year - 5)
-                .GroupBy(ou => ou.LoginDate.Year)
-                .Select(res => new GetSampleOnlineUserStatisticResponse
-                {
-                    Year = res.Key,
-                    TotalOnlineUsers = res.Select(p => p.UserId).Distinct().Count()
-                })
-                .ToListAsync(),
-
-            _ => throw new ArgumentOutOfRangeException()
+            Period = filter.Period
         });
 
-        return new GetOnlineUserStatisticResponse()
+        return new GetOnlineUserStatisticResponse
         {
-            TotalDataSamples = samples.Select(p => p.TotalOnlineUsers).Sum(),
+            TotalDataSamples = samples.Select(p => p.TotalSamples).Sum(),
             Samples = samples
         };
     }
-    
+
     public async Task<GetPoemUploadStatisticResponse> GetUploadPoemStatistic(GetPoemUploadFilterOption filter)
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>()
@@ -164,44 +237,13 @@ public class StatisticService : IStatisticService
                                          && p.DeletedTime == null
                                          && p.CreatedTime <= DateTimeHelper.SystemTimeNow);
 
-        var samples = await (filter.Period switch
+        var samples = await GetSampleStatisticResponse(poemQuery,
+            p => p.CreatedTime,
+            p => 1,
+            p => p.Count(),
+            new GetStatisticFilterOption()
         {
-            // Filter by date (last 30 days)
-            PeriodEnum.ByDate => poemQuery
-                .Where(p => p.CreatedTime.Date >= DateTimeHelper.SystemTimeNow.Date.AddDays(-30)) // Filter last 30 days
-                .GroupBy(p => p.CreatedTime.Date)
-                .Select(res => new GetSampleStatisticResponse()
-                {
-                    Year = res.Key.Year,
-                    Month = res.Key.Month,
-                    Day = res.Key.Day,
-                    TotalSamples = res.Count()
-                })
-                .ToListAsync(),
-
-            // Filter by month (within this year)
-            PeriodEnum.ByMonth => poemQuery
-                .GroupBy(p => new { p.CreatedTime.Year, p.CreatedTime.Month })
-                .Select(res => new GetSampleStatisticResponse
-                {
-                    Year = res.Key.Year,
-                    Month = res.Key.Month,
-                    TotalSamples = res.Count()
-                })
-                .ToListAsync(),
-
-            // Filter by year (last 5 years)
-            PeriodEnum.ByYear => poemQuery
-                .Where(p => p.CreatedTime.Year >= DateTimeHelper.SystemTimeNow.Year - 5)
-                .GroupBy(p => p.CreatedTime.Year)
-                .Select(res => new GetSampleStatisticResponse
-                {
-                    Year = res.Key,
-                    TotalSamples = res.Count()
-                })
-                .ToListAsync(),
-
-            _ => throw new ArgumentOutOfRangeException()
+            Period = filter.Period
         });
 
         return new GetPoemUploadStatisticResponse()
@@ -284,13 +326,13 @@ public class StatisticService : IStatisticService
             Samples = samples,
         };
     }
-    
+
     public async Task<GetReportPoemStatisticResponse> GetReportPlagiarismPoemStatistic()
     {
         // query by plagiarism poem report
         var reportPoemQuery = _unitOfWork.GetRepository<Report>()
             .AsQueryable()
-            .Where(p => p.Poem != null 
+            .Where(p => p.Poem != null
                         && p.PlagiarismPoemReports != null
                         && p.ReportedUser == null);
 
@@ -308,6 +350,51 @@ public class StatisticService : IStatisticService
         {
             TotalDataSamples = samples.Select(p => p.TotalPoems).Sum(),
             Samples = samples,
+        };
+    }
+
+    public async Task<GetTransactionStatisticResponse> GetTransactionStatistic(
+        GetTransactionStatisticFilterOption filter)
+    {
+        var transactionQuery = _unitOfWork.GetRepository<Transaction>()
+            .AsQueryable();
+
+        // Filter by condition: Poem is active, not yet deleted and upload date is less than or equal to current date (UTC + 7)
+        transactionQuery = transactionQuery.Where(p => p.Order!.Status == OrderStatus.Paid
+                                                       && p.CreatedTime <= DateTimeHelper.SystemTimeNow);
+
+        // Transaction samples (total transactions)
+        var samples = await GetSampleStatisticResponse(
+            transactionQuery, p => p.CreatedTime,
+            p => 1,
+            p => p.Count(),
+            new GetStatisticFilterOption()
+            {
+                Period = filter.Period
+            });
+
+        // Transaction amounts (total amounts)
+        var transactionAmount = await GetSampleStatisticResponse(
+            transactionQuery, p => p.CreatedTime,
+            p => p.Amount,
+            p => p.Sum(),
+            new GetStatisticFilterOption()
+            {
+                Period = filter.Period
+            });
+        
+        return new GetTransactionStatisticResponse
+        {
+            Samples = new GetStatisticResponse<int>
+            {
+                TotalDataSamples = samples.Sum(p => p.TotalSamples),
+                Samples = samples
+            },
+            Amounts = new GetStatisticResponse<decimal>
+            {
+                TotalDataSamples = transactionAmount.Sum(p => p.TotalSamples),
+                Samples = transactionAmount
+            }
         };
     }
 }

@@ -1,7 +1,5 @@
 ﻿namespace PoemTown.Service.BusinessModels.ResponseModels.StatisticsResponse;
 
-public class GetPoemUploadStatisticResponse
+public class GetPoemUploadStatisticResponse : GetStatisticResponse<int>
 {
-    public int TotalDataSamples { get; set; }
-    public IList<GetSampleStatisticResponse>? Samples { get; set; }
 }

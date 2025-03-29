@@ -178,6 +178,9 @@ public class PoemService : IPoemService
                     CopyRightValidTo = now.AddYears(100),
                     SaleVersion = saleVersion,
                 });
+                
+                // Adjust created time of poem when it is posted
+                poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             }
         }
 
@@ -269,6 +272,9 @@ public class PoemService : IPoemService
                     CopyRightValidTo = now.AddYears(100),
                     SaleVersion = saleVersion,
                 });
+                
+                // Adjust created time of poem when it is posted
+                poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             }
         }
 
@@ -612,6 +618,9 @@ public class PoemService : IPoemService
                     CopyRightValidTo = now.AddYears(100),
                     SaleVersion = saleVersion,
                 });
+                
+                // Adjust created time of poem when it is posted
+                poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             }
         }
 

@@ -15,7 +15,7 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses
         public decimal Price { get; set; }
         public string FileUrl { get; set; }
 
-        public GetPoemDetailResponse OriginalPoem {  get; set; }    
+        public GetPoemDetailResponse Poem {  get; set; }    
         public GetBasicUserInformationResponse Buyer { get; set; }
         public GetBasicUserInformationResponse Owner { get; set; }
 

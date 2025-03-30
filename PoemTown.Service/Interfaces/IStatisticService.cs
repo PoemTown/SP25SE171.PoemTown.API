@@ -14,4 +14,6 @@ public interface IStatisticService
     Task<GetReportUserStatisticResponse> GetReportUserStatistic();
     Task<GetReportPoemStatisticResponse> GetReportPlagiarismPoemStatistic();
     Task<GetTransactionStatisticResponse> GetTransactionStatistic(GetTransactionStatisticFilterOption filter);
+    Task<GetOrderStatusStatisticResponse> GetOrderStatusStatistic();
+    Task<GetMasterTemplateOrderStatisticResponse> GetMasterTemplateOrderStatistic();
 }

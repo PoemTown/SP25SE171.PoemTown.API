@@ -209,5 +209,40 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetTransactionStatistic(filter);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get transaction statistic successfully", result));
         }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng đơn hàng theo từng trạng thái, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// OrderStatus:
+        ///
+        /// - Pending = 1,
+        /// - Paid = 2,
+        /// - Cancelled = 3
+        /// </remarks>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/order-status")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetOrderStatusStatisticResponse>>>
+            GetOrderTypeStatistic()
+        {
+            var result = await _service.GetOrderStatusStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get order type statistic successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng đơn hàng đã được thánh toán theo từng loại Master Templates, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/master-template-orders")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetMasterTemplateOrderStatisticResponse>>>
+            GetMasterTemplateOrderStatistic()
+        {
+            var result = await _service.GetMasterTemplateOrderStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get master template order statistic successfully", result));
+        }
     }
 }

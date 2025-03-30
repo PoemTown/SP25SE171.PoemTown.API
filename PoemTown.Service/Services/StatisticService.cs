@@ -216,9 +216,9 @@ public class StatisticService : IStatisticService
             p => 1,
             p => p.Count(),
             new GetStatisticFilterOption()
-        {
-            Period = filter.Period
-        });
+            {
+                Period = filter.Period
+            });
 
         return new GetOnlineUserStatisticResponse
         {
@@ -242,9 +242,9 @@ public class StatisticService : IStatisticService
             p => 1,
             p => p.Count(),
             new GetStatisticFilterOption()
-        {
-            Period = filter.Period
-        });
+            {
+                Period = filter.Period
+            });
 
         return new GetPoemUploadStatisticResponse()
         {
@@ -359,7 +359,7 @@ public class StatisticService : IStatisticService
         var transactionQuery = _unitOfWork.GetRepository<Transaction>()
             .AsQueryable();
 
-        // Filter by condition: Poem is active, not yet deleted and upload date is less than or equal to current date (UTC + 7)
+        // Filter by condition: CreatedTime is less than or equal to current date (UTC + 7)
         transactionQuery = transactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow);
 
         // Transaction samples (total transactions)
@@ -381,7 +381,7 @@ public class StatisticService : IStatisticService
             {
                 Period = filter.Period
             });
-        
+
         return new GetTransactionStatisticResponse
         {
             Samples = new GetStatisticResponse<int>
@@ -394,6 +394,58 @@ public class StatisticService : IStatisticService
                 TotalDataSamples = transactionAmount.Sum(p => p.TotalSamples),
                 Samples = transactionAmount
             }
+        };
+    }
+
+    public async Task<GetOrderStatusStatisticResponse> GetOrderStatusStatistic()
+    {
+        var orderQuery = _unitOfWork.GetRepository<Order>()
+            .AsQueryable();
+
+        // Filter by condition: CreatedTime is less than or equal to current date (UTC + 7)
+        orderQuery = orderQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow);
+
+        // Group by order type
+        var samples = await orderQuery
+            .GroupBy(p => p.Status)
+            .Select(res => new GetOrderTypeSampleResponse()
+            {
+                Status = res.Key,
+                TotalOrders = res.Count()
+            })
+            .ToListAsync();
+
+        return new GetOrderStatusStatisticResponse()
+        {
+            TotalDataSamples = samples.Select(p => p.TotalOrders).Sum(),
+            Samples = samples
+        };
+    }
+
+    public async Task<GetMasterTemplateOrderStatisticResponse> GetMasterTemplateOrderStatistic()
+    {
+        var masterTemplateOrderQuery = _unitOfWork.GetRepository<OrderDetail>()
+            .AsQueryable();
+
+        // Filter by condition: mastertemplate is not null, with status paid and created date is less than or equal to current date (UTC + 7)
+        masterTemplateOrderQuery = masterTemplateOrderQuery.Where(p => p.MasterTemplate != null
+                                                                       && p.CreatedTime <= DateTimeHelper.SystemTimeNow
+                                                                       && p.Order.Status == OrderStatus.Paid);
+
+        // Group by mastertemplate name
+        var samples = await masterTemplateOrderQuery
+            .GroupBy(p => p.MasterTemplate!.TemplateName)
+            .Select(res => new GetMasterTemplateOrderSampleResponse()
+            {
+                TemplateName = res.Key ?? "",
+                TotalOrders = res.Count()
+            })
+            .ToListAsync();
+        
+        return new GetMasterTemplateOrderStatisticResponse()
+        {
+            TotalDataSamples = samples.Select(p => p.TotalOrders).Sum(),
+            Samples = samples
         };
     }
 }

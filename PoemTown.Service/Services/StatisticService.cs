@@ -405,8 +405,7 @@ public class StatisticService : IStatisticService
         // Filter by condition: CreatedTime is less than or equal to current date (UTC + 7)
         orderQuery = orderQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow);
 
-        // Group by order type
-        var samples = await orderQuery
+        var actualData = await orderQuery
             .GroupBy(p => p.Status)
             .Select(res => new GetOrderTypeSampleResponse()
             {
@@ -414,6 +413,23 @@ public class StatisticService : IStatisticService
                 TotalOrders = res.Count()
             })
             .ToListAsync();
+
+        var allOrderStatus = new[]
+        {
+            OrderStatus.Paid,
+            OrderStatus.Pending,
+            OrderStatus.Cancelled
+        };
+        
+        // Group by order type
+        var samples = allOrderStatus
+            .Select(status => actualData.FirstOrDefault(p => p.Status == status)
+                             ?? new GetOrderTypeSampleResponse()
+                             {
+                                 Status = status,
+                                 TotalOrders = 0
+                             })
+            .ToList();
 
         return new GetOrderStatusStatisticResponse()
         {
@@ -432,8 +448,12 @@ public class StatisticService : IStatisticService
                                                                        && p.CreatedTime <= DateTimeHelper.SystemTimeNow
                                                                        && p.Order.Status == OrderStatus.Paid);
 
-        // Group by mastertemplate name
-        var samples = await masterTemplateOrderQuery
+        var allTemplateNames = await _unitOfWork.GetRepository<MasterTemplate>()
+            .AsQueryable()
+            .Select(p => p.TemplateName)
+            .ToListAsync();
+        
+        var actualData = await masterTemplateOrderQuery
             .GroupBy(p => p.MasterTemplate!.TemplateName)
             .Select(res => new GetMasterTemplateOrderSampleResponse()
             {
@@ -441,6 +461,17 @@ public class StatisticService : IStatisticService
                 TotalOrders = res.Count()
             })
             .ToListAsync();
+        
+        
+        // Group by mastertemplate name
+        var samples = allTemplateNames
+            .Select(templateName => actualData.FirstOrDefault(p => p.TemplateName == templateName)
+                                   ?? new GetMasterTemplateOrderSampleResponse()
+                                   {
+                                       TemplateName = templateName ?? "",
+                                       TotalOrders = 0
+                                   })
+            .ToList();
         
         return new GetMasterTemplateOrderStatisticResponse()
         {

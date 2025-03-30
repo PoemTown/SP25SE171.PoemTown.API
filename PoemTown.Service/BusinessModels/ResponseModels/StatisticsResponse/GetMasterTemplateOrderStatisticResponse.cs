@@ -9,5 +9,6 @@ public class GetMasterTemplateOrderStatisticResponse
 public class GetMasterTemplateOrderSampleResponse
 {
     public string TemplateName { get; set; }
+    public string TagName { get; set; }
     public int TotalOrders { get; set; }
 }

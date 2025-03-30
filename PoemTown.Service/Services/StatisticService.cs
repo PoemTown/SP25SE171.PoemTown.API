@@ -448,11 +448,14 @@ public class StatisticService : IStatisticService
                                                                        && p.CreatedTime <= DateTimeHelper.SystemTimeNow
                                                                        && p.Order.Status == OrderStatus.Paid);
 
+        // Get all mastertemplate names
         var allTemplateNames = await _unitOfWork.GetRepository<MasterTemplate>()
             .AsQueryable()
+            .Where(p => p.DeletedTime != null)
             .Select(p => new{ p.TemplateName, p.TagName })
             .ToListAsync();
         
+        // Get actual data from database
         var actualData = await masterTemplateOrderQuery
             .GroupBy(p => p.MasterTemplate!.TemplateName)
             .Select(res => new GetMasterTemplateOrderSampleResponse()

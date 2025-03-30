@@ -450,7 +450,7 @@ public class StatisticService : IStatisticService
 
         var allTemplateNames = await _unitOfWork.GetRepository<MasterTemplate>()
             .AsQueryable()
-            .Select(p => p.TemplateName)
+            .Select(p => new{ p.TemplateName, p.TagName })
             .ToListAsync();
         
         var actualData = await masterTemplateOrderQuery
@@ -465,10 +465,11 @@ public class StatisticService : IStatisticService
         
         // Group by mastertemplate name
         var samples = allTemplateNames
-            .Select(templateName => actualData.FirstOrDefault(p => p.TemplateName == templateName)
+            .Select(template => actualData.FirstOrDefault(p => p.TemplateName == template.TemplateName)
                                    ?? new GetMasterTemplateOrderSampleResponse()
                                    {
-                                       TemplateName = templateName ?? "",
+                                       TemplateName = template.TemplateName ?? "",
+                                       TagName = template.TagName ?? "",
                                        TotalOrders = 0
                                    })
             .ToList();

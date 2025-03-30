@@ -451,7 +451,7 @@ public class StatisticService : IStatisticService
         // Get all mastertemplate names
         var allTemplateNames = await _unitOfWork.GetRepository<MasterTemplate>()
             .AsQueryable()
-            .Where(p => p.DeletedTime != null)
+            .Where(p => p.DeletedTime == null)
             .Select(p => new{ p.TemplateName, p.TagName })
             .ToListAsync();
         

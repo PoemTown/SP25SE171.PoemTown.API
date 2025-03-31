@@ -1,6 +1,6 @@
 ﻿namespace PoemTown.Service.BusinessModels.ResponseModels.StatisticsResponse;
 
-public class GetOnlineUserStatisticResponse : GetStatisticResponse<int>
+public class GetOnlineUserStatisticResponse : GetStatisticResponse<int, decimal>
 {
     /*public int TotalDataSamples { get; set; }
     public IList<GetSampleOnlineUserStatisticResponse>? Samples { get; set; }*/

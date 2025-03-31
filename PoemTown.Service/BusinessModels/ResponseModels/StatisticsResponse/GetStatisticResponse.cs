@@ -1,7 +1,8 @@
 ﻿namespace PoemTown.Service.BusinessModels.ResponseModels.StatisticsResponse;
 
-public class GetStatisticResponse<TValue>
+public class GetStatisticResponse<TSample, TAmount>
 {
-    public TValue TotalDataSamples { get; set; }
-    public IList<GetSampleStatisticResponse<TValue>>? Samples { get; set; }
+    public TSample? TotalDataSamples { get; set; }
+    public TAmount? TotalDataAmount { get; set; }
+    public IList<GetSampleStatisticResponse<TSample, TAmount>>? Samples { get; set; }
 }

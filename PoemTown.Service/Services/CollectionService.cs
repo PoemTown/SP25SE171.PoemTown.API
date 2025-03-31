@@ -145,6 +145,12 @@ namespace PoemTown.Service.Services
                 (collection.TargetMarks!.FirstOrDefault(tm =>
                     tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id &&
                     tm.Type == TargetMarkType.Collection));
+                
+                // Check if the collection is mine
+                if (userId == collection.UserId)
+                {
+                    collections.Last().IsMine = true;
+                }
             }
 
 
@@ -213,6 +219,12 @@ namespace PoemTown.Service.Services
                 (collection.TargetMarks!.FirstOrDefault(tm =>
                     tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id &&
                     tm.Type == TargetMarkType.Collection));
+                
+                // Check if the collection is mine
+                if (userId == collection.UserId)
+                {
+                    collections.Last().IsMine = true;
+                }
             }
 
 
@@ -302,6 +314,12 @@ namespace PoemTown.Service.Services
             collectionDetail.TargetMark = _mapper.Map<GetTargetMarkResponse>(collection.TargetMarks!.FirstOrDefault(tm =>
                     tm.MarkByUserId == userId && tm.CollectionId == collectionDetail.Id &&
                     tm.Type == TargetMarkType.Collection));
+            
+            // Check if the collection is mine
+            if (userId == collection.UserId)
+            {
+                collectionDetail.IsMine = true;
+            }
             return collectionDetail;
         }
 
@@ -368,6 +386,12 @@ namespace PoemTown.Service.Services
                 (collection.TargetMarks!.FirstOrDefault(tm =>
                     tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id &&
                     tm.Type == TargetMarkType.Collection));
+                
+                // Check if the collection is mine
+                if (userId == collection.UserId)
+                {
+                    collections.Last().IsMine = true;
+                }
             }
 
             return new PaginationResponse<GetCollectionResponse>(
@@ -527,6 +551,12 @@ namespace PoemTown.Service.Services
                 (collection.TargetMarks!.FirstOrDefault(tm =>
                     tm.MarkByUserId == collection.User.Id && tm.CollectionId == collectionEntity.Id &&
                     tm.Type == TargetMarkType.Collection));
+                
+                // Check if the collection is mine
+                if (userName == collection.User.UserName)
+                {
+                    collections.Last().IsMine = true;
+                }
             }
 
 

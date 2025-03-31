@@ -15,7 +15,7 @@ public class SaleVersion : BaseEntity
     public Guid PoemId { get; set; }
     
     public virtual Poem Poem { get; set; } = null!;
-    public virtual OrderDetail OrderDetail { get; set; } = null!;
+    public virtual ICollection<OrderDetail>? OrderDetails { get; set; } = null!;
     public virtual ICollection<RecordFile>? RecordFiles { get; set; }
     public virtual ICollection<UsageRight>? UsageRights { get; set; }
 }

@@ -29,7 +29,7 @@ namespace PoemTown.Repository.Entities
         public virtual Guid? SaleVersionId { get; set; }
         public virtual SaleVersion? SaleVersion { get; set; }
         public virtual ICollection<UsageRight>? UsageRights { get; set; }
-        
+        public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
     }
 
 }

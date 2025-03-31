@@ -1528,7 +1528,7 @@ public class PoemService : IPoemService
 
     public bool IsPoemPlagiarism(double score)
     {
-        return score > 0.5;
+        return score > 0.75;
     }
 
     public IList<SearchPointsResult> GetListQDrantSearchPoint(QDrantResponse<SearchPointsResult> response, int top)

@@ -93,6 +93,7 @@ public static class ConfigureService
         services.AddScoped<IChatService, ChatService>();
         services.AddScoped<ILeaderBoardService, LeaderBoardService>();
         services.AddScoped<IAchievementService, AchievementService>();
+        services.AddScoped<IUsageRightService, UsageRightService>();
 
 
         //Plagiarism detector

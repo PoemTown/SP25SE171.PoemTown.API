@@ -164,6 +164,27 @@ namespace PoemTown.API.Controllers
 
             return Ok(basePaginationResponse);
         }
+
+        /// <summary>
+        /// Lấy danh sách bản ngâm thơ của người dùng, không yêu cầu đăng nhập 
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="userName"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/user/{username}")]
+        public async Task<ActionResult<BaseResponse<GetRecordFileResponse>>> GetUserRecord(string userName, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
+        {
+            var paginationResponse = await _service.GetUserRecord(userName, request);
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetRecordFileResponse>>(paginationResponse);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get my record successfully";
+
+            return Ok(basePaginationResponse);
+        }
+
         /// <summary>
         /// Lấy danh sách bản ngâm thơ public, yêu cầu đăng nhập
         /// </summary>

@@ -53,9 +53,26 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
                 return;
             }
             
-            
             // Get the list of poems that the current poem is plagiarism from
-            IList<SearchPointsResult> plagiarismFromPoems = _poemService.GetListQDrantSearchPoint(response, 3);;
+            IList<SearchPointsResult> plagiarismFromPoems = _poemService.GetListQDrantSearchPoint(response, 3);
+            
+            // Get the list of existing poem IDs
+            var existingPoemIds = await _unitOfWork.GetRepository<Poem>()
+                .AsQueryable()
+                .Where(p => p.Status == PoemStatus.Posted)
+                .Where(p => plagiarismFromPoems.Select(x => Guid.Parse(x.Id)).Contains(p.Id))
+                .Select(p => p.Id)
+                .ToListAsync();
+            
+            // Get the valid plagiarism reports
+            var validPlagiarismReports = plagiarismFromPoems
+                .Where(p => existingPoemIds.Contains(Guid.Parse(p.Id)))  // Ensure the ID exists
+                .Select(p => new PlagiarismPoemReport
+                {
+                    PlagiarismFromPoemId = Guid.Parse(p.Id),
+                    Score = p.Score
+                })
+                .ToList();
             
             // Suspend the poem
             poem.Status = PoemStatus.Pending;
@@ -71,11 +88,7 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
                 PlagiarismScore = averageScore,
                 Poem = poem,
                 Type = ReportType.Plagiarism,
-                PlagiarismPoemReports = plagiarismFromPoems.Select(p => new PlagiarismPoemReport
-                {
-                    PlagiarismFromPoemId = Guid.Parse(p.Id),
-                    Score = p.Score
-                }).ToList()
+                PlagiarismPoemReports = validPlagiarismReports
             };
             
             await _unitOfWork.GetRepository<Report>().InsertAsync(report);

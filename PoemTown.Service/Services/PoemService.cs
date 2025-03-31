@@ -182,18 +182,19 @@ public class PoemService : IPoemService
                 // Adjust created time of poem when it is posted
                 poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             }
+            
+            // Publish event to store poem embedding
+            await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
+            {
+                PoemId = poem.Id,
+                UserId = userId,
+                PoemContent = poem.Content
+            });
         }
 
         // Save changes
         await _unitOfWork.SaveChangesAsync();
 
-        // Publish event to store poem embedding
-        await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
-        {
-            PoemId = poem.Id,
-            UserId = userId,
-            PoemContent = poem.Content
-        });
     }
 
     public async Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request)
@@ -276,6 +277,15 @@ public class PoemService : IPoemService
                 // Adjust created time of poem when it is posted
                 poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             }
+            
+            
+            // Publish event to store poem embedding
+            await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
+            {
+                PoemId = poem.Id,
+                UserId = userId,
+                PoemContent = poem.Content
+            });
         }
 
         // Save changes
@@ -622,17 +632,18 @@ public class PoemService : IPoemService
                 // Adjust created time of poem when it is posted
                 poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             }
+            
+            // Publish event to store poem embedding
+            await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
+            {
+                PoemId = poem.Id,
+                UserId = userId,
+                PoemContent = poem.Content
+            });
         }
 
         await _unitOfWork.SaveChangesAsync();
 
-        // Publish event to store poem embedding
-        await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
-        {
-            PoemId = poem.Id,
-            UserId = userId,
-            PoemContent = poem.Content
-        });
     }
 
     public async Task DeletePoem(Guid poemId)

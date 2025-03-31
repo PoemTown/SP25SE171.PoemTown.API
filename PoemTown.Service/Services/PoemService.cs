@@ -970,6 +970,12 @@ public class PoemService : IPoemService
                                    && p.Status == UsageRightStatus.StillValid);
 
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
+
+            if (poemEntity.UserId == userId)
+            {
+                poems.Last().IsMine = true;
+            }
+            
         }
 
         return new PaginationResponse<GetPoemInCollectionResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,

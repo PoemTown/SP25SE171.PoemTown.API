@@ -24,6 +24,7 @@ public class GetPoemInCollectionResponse
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
+    public bool? IsMine { get; set; } = false;
     public GetBasicUserInformationResponse User { get; set; }
     public GetLikeResponse Like { get; set; }
     public GetTargetMarkResponse TargetMark { get; set; }

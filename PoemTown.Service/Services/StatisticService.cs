@@ -25,7 +25,7 @@ public class StatisticService : IStatisticService
         _mapper = mapper;
     }
 
-    public async Task<StatisticResponse> GetStatisticsAsync(Guid userId)
+    public async Task<StatisticResponse> GetStatisticsAsync(Guid? userId)
     {
         var collections = _unitOfWork.GetRepository<Collection>()
             .AsQueryable()

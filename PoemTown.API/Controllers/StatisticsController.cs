@@ -24,7 +24,7 @@ namespace PoemTown.API.Controllers
         }
 
         /// <summary>
-        /// Lấy thống kê của người dùng, yêu cầu đăng nhập
+        /// Lấy thống kê của người dùng, không yêu cầu đăng nhập
         /// </summary>
         /// <remarks>
         /// 
@@ -33,10 +33,14 @@ namespace PoemTown.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("v1")]
-        [Authorize]
         public async Task<ActionResult<BaseResponse>> GetStatistics()
         {
-            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }
             var result = await _service.GetStatisticsAsync(userId);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get statistic user successfully", result));
         }

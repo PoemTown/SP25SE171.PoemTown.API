@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
 
 namespace PoemTown.Service.Services;
@@ -63,5 +66,30 @@ public class LikeService : ILikeService
 
         _unitOfWork.GetRepository<Like>().DeletePermanent(like);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<GetLikePoemResponse> GetLikePoem(Guid poemId)
+    {
+        // Get all likes for the poem
+        var likes = await _unitOfWork.GetRepository<Like>()
+            .AsQueryable()
+            .Where(p => p.PoemId == poemId)
+            .ToListAsync();
+        
+        
+        return new GetLikePoemResponse()
+        {
+            // Map the user information
+            User = likes.Select(p => p.User).Select(p => new GetBasicUserInformationResponse()
+            {
+                Id = p.Id,
+                DisplayName = p.DisplayName,
+                UserName = p.UserName,
+                Avatar = p.Avatar,
+            }).ToList(),
+            
+            // Get the total likes
+            TotalLikes = likes.Count
+        };
     }
 }

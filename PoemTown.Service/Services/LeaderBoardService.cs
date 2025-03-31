@@ -41,7 +41,7 @@ namespace PoemTown.Service.Services
             const int CommentWeight = 2;
             var now = DateTime.Now;
             var startOfMonth = new DateTime(now.Year, now.Month, 1);
-            var endOfMonth = startOfMonth.AddMonths(1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
 
             var poemRepository = _unitOfWork.GetRepository<Poem>();
             var poems = await poemRepository.AsQueryable()
@@ -123,7 +123,7 @@ namespace PoemTown.Service.Services
         {
             var now = DateTime.Now;
             var startOfMonth = new DateTime(now.Year, now.Month, 1);
-            var endOfMonth = startOfMonth.AddMonths(1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
             var userRepository = _unitOfWork.GetRepository<User>();
             var users = await _unitOfWork.GetRepository<User>().AsQueryable()
                 .Include(u => u.UserRoles)

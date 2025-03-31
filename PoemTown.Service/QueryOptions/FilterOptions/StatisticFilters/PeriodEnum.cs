@@ -4,5 +4,6 @@ public enum PeriodEnum
 {
     ByDate = 1,
     ByMonth = 2,
-    ByYear = 3
+    ByYear = 3,
+    By15Days = 4
 }

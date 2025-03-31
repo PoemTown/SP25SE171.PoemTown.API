@@ -251,6 +251,14 @@ namespace PoemTown.API.Controllers
         /// <summary>
         /// Lấy thống kê số lượng đơn hàng đã được thánh toán theo từng loại, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
+        /// <remarks>
+        /// orderTypes:
+        ///
+        /// - EWalletDeposit = 1,
+        /// - MasterTemplates = 2,
+        /// - RecordFiles = 3,
+        /// - Poems = 4,
+        /// </remarks>
         /// <param name="filter"></param>
         /// <returns></returns>
         [HttpGet]

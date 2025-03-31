@@ -39,7 +39,8 @@ namespace PoemTown.Service.Services
         {
             const int LikeWeight = 1;
             const int CommentWeight = 2;
-            var now = DateTime.Now;
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var now = TimeZoneInfo.ConvertTime(DateTime.UtcNow, timeZone);
             var startOfMonth = new DateTime(now.Year, now.Month, 1);
             var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
 
@@ -121,7 +122,8 @@ namespace PoemTown.Service.Services
         }
         public async Task CalculateTopUsersAsync()
         {
-            var now = DateTime.Now;
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            var now = TimeZoneInfo.ConvertTime(DateTime.UtcNow, timeZone);
             var startOfMonth = new DateTime(now.Year, now.Month, 1);
             var endOfMonth = startOfMonth.AddMonths(1).AddSeconds(-1);
             var userRepository = _unitOfWork.GetRepository<User>();
@@ -201,7 +203,9 @@ namespace PoemTown.Service.Services
 
         public async Task<GetLeaderBoardResponse> GetTopPoemsLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
         {
-            DateTimeOffset targetDate = request.FilterOptions?.Date ?? DateTimeHelper.SystemTimeNow;
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, timeZone);
+            DateTimeOffset targetDate = request.FilterOptions?.Date ?? localNow;
 
             var leaderboardQuery = _unitOfWork.GetRepository<LeaderBoard>().AsQueryable()
               .Include(lb => lb.PoemLeaderBoards)
@@ -275,7 +279,9 @@ namespace PoemTown.Service.Services
         public async Task<GetLeaderBoardResponse> GetTopUsersLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)
         {
             // Use the provided date or default to the current system time.
-            DateTimeOffset targetDate = request.FilterOptions?.Date ?? DateTimeHelper.SystemTimeNow;
+            var timeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
+            DateTimeOffset localNow = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, timeZone);
+            DateTimeOffset targetDate = request.FilterOptions?.Date ?? localNow;
 
             // Query for the User LeaderBoard for the target month.
             var leaderboardQuery = _unitOfWork.GetRepository<LeaderBoard>().AsQueryable()

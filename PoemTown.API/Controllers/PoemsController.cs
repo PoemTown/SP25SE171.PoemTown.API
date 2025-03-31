@@ -370,7 +370,7 @@ public class PoemsController : BaseController
     
     
     /// <summary>
-    /// Lấy danh sách bài thơ theo bộ sưu tập, yêu cầu đăng nhập
+    /// Lấy danh sách bài thơ theo bộ sưu tập, không yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
     /// Status: Trạng thái của bài thơ

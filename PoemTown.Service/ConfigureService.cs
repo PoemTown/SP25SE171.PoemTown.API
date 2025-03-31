@@ -286,10 +286,12 @@ public static class ConfigureService
                     .RepeatForever()));
 
             // Trigger for MonthlyAchievementJob: for testing, fire every 1 minute.
+            // In AddQuartzConfig()
             q.AddTrigger(opts => opts
                 .ForJob(achievementJobKey)
                 .WithIdentity("MonthlyAchievementJobTrigger", "Achievement")
-                .WithCronSchedule("0 59 23 L * ?"));
+                .WithCronSchedule("0 0 0 1 * ?", cron =>
+                    cron.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")))); // Use your time zone
         });
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
         

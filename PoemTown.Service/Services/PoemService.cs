@@ -857,7 +857,7 @@ public class PoemService : IPoemService
     }
 
     public async Task<PaginationResponse<GetPoemInCollectionResponse>> GetPoemsInCollection
-        (Guid userId, Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
+        (Guid? userId, Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
         Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
         if (collection == null)

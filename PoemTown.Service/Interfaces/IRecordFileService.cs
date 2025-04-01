@@ -23,7 +23,7 @@ namespace PoemTown.Service.Interfaces
         Task<PaginationResponse<GetSoldRecordResponse>>GetSoldRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
         Task<PaginationResponse<GetBoughtRecordResponse>> GetBoughtRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
         Task<PaginationResponse<GetRecordFileResponse>> GetAllRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
-
+        Task<PaginationResponse<GetRecordFileResponse>> GetUserRecord(string username,RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
         Task<PaginationResponse<GetRecordFileResponse>> GetMyRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
         Task<string> UploadRecordFile(Guid userId, IFormFile file);
     }

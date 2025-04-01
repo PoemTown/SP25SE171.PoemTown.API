@@ -546,7 +546,6 @@ namespace PoemTown.Service.Services
             var recordsQuery = _unitOfWork.GetRepository<RecordFile>()
                 .AsQueryable()
                 .Where(r => r.User.UserName == username && r.DeletedTime == null);
-
             if (request.IsDelete == true)
             {
                 recordsQuery = recordsQuery.Where(p => p.DeletedTime != null);
@@ -592,7 +591,10 @@ namespace PoemTown.Service.Services
 
                 records.Add(_mapper.Map<GetRecordFileResponse>(poemEntity));
                 records.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(record.User);
-
+                records.Last().Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
+                                            .Where(u => u.RecordFileId == record.Id && u.DeletedTime == null)
+                                            .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
+                                            .ToList();
             }
 
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,

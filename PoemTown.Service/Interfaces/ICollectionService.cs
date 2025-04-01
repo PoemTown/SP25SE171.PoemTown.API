@@ -21,7 +21,7 @@ namespace PoemTown.Service.Interfaces
         Task UpdateCollection(UpdateCollectionRequest request);
         Task<PaginationResponse<GetCollectionResponse>> GetCollections(Guid userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
         Task<PaginationResponse<GetCollectionResponse>> GetCollectionsCommunity(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
-        Task DeleteCollection(Guid collectionId, byte[] rowVersion);
+        Task DeleteCollection(Guid userId, Guid collectionId, byte[] rowVersion);
         Task DeleteCollectionPermanent(Guid collectionId);
         Task AddPoemToCollection(Guid poemId, Guid collectionId);
         Task<PaginationResponse<GetCollectionResponse>>GetTrendingCollections(Guid? userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);

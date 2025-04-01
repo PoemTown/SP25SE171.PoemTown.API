@@ -2,6 +2,5 @@
 
 public class GetTransactionStatisticResponse
 {
-    public GetStatisticResponse<int> Samples { get; set; }
-    public GetStatisticResponse<decimal> Amounts { get; set; }
+    public GetStatisticResponse<int, decimal> Samples { get; set; }
 }

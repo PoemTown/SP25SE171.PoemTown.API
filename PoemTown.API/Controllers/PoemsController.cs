@@ -370,7 +370,7 @@ public class PoemsController : BaseController
     
     
     /// <summary>
-    /// Lấy danh sách bài thơ theo bộ sưu tập, yêu cầu đăng nhập
+    /// Lấy danh sách bài thơ theo bộ sưu tập, không yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
     /// Status: Trạng thái của bài thơ
@@ -420,11 +420,15 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpGet]
     [Route("v1/{collectionId}")]
-    [Authorize]
     public async Task<ActionResult<BasePaginationResponse<GetPoemInCollectionResponse>>> 
         GetPoemsInCollection(Guid collectionId, RequestOptionsBase<GetMyPoemFilterOption, GetMyPoemSortOption> request)
     {
-        var userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }
         var paginationResponse = await _poemService.GetPoemsInCollection(userId, collectionId, request);
 
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemInCollectionResponse>>(paginationResponse);

@@ -17,5 +17,5 @@ public class MasterTemplate : BaseEntity
     
     public virtual ICollection<MasterTemplateDetail>? MasterTemplateDetails { get; set; }
     public virtual ICollection<UserTemplate>? Templates { get; set; }
-    public virtual OrderDetail? OrderDetail { get; set; }
+    public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
 }

@@ -11,6 +11,7 @@ public class GetCollectionInTargetMarkResponse
     public string CollectionImage { get; set; }
     public int TotalChapter { get; set; }
     public bool? IsCommunity { get; set; }
+    public bool? IsMine { get; set; }
     public GetBasicUserInformationResponse User { get; set; }
     public GetTargetMarkResponse TargetMark { get; set; }
 

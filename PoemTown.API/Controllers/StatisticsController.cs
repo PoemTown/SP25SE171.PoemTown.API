@@ -24,7 +24,7 @@ namespace PoemTown.API.Controllers
         }
 
         /// <summary>
-        /// Lấy thống kê của người dùng, yêu cầu đăng nhập
+        /// Lấy thống kê của người dùng, không yêu cầu đăng nhập
         /// </summary>
         /// <remarks>
         /// 
@@ -33,10 +33,14 @@ namespace PoemTown.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("v1")]
-        [Authorize]
         public async Task<ActionResult<BaseResponse>> GetStatistics()
         {
-            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }
             var result = await _service.GetStatisticsAsync(userId);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get statistic user successfully", result));
         }
@@ -63,6 +67,7 @@ namespace PoemTown.API.Controllers
         /// - ByDate = 1 (lấy theo 30 ngày gần nhất),
         /// - ByMonth = 2 (lấy theo tháng chỉ trong năm hiện tại),
         /// - ByYear = 3 (lấy theo 5 năm gần nhất)
+        /// - By15Days = 4 (lấy theo 15 ngày gần nhất)
         /// </remarks>
         /// <remarks></remarks>
         /// <param name="filter"></param>
@@ -86,6 +91,7 @@ namespace PoemTown.API.Controllers
         /// - ByDate = 1 (lấy theo 30 ngày gần nhất),
         /// - ByMonth = 2 (lấy theo tháng chỉ trong năm hiện tại),
         /// - ByYear = 3 (lấy theo 5 năm gần nhất)
+        /// - By15Days = 4 (lấy theo 15 ngày gần nhất)
         /// </remarks>
         /// <param name="filter"></param>
         /// <returns></returns>
@@ -197,6 +203,7 @@ namespace PoemTown.API.Controllers
         /// - ByDate = 1 (lấy theo 30 ngày gần nhất),
         /// - ByMonth = 2 (lấy theo tháng chỉ trong năm hiện tại),
         /// - ByYear = 3 (lấy theo 5 năm gần nhất)
+        /// - By15Days = 4 (lấy theo 15 ngày gần nhất)
         /// </remarks>
         /// <param name="filter"></param>
         /// <returns></returns>
@@ -208,6 +215,91 @@ namespace PoemTown.API.Controllers
         {
             var result = await _service.GetTransactionStatistic(filter);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get transaction statistic successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng đơn hàng theo từng trạng thái, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// OrderStatus:
+        ///
+        /// - Pending = 1,
+        /// - Paid = 2,
+        /// - Cancelled = 3
+        /// </remarks>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/order-status")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetOrderStatusStatisticResponse>>>
+            GetOrderStatusStatistic()
+        {
+            var result = await _service.GetOrderStatusStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get order type statistic successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng đơn hàng đã được thánh toán theo từng loại Master Templates, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/master-template-orders")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetMasterTemplateOrderStatisticResponse>>>
+            GetMasterTemplateOrderStatistic()
+        {
+            var result = await _service.GetMasterTemplateOrderStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get master template order statistic successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê số lượng đơn hàng đã được thánh toán theo từng loại, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// orderTypes:
+        ///
+        /// - EWalletDeposit = 1,
+        /// - MasterTemplates = 2,
+        /// - RecordFiles = 3,
+        /// - Poems = 4,
+        /// </remarks>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/order-types")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetOrderTypeStatisticResponse>>> GetOrderTypeStatistic()
+        {
+            var result = await _service.GetOrderTypeStatistic();
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get order type statistic successfully", result));
+        }
+        
+        /// <summary>
+        /// Lấy thống kê doanh thu, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <remarks>
+        /// incomeType:
+        ///
+        /// - EWalletDeposit = 1,
+        /// - MasterTemplates = 2,
+        /// 
+        /// period:
+        ///
+        /// - ByDate = 1 (lấy theo 30 ngày gần nhất),
+        /// - ByMonth = 2 (lấy theo tháng chỉ trong năm hiện tại),
+        /// - ByYear = 3 (lấy theo 5 năm gần nhất)
+        /// - By15Days = 4 (lấy theo 15 ngày gần nhất)
+        /// </remarks>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/incomes")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetIncomeStatisticResponse>>>
+            GetIncomeStatistic([FromQuery] GetIncomeStatisticFilterOption filter)
+        {
+            var result = await _service.GetIncomeStatistic(filter);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get income statistic successfully", result));
         }
     }
 }

@@ -20,6 +20,7 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses
         public int? TotalRecord { get; set; } = default!;
         public byte[]? RowVersion { get; set; }
         public bool? IsCommunity { get; set; }
+        public bool? IsMine { get; set; } = false;
         public DateTimeOffset? CreatedTime { get; set; }
         public DateTimeOffset? LastUpdatedTime { get; set; }
         public GetTargetMarkResponse? TargetMark { get; set; }

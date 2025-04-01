@@ -8,4 +8,5 @@ public enum TransactionType
     Poems = 4,
     Withdraw = 5,
     Donate = 6,
+    CommissionFee = 7,
 }

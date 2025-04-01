@@ -93,6 +93,7 @@ public static class ConfigureService
         services.AddScoped<IChatService, ChatService>();
         services.AddScoped<ILeaderBoardService, LeaderBoardService>();
         services.AddScoped<IAchievementService, AchievementService>();
+        services.AddScoped<IUsageRightService, UsageRightService>();
 
 
         //Plagiarism detector
@@ -130,6 +131,8 @@ public static class ConfigureService
             config.AddConsumer<SendPasswordToModeratorAccountConsumer>();
             config.AddConsumer<CheckPoemPlagiarismConsumer>();
             config.AddConsumer<TrackingUserLoginConsumer>();
+            config.AddConsumer<CreateCommissionConsumer>();
+
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {

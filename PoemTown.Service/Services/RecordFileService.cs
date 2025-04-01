@@ -453,6 +453,7 @@ namespace PoemTown.Service.Services
                 }
 
                 records.Add(_mapper.Map<GetRecordFileResponse>(recordEntity));
+                records.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(recordEntity.User);
             }
 
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,
@@ -512,6 +513,8 @@ namespace PoemTown.Service.Services
                 }
 
                 records.Add(_mapper.Map<GetRecordFileResponse>(recordEntity));
+                records.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(recordEntity.User);
+
             }
 
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,
@@ -570,6 +573,8 @@ namespace PoemTown.Service.Services
                 }
 
                 records.Add(_mapper.Map<GetRecordFileResponse>(poemEntity));
+                records.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(record.User);
+
             }
 
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,

@@ -10,6 +10,7 @@ using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.RecordFile;
 using PoemTown.Repository.Enums.SaleVersions;
 using PoemTown.Repository.Enums.TargetMarks;
+using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Enums.UsageRights;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
@@ -22,6 +23,7 @@ using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Events.OrderEvents;
+using PoemTown.Service.Events.TransactionEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -161,6 +163,10 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file has been bought, cannot delete");
             }
+            if(userId != recordFile.UserId)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "You not own this record file, cannot delete");
+            }
 
             _unitOfWork.GetRepository<RecordFile>().Delete(recordFile);
             await _unitOfWork.SaveChangesAsync();
@@ -286,6 +292,15 @@ namespace PoemTown.Service.Services
                     recordFile.Price * recordFile.SaleVersion.CommissionPercentage / 100;
                 userEWalletRecordOwner.WalletBalance +=
                     recordFile.Price * (100 - recordFile.SaleVersion.CommissionPercentage) / 100;
+                CreateCommissionTransactionEvent createTransactionEvent = new CreateCommissionTransactionEvent()
+                {
+                    Amount = recordFile.Price * recordFile.SaleVersion.CommissionPercentage / 100,
+                    Description = $"Tiền hoa hồng từ bản quyền từ bài thơ {recordFile.Poem.Title}",
+                    Type = TransactionType.CommissionFee,
+                    UserEWalletId = userEWalletPoemOwner.Id,
+                };
+                await _publishEndpoint.Publish(createTransactionEvent);
+
                 _unitOfWork.GetRepository<UserEWallet>().Update(userEWalletPoemOwner);
                 _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
                 await _unitOfWork.SaveChangesAsync();

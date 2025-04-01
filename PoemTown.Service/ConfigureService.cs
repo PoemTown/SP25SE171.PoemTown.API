@@ -131,6 +131,8 @@ public static class ConfigureService
             config.AddConsumer<SendPasswordToModeratorAccountConsumer>();
             config.AddConsumer<CheckPoemPlagiarismConsumer>();
             config.AddConsumer<TrackingUserLoginConsumer>();
+            config.AddConsumer<CreateCommissionConsumer>();
+
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {

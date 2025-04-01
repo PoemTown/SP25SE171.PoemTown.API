@@ -1337,6 +1337,7 @@ public class PoemService : IPoemService
             UserId = userId,
             Type = UserPoemType.PoemBuyer,
             SaleVersion = saleVersion,
+            Status = UsageRightStatus.StillValid,           
             CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
             CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(saleVersion.DurationTime).DateTime
         };

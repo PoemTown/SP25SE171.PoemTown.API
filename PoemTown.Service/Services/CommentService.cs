@@ -9,6 +9,7 @@ using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.CommentRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.CommentResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.CommentFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -150,8 +151,22 @@ public class CommentService : ICommentService
         
         var queryPaging = await _unitOfWork.GetRepository<Comment>()
             .GetPagination(commentQuery, request.PageNumber, request.PageSize);
-        
-        var comments = _mapper.Map<IList<GetCommentResponse>>(queryPaging.Data);
+
+        IList<GetCommentResponse> comments = new List<GetCommentResponse>();
+        foreach (var comment in queryPaging.Data)
+        {
+            Comment? commentEntity = await _unitOfWork.GetRepository<Comment>().FindAsync(p => p.Id == comment.Id);
+            if(commentEntity == null)
+            {
+                continue;
+            }
+            
+            comments.Add(_mapper.Map<GetCommentResponse>(commentEntity));
+            
+            // Map author information
+            comments.Last().Author = _mapper.Map<GetBasicUserInformationResponse>(
+                await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == commentEntity.AuthorCommentId));
+        }
         
         return new PaginationResponse<GetCommentResponse>(comments, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);

@@ -166,6 +166,13 @@ public class CommentService : ICommentService
             // Map author information
             comments.Last().Author = _mapper.Map<GetBasicUserInformationResponse>(
                 await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == commentEntity.AuthorCommentId));
+            
+            // Map parent comment author information
+            if (commentEntity.ParentCommentId != null)
+            {
+                comments.Last().ParentCommentAuthor = _mapper.Map<GetBasicUserInformationResponse>(
+                    await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == commentEntity.ParentCommentId));
+            }
         }
         
         return new PaginationResponse<GetCommentResponse>(comments, queryPaging.PageNumber, queryPaging.PageSize,

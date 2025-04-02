@@ -57,10 +57,14 @@ public static class ConfigureService
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "Service API v1");
         });
 
-        app.MapHub<ChatHub>("/chatHub");
+        app.AddSignalRHub();
     }
 
-
+    private static void AddSignalRHub(this WebApplication app)
+    {
+        app.MapHub<ChatHub>("/chatHub");
+        app.MapHub<AnnouncementHub>("/announcementHub");
+    }
 
     private static void AddMiddlewareConfigs(this IApplicationBuilder app)
     {

@@ -1,24 +1,40 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using PoemTown.Service.SignalR.IReceiveClients;
 
 namespace PoemTown.Service.SignalR;
 
-public class AnnouncementHub : Hub
+public class AnnouncementHub : Hub<IAnnouncementClient>
 {
-    private static readonly Dictionary<Guid, string> _connections = null;
+    public static Dictionary<Guid, string> Connections = new();
 
     public override Task OnConnectedAsync()
     {
         string? userIdString = Context.User?.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
         if(Guid.TryParse(userIdString, out Guid userId))
         {
-            _connections.Add(userId, Context.ConnectionId);
+            Connections.Add(userId, Context.ConnectionId);
         }
         
         return base.OnConnectedAsync();
     }
 
-    public static string GetConnectionId(Guid userId)
+    public override Task OnDisconnectedAsync(Exception? exception)
     {
-        return _connections.TryGetValue(userId, out var connectionId) ? connectionId : string.Empty;
+        string? userIdString = Context.User?.Claims.FirstOrDefault(c => c.Type == "UserId")?.Value;
+        if(Guid.TryParse(userIdString, out Guid userId))
+        {
+            Connections.Remove(userId);
+        }
+        
+        return base.OnDisconnectedAsync(exception);
+    }
+    public static string GetConnectionId(Guid? userId)
+    {
+        if(userId == null)
+        {
+            return string.Empty;
+        }
+        
+        return Connections.TryGetValue(userId.Value, out var connectionId) ? connectionId : string.Empty;
     }
 }

@@ -61,7 +61,7 @@ public class FollowerService : IFollowerService
 
     public async Task UnfollowUserAsync(Guid userId, Guid followerId)
     {
-        var follower = await _unitOfWork.GetRepository<Follower>().FindAsync(p => p.Id == followerId);
+        var follower = await _unitOfWork.GetRepository<Follower>().FindAsync(p => p.FollowedUserId == followerId && p.FollowUserId == userId);
         
         // Check if the follower exists
         if (follower == null)

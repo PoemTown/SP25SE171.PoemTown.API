@@ -126,7 +126,7 @@ public class AccountsController : BaseController
     /// <returns></returns>
     [HttpGet]
     [Route("v1/accounts")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BasePaginationResponse<GetAccountResponse>>>
         GetAccounts(RequestOptionsBase<GetAccountFilterOption, GetAccountSortOption> request)
     {

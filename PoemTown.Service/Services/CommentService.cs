@@ -125,7 +125,7 @@ public class CommentService : ICommentService
     }
     
     public async Task<PaginationResponse<GetCommentResponse>>
-        GetPostComments(Guid poemId, RequestOptionsBase<GetPostCommentFilterOption, GetPostCommentSortOption> request)
+        GetPostComments(Guid? userId, Guid poemId, RequestOptionsBase<GetPostCommentFilterOption, GetPostCommentSortOption> request)
     {
         // Check if poem exists
         Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
@@ -166,6 +166,9 @@ public class CommentService : ICommentService
             // Map author information
             comments.Last().Author = _mapper.Map<GetBasicUserInformationResponse>(
                 await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == commentEntity.AuthorCommentId));
+            
+            // Map is mine
+            comments.Last().IsMine = commentEntity.AuthorCommentId == userId;
             
             // Map parent comment author information
             if (commentEntity.ParentCommentId != null)

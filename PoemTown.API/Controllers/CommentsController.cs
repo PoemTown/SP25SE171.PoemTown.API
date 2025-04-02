@@ -92,7 +92,14 @@ public class CommentsController : BaseController
     public async Task<ActionResult<PaginationResponse<GetCommentResponse>>>
         GetPostComments(Guid poemId, RequestOptionsBase<GetPostCommentFilterOption, GetPostCommentSortOption> request)
     {
-        var paginationResponse = await _commentService.GetPostComments(poemId, request);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }   
+        
+        var paginationResponse = await _commentService.GetPostComments(userId, poemId, request);
 
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetCommentResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;

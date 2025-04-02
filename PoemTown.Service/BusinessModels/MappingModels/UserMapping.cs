@@ -24,6 +24,8 @@ public class UserMapping : Profile
             .ForMember(dest => dest.TotalFollowers, opt => opt.MapFrom(src => src.FollowedUser.Count))
             .ForMember(dest => dest.TotalFollowings, opt => opt.MapFrom(src => src.FollowUser.Count));
 
-        CreateMap<User, GetUserOnlineProfileResponse>().ReverseMap();
+        CreateMap<GetUserOnlineProfileResponse, User>().ReverseMap()
+            .ForMember(dest => dest.TotalFollowers, opt => opt.MapFrom(src => src.FollowedUser.Count))
+            .ForMember(dest => dest.TotalFollowings, opt => opt.MapFrom(src => src.FollowUser.Count));
     }
 }

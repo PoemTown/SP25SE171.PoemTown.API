@@ -265,7 +265,12 @@ namespace PoemTown.API.Controllers
         public async Task<ActionResult<BaseResponse<GetPoemDetailResponse>>>
             GetPoemDetail(Guid collectionId)
         {
-            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }        
             var response = await _service.GetCollectionDetail(collectionId, userId);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get collection detail successfully", response));
         }

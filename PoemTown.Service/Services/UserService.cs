@@ -160,6 +160,8 @@ public class UserService : IUserService
         // Get user statistics
         userOnlineProfileResponse.UserStatistic = await _statisticService.GetStatisticsAsync(user.Id);
         
+        userOnlineProfileResponse.IsFollowed = loginUser != null && loginUser.FollowUser != null && loginUser.FollowUser.Any(p => p.FollowedUserId == user.Id);
+        
         return userOnlineProfileResponse;
     }
 }

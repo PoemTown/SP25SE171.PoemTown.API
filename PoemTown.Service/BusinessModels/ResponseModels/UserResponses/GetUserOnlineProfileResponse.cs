@@ -15,6 +15,7 @@ public class GetUserOnlineProfileResponse
     public int TotalFollowers { get; set; }
     public int TotalFollowings { get; set; }
     public bool IsMine { get; set; }
+    public bool? IsFollowed { get; set; } = false;
     public IList<GetUserTemplateDetailInUserThemeResponse>? UserTemplateDetails { get; set; }
     public IList<GetAchievementResponse>? Achievements { get; set; }
     public StatisticResponse? UserStatistic { get; set; }

@@ -298,7 +298,7 @@ public class PoemService : IPoemService
             RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
     {
         Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
-
+        
         if (poem == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
@@ -1357,6 +1357,7 @@ public class PoemService : IPoemService
             UserId = userId,
             Type = UserPoemType.PoemBuyer,
             SaleVersion = saleVersion,
+            Status = UsageRightStatus.StillValid,           
             CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
             CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(saleVersion.DurationTime).DateTime
         };
@@ -1768,5 +1769,7 @@ public class PoemService : IPoemService
         _unitOfWork.GetRepository<Poem>().Update(poem);
         await _unitOfWork.SaveChangesAsync();
     }
+
+
 
 }

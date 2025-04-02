@@ -233,11 +233,15 @@ namespace PoemTown.Service.Services
                 queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 
-        public async Task DeleteCollection(Guid collectionId, byte[] rowVersion)
+        public async Task DeleteCollection(Guid userId, Guid collectionId, byte[] rowVersion)
         {
             try
             {
                 Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
+                if(userId != collection.UserId)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "You not own this collection");
+                }
                 if (collection == null)
                 {
                     throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");

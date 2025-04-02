@@ -59,6 +59,7 @@ namespace PoemTown.Repository.Utils
             }
 
             // Signature phổ biến cho các định dạng âm thanh
+            var id3Signature = new byte[] { 0x49, 0x44, 0x33 }; // "ID3" cho MP3 có thẻ ID3
             var mp3Signature = new byte[] { 0xFF, 0xFB }; // MP3 (MPEG Audio Frame)
             var wavSignature = new byte[] { 0x52, 0x49, 0x46, 0x46 }; // WAV (RIFF)
             var flacSignature = new byte[] { 0x66, 0x4C, 0x61, 0x43 }; // FLAC
@@ -72,8 +73,9 @@ namespace PoemTown.Repository.Utils
         new byte[] { 0x66, 0x74, 0x79, 0x70, 0x4D, 0x34, 0x56 } // ftypM4V
     };
 
-            // Kiểm tra MP3, WAV, FLAC, OGG
-            if (buffer.Take(2).SequenceEqual(mp3Signature) ||
+            // Kiểm tra signature cho các định dạng MP3, WAV, FLAC, OGG
+            if (buffer.Take(3).SequenceEqual(id3Signature) ||
+                buffer.Take(2).SequenceEqual(mp3Signature) ||
                 buffer.Take(4).SequenceEqual(wavSignature) ||
                 buffer.Take(4).SequenceEqual(flacSignature) ||
                 buffer.Take(4).SequenceEqual(oggSignature))
@@ -95,6 +97,7 @@ namespace PoemTown.Repository.Utils
 
             return false;
         }
+
 
     }
 }

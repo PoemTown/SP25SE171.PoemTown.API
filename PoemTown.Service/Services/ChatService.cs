@@ -6,8 +6,10 @@ using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.QueryOptions.FilterOptions.MessageFilters;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
+using PoemTown.Service.QueryOptions.SortOptions.MessageSorts;
 using PoemTown.Service.QueryOptions.SortOptions.PoemSorts;
 using PoemTown.Service.SignalR;
 using System;
@@ -62,13 +64,13 @@ namespace PoemTown.Service.Services
 
 
 
-     
 
-/*        public async Task<PaginationResponse<GetBasicUserInformationResponse>> GetChatPartners(Guid? userId, RequestOptionsBase<object, object> request)
+
+        public async Task<PaginationResponse<GetBasicUserInformationResponse>> GetChatPartners(Guid? userId, RequestOptionsBase<GetChatPartnerFilter, GetChatPartnerSort> request)
         {
             var message = _unitOfWork.GetRepository<Message>().AsQueryable();
             var partnerUsers = message
-                .Where(m => m.FromUserId == userId || m.ToUserId == userId && m.DeletedTime == null);
+                .Where(m => m.FromUserId == userId || m.ToUserId == userId && m.DeletedTime == null)
                 .Select(m => m.FromUserId == userId ? m.ToUser : m.FromUser)
                 .Distinct();
 
@@ -82,7 +84,7 @@ namespace PoemTown.Service.Services
         }
 
 
-        public async Task<PaginationResponse<GetBasicUserInformationResponse>> GetPrivateMessagesWithUser(Guid? fromUserId, Guid toUserId ,RequestOptionsBase<object, object> request)
+/*        public async Task<PaginationResponse<GetBasicUserInformationResponse>> GetPrivateMessagesWithUser(Guid? fromUserId, Guid toUserId, RequestOptionsBase<object, object> request)
         {
             var message = _unitOfWork.GetRepository<Message>().AsQueryable();
             var messageContent = message.Where(m => m.FromUserId == fromUserId && m.ToUserId == toUserId && m.DeletedTime == null).Select(m => m.MessageText);

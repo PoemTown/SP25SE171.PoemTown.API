@@ -179,7 +179,13 @@ namespace PoemTown.API.Controllers
         [Authorize]
         public async Task<ActionResult<BaseResponse>> DeletePoem(Guid collectionId, [FromQuery] byte[] rowVersion)
         {
-            await _service.DeleteCollection(collectionId, rowVersion);
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }
+            await _service.DeleteCollection(userId.Value, collectionId, rowVersion);
             return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Collection deleted successfully"));
         }
         /// <summary>

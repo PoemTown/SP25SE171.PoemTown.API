@@ -9,6 +9,7 @@ public class GetCommentResponse
     public Guid AuthorCommentId { get; set; } 
     public GetBasicUserInformationResponse? ParentCommentAuthor { get; set; }
     public GetBasicUserInformationResponse Author { get; set; }
+    public bool? IsMine { get; set; } = false;
     public Guid PoemId { get; set; }
     public Guid? ParentCommentId { get; set; }
     public DateTimeOffset CreatedTime { get; set; }

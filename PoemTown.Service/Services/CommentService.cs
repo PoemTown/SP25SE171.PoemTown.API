@@ -174,7 +174,7 @@ public class CommentService : ICommentService
             if (commentEntity.ParentCommentId != null)
             {
                 comments.Last().ParentCommentAuthor = _mapper.Map<GetBasicUserInformationResponse>(
-                    await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == commentEntity.ParentCommentId));
+                    await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == commentEntity.AuthorCommentId));
             }
         }
         

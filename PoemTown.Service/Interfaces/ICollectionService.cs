@@ -25,7 +25,7 @@ namespace PoemTown.Service.Interfaces
         Task DeleteCollectionPermanent(Guid collectionId);
         Task AddPoemToCollection(Guid poemId, Guid collectionId);
         Task<PaginationResponse<GetCollectionResponse>>GetTrendingCollections(Guid? userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
-        Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid userId);
+        Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid? userId);
         Task<string> UploadCollectionImage(Guid userId, IFormFile file);
 
         Task<PaginationResponse<GetUserCollectionResponse>>

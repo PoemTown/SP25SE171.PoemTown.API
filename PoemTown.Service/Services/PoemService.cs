@@ -359,6 +359,9 @@ public class PoemService : IPoemService
             poemDetail.TargetMark = _mapper.Map<GetTargetMarkResponse>(
                 poem.TargetMarks!.FirstOrDefault(tm =>
                     tm.MarkByUserId == userId && tm.PoemId == poem.Id && tm.Type == TargetMarkType.Poem));
+            
+            // Check if user is followed this user
+            poemDetail.IsFollowed = poem.User!.FollowedUser!.Any(p => p.FollowUserId == userId);
         }
 
         if (poem.RecordFiles != null && poem.RecordFiles.Count <= 0)

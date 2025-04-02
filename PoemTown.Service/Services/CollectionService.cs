@@ -302,7 +302,7 @@ namespace PoemTown.Service.Services
         }
 
 
-        public async Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid userId)
+        public async Task<GetCollectionResponse> GetCollectionDetail(Guid collectionId, Guid? userId)
         {
             Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(c => c.Id == collectionId);
             if (collection == null)

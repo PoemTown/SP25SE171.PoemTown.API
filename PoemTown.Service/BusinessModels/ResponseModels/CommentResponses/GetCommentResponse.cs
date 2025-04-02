@@ -6,7 +6,8 @@ public class GetCommentResponse
 {
     public Guid Id { get; set; }
     public string Content { get; set; }
-    public Guid AuthorCommentId { get; set; }
+    public Guid AuthorCommentId { get; set; } 
+    public GetBasicUserInformationResponse? ParentCommentAuthor { get; set; }
     public GetBasicUserInformationResponse Author { get; set; }
     public Guid PoemId { get; set; }
     public Guid? ParentCommentId { get; set; }

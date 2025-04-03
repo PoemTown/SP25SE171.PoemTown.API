@@ -15,9 +15,10 @@ namespace PoemTown.Service.SignalR
         public override async Task OnConnectedAsync()
         {
             // Get user id from token
-            var userId = Context.User?.FindFirst("UserId")?.Value ??
-                         Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            
+            var userId = Context.User?.FindFirst("UserId")?.Value
+                          ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                          ?? Context.User?.Claims.FirstOrDefault(p => p.Type == "UserId")?.Value;
+
             // Add user connection
             if (!string.IsNullOrEmpty(userId))
             {

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Service.BusinessModels.ResponseModels.ChatResponse;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
@@ -69,34 +70,41 @@ namespace PoemTown.Service.Services
         public async Task<PaginationResponse<GetBasicUserInformationResponse>> GetChatPartners(Guid? userId, RequestOptionsBase<GetChatPartnerFilter, GetChatPartnerSort> request)
         {
             var message = _unitOfWork.GetRepository<Message>().AsQueryable();
-            var partnerUsers = message
-                .Where(m => m.FromUserId == userId || m.ToUserId == userId && m.DeletedTime == null)
-                .Select(m => m.FromUserId == userId ? m.ToUser : m.FromUser)
-                .Distinct();
+            var fromUsers = message
+                .Where(m => m.FromUserId == userId && m.DeletedTime == null)
+                .Select(m => m.ToUser); // Chỉ chọn ToUser
+
+            var toUsers = message
+                .Where(m => m.ToUserId == userId && m.DeletedTime == null)
+                .Select(m => m.FromUser); // Chỉ chọn FromUser
+
+            var partnerUsers = fromUsers.Concat(toUsers).Distinct();
+
+            var queryPaging = await _unitOfWork.GetRepository<User>()
+                            .GetPagination(partnerUsers, request.PageNumber, request.PageSize);
 
             var mappedUsers = _mapper.Map<List<GetBasicUserInformationResponse>>(partnerUsers);
 
-            var queryPaging = await _unitOfWork.GetRepository<User>()
-                .GetPagination(partnerUsers, request.PageNumber, request.PageSize);
+            
 
             return new PaginationResponse<GetBasicUserInformationResponse>(mappedUsers, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 
 
-/*        public async Task<PaginationResponse<GetBasicUserInformationResponse>> GetPrivateMessagesWithUser(Guid? fromUserId, Guid toUserId, RequestOptionsBase<object, object> request)
+        public async Task<PaginationResponse<GetMesssageWithPartner>> GetPrivateMessagesWithUser(Guid? fromUserId, Guid toUserId, RequestOptionsBase<object, object> request)
         {
             var message = _unitOfWork.GetRepository<Message>().AsQueryable();
-            var messageContent = message.Where(m => m.FromUserId == fromUserId && m.ToUserId == toUserId && m.DeletedTime == null).Select(m => m.MessageText);
+            var messageContent = message.Where(m => m.FromUserId == fromUserId && m.ToUserId == toUserId && m.DeletedTime == null);
 
-            var mappedUsers = _mapper.Map<List<GetBasicUserInformationResponse>>(partnerUsers);
+            var mappedMessage = _mapper.Map<List<GetMesssageWithPartner>>(messageContent);
 
             var queryPaging = await _unitOfWork.GetRepository<Message>()
                 .GetPagination(messageContent, request.PageNumber, request.PageSize);
 
-            return new PaginationResponse<GetBasicUserInformationResponse>(mappedUsers, queryPaging.PageNumber, queryPaging.PageSize,
+            return new PaginationResponse<GetMesssageWithPartner>(mappedMessage, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
-        }*/
+        }
 
     }
 }

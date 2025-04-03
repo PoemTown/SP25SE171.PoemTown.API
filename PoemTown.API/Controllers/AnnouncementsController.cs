@@ -42,4 +42,18 @@ public class AnnouncementsController : BaseController
         var announcements = await _announcementService.GetUserAnnouncementsAsync(userId);
         return Ok(new BaseResponse<IEnumerable<GetAnnouncementResponse>>(StatusCodes.Status200OK, "Get user announcement successfully" ,announcements));
     }
+    
+    /// <summary>
+    /// Cập nhật thông báo thành đã đọc, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="announcementId"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/{announcementId}")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> UpdateAnnouncementToRead(Guid announcementId)
+    {
+        await _announcementService.UpdateAnnouncementToRead(announcementId);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Update announcement successfully"));
+    }
 }

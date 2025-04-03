@@ -78,4 +78,21 @@ public class AnnouncementService : IAnnouncementService
 
         return _mapper.Map<IEnumerable<GetAnnouncementResponse>>(announcements);
     }
+
+    public async Task UpdateAnnouncementToRead(Guid announcementId)
+    {
+        var announcement = await _unitOfWork.GetRepository<Announcement>()
+            .FindAsync(a => a.Id == announcementId);
+
+        // Check if announcement exists
+        if (announcement == null)
+        {
+            throw new CoreException(StatusCodes.Status404NotFound, "Announcement not found");
+        }
+
+        announcement.IsRead = true;
+
+        _unitOfWork.GetRepository<Announcement>().Update(announcement);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

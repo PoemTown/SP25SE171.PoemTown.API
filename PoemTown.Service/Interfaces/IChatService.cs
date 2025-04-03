@@ -1,4 +1,5 @@
 ﻿using PoemTown.Repository.Base;
+using PoemTown.Service.BusinessModels.ResponseModels.ChatResponse;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.QueryOptions.FilterOptions.MessageFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -16,5 +17,6 @@ namespace PoemTown.Service.Interfaces
         Task SendMessageToAllAsync(string user, string message);
         Task SendPrivateMessageAsync(Guid fromUser, Guid toUser, string message);
         Task<PaginationResponse<GetBasicUserInformationResponse>> GetChatPartners(Guid? userId, RequestOptionsBase<GetChatPartnerFilter, GetChatPartnerSort> request);
+        Task<PaginationResponse<GetMesssageWithPartner>> GetPrivateMessagesWithUser(Guid? fromUserId, Guid toUserId, RequestOptionsBase<object, object> request);
     }
 }

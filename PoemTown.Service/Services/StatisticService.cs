@@ -30,7 +30,7 @@ public class StatisticService : IStatisticService
         var collections = _unitOfWork.GetRepository<Collection>()
             .AsQueryable()
             .Where(c => c.UserId == userId && c.DeletedTime == null);
-
+        var records = _unitOfWork.GetRepository<RecordFile>().AsQueryable().Where(r => r.UserId == userId && r.DeletedTime == null);
         // Nếu không có bộ sưu tập, trả về thống kê mặc định
         if (!await collections.AnyAsync())
         {
@@ -45,7 +45,7 @@ public class StatisticService : IStatisticService
         // Truy vấn tuần tự để tránh lỗi DbContext bị sử dụng đồng thời
         var totalCollections = await collections.CountAsync();
         var totalPoems = await poemsQuery.CountAsync();
-        var totalRecords = await poemsQuery.SelectMany(p => p.RecordFiles).CountAsync(r => r.DeletedTime == null);
+        var totalRecords = await records.CountAsync();
         var totalCollectionBookmarks =
             await collections.SelectMany(p => p.TargetMarks).CountAsync(l => l.DeletedTime == null);
         var totalLikes = await poemsQuery.SelectMany(p => p.Likes).CountAsync(l => l.DeletedTime == null);

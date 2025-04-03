@@ -5,6 +5,7 @@ using Org.BouncyCastle.Asn1.Crmf;
 using PoemTown.API.Base;
 using PoemTown.Service.BusinessModels.RequestModels.MessageRequest;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
+using PoemTown.Service.BusinessModels.ResponseModels.ChatResponse;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
@@ -56,6 +57,29 @@ namespace PoemTown.API.Controllers
             var result = await _chatService.GetChatPartners(userId, request);
 
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetBasicUserInformationResponse>>(result);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get Chat Partners successfully";
+            return Ok(basePaginationResponse);
+        }
+
+        /// <summary>
+        /// Lấy danh sách tất cả nội dung tin nhắn với người mình đã từng nhắn, yêu cầu đăng nhập
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="targetUserId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/partner/content")]
+        [Authorize]
+        public async Task<ActionResult<BaseResponse<GetMesssageWithPartner>>>
+        GetPrivateMessagesWithUser(RequestOptionsBase<object, object> request, [FromQuery] Guid targetUserId)
+        {
+
+            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+
+            var result = await _chatService.GetPrivateMessagesWithUser(userId, targetUserId, request);
+
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetMesssageWithPartner>>(result);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;
             basePaginationResponse.Message = "Get Chat Partners successfully";
             return Ok(basePaginationResponse);

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AnnouncementRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AnnouncementResponses;
 using PoemTown.Service.Interfaces;
@@ -34,6 +35,7 @@ public class AnnouncementService : IAnnouncementService
         var connectionId = AnnouncementHub.GetConnectionId(request.UserId);
 
         Guid announcementId = Guid.NewGuid();
+        DateTimeOffset createdTime = DateTimeHelper.SystemTimeNow;
         
         // Send SignalR if user is online
         if (connectionId != string.Empty)
@@ -43,7 +45,8 @@ public class AnnouncementService : IAnnouncementService
                 Id = announcementId,
                 Title = request.Title,
                 Content = request.Content,
-                IsRead = request.IsRead
+                IsRead = request.IsRead,
+                CreatedTime = createdTime
             });
         }
         
@@ -59,7 +62,8 @@ public class AnnouncementService : IAnnouncementService
             Id = announcementId,
             Title = request.Title,
             Content = request.Content,
-            UserId = request.UserId
+            UserId = request.UserId,
+            CreatedTime = createdTime
         });
         
         await _unitOfWork.SaveChangesAsync();

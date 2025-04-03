@@ -10,6 +10,7 @@ using PoemTown.Service.BusinessModels.ResponseModels.AnnouncementResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.SignalR;
 using PoemTown.Service.SignalR.IReceiveClients;
+using PoemTown.Service.SignalR.ReceiveClientModels.AnnouncementClientModels;
 
 namespace PoemTown.Service.Services;
 
@@ -31,11 +32,19 @@ public class AnnouncementService : IAnnouncementService
     public async Task SendAnnouncementAsync(CreateNewAnnouncementRequest request)
     {
         var connectionId = AnnouncementHub.GetConnectionId(request.UserId);
+
+        Guid announcementId = Guid.NewGuid();
         
         // Send SignalR if user is online
         if (connectionId != string.Empty)
         {
-            await _hubContext.Clients.Client(connectionId).ReceiveAnnouncement(request);
+            await _hubContext.Clients.Client(connectionId).ReceiveAnnouncement(new CreateNewAnnouncementClientModel()
+            {
+                Id = announcementId,
+                Title = request.Title,
+                Content = request.Content,
+                IsRead = request.IsRead
+            });
         }
         
         // Check if user exists
@@ -47,6 +56,7 @@ public class AnnouncementService : IAnnouncementService
         
         await _unitOfWork.GetRepository<Announcement>().InsertAsync(new Announcement
         {
+            Id = announcementId,
             Title = request.Title,
             Content = request.Content,
             UserId = request.UserId

@@ -20,6 +20,7 @@ public class AnnouncementsController : BaseController
     
     [HttpPost]
     [Route("v1")]
+    [Authorize(Roles = "ADMIN")]
     public async Task<ActionResult<BaseResponse>> CreateAnnouncement([FromBody] CreateNewAnnouncementRequest request)
     {
         

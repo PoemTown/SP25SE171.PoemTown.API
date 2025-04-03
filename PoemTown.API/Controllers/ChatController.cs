@@ -48,7 +48,7 @@ namespace PoemTown.API.Controllers
         [HttpGet]
         [Route("v1/partner")]
         [Authorize]
-        public async Task<ActionResult<BaseResponse<GetBasicUserInformationResponse>>>
+        public async Task<ActionResult<BaseResponse<GetChatPartner>>>
         GetChatPartners(RequestOptionsBase<GetChatPartnerFilter, GetChatPartnerSort> request)
         {
             
@@ -56,7 +56,7 @@ namespace PoemTown.API.Controllers
             
             var result = await _chatService.GetChatPartners(userId, request);
 
-            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetBasicUserInformationResponse>>(result);
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetChatPartner>>(result);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;
             basePaginationResponse.Message = "Get Chat Partners successfully";
             return Ok(basePaginationResponse);

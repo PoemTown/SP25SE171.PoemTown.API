@@ -94,5 +94,19 @@ public class AnnouncementService : IAnnouncementService
 
         _unitOfWork.GetRepository<Announcement>().Update(announcement);
         await _unitOfWork.SaveChangesAsync();
+
+        // Send changes to signalR if connection is exists
+        var connectionId = AnnouncementHub.GetConnectionId(userId);
+        if (connectionId != string.Empty)
+        {
+            await _hubContext.Clients.Client(connectionId).ReceiveAnnouncement(new CreateNewAnnouncementClientModel()
+            {
+                Id = announcement.Id,
+                Title = announcement.Title,
+                Content = announcement.Content,
+                IsRead = announcement.IsRead,
+                CreatedTime = announcement.CreatedTime,
+            });
+        }
     }
 }

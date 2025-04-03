@@ -62,8 +62,8 @@ public static class ConfigureService
 
     private static void AddSignalRHub(this WebApplication app)
     {
-        app.MapHub<ChatHub>("/chatHub");
-        app.MapHub<AnnouncementHub>("/announcementHub");
+        app.MapHub<ChatHub>("/hub/chatHub");
+        app.MapHub<AnnouncementHub>("/hub/announcementHub");
     }
 
     private static void AddMiddlewareConfigs(this IApplicationBuilder app)

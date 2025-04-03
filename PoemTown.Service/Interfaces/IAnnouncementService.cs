@@ -7,5 +7,5 @@ public interface IAnnouncementService
 {
     Task SendAnnouncementAsync(CreateNewAnnouncementRequest request);
     Task<IEnumerable<GetAnnouncementResponse>> GetUserAnnouncementsAsync(Guid userId);
-    Task UpdateAnnouncementToRead(Guid announcementId);
+    Task UpdateAnnouncementToRead(Guid userId, Guid announcementId);
 }

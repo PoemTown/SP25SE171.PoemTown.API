@@ -51,9 +51,10 @@ public class AnnouncementsController : BaseController
     [HttpPut]
     [Route("v1/{announcementId}")]
     [Authorize]
-    public async Task<ActionResult<BaseResponse>> UpdateAnnouncementToRead(Guid announcementId)
+    public async Task<ActionResult<BaseResponse>> UpdateUserAnnouncementToRead(Guid announcementId)
     {
-        await _announcementService.UpdateAnnouncementToRead(announcementId);
+        Guid userId = Guid.Parse(User.Claims.First(p => p.Type == "UserId").Value);
+        await _announcementService.UpdateAnnouncementToRead(userId, announcementId);
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Update announcement successfully"));
     }
 }

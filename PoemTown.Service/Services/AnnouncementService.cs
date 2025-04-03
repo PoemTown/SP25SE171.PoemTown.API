@@ -79,10 +79,10 @@ public class AnnouncementService : IAnnouncementService
         return _mapper.Map<IEnumerable<GetAnnouncementResponse>>(announcements);
     }
 
-    public async Task UpdateAnnouncementToRead(Guid announcementId)
+    public async Task UpdateAnnouncementToRead(Guid userId, Guid announcementId)
     {
         var announcement = await _unitOfWork.GetRepository<Announcement>()
-            .FindAsync(a => a.Id == announcementId);
+            .FindAsync(a => a.Id == announcementId && a.UserId == userId);
 
         // Check if announcement exists
         if (announcement == null)

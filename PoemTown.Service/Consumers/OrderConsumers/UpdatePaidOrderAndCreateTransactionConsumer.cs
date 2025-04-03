@@ -68,7 +68,7 @@ public class UpdatePaidOrderAndCreateTransactionConsumer : IConsumer<UpdatePaidO
         await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
         {
             Title = "Hóa đơn mua hàng",
-            Content = $"Hóa đơn mua hàng của bạn đã được khởi tạo thành công",
+            Content = $"Hóa đơn: {order.Transaction.Description} đã khởi tạo thành công",
             UserId = order.UserId,
             IsRead = false
         });

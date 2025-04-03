@@ -2,6 +2,7 @@
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.RequestModels.AnnouncementRequests;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.TransactionEvents;
 
 namespace PoemTown.Service.Consumers.TransactionConsumers;
@@ -50,10 +51,10 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
         await _unitOfWork.SaveChangesAsync();
         
         // Publish event create announcement
-        await _publishEndpoint.Publish(new CreateNewAnnouncementRequest()
+        await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
         {
             Title = "Hóa đơn mua hàng",
-            Content = $"Hóa đơn mua hàng của bạn đã được khởi tạo thành công",
+            Content = $"Hóa đơn: {transaction.Description} đã khởi tạo thành công",
             UserId = order.User.Id,
             IsRead = false
         });

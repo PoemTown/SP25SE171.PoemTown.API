@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Service.BusinessModels.RequestModels.AnnouncementRequests;
 using PoemTown.Service.Events.TransactionEvents;
 
 namespace PoemTown.Service.Consumers.TransactionConsumers;
@@ -8,9 +9,11 @@ namespace PoemTown.Service.Consumers.TransactionConsumers;
 public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
 {
     private readonly IUnitOfWork _unitOfWork;
-    public CreateTransactionConsumer(IUnitOfWork unitOfWork)
+    private readonly IPublishEndpoint _publishEndpoint;
+    public CreateTransactionConsumer(IUnitOfWork unitOfWork, IPublishEndpoint publishEndpoint)
     {
         _unitOfWork = unitOfWork;
+        _publishEndpoint = publishEndpoint;
     }
     
     public async Task Consume(ConsumeContext<CreateTransactionEvent> context)
@@ -45,5 +48,14 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
         
         await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
         await _unitOfWork.SaveChangesAsync();
+        
+        // Publish event create announcement
+        await _publishEndpoint.Publish(new CreateNewAnnouncementRequest()
+        {
+            Title = "Hóa đơn mua hàng",
+            Content = $"Hóa đơn mua hàng của bạn đã được khởi tạo thành công",
+            UserId = order.User.Id,
+            IsRead = false
+        });
     }
 }

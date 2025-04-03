@@ -4,6 +4,7 @@ using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.OrderEvents;
 
 namespace PoemTown.Service.Consumers.OrderConsumers;
@@ -11,9 +12,12 @@ namespace PoemTown.Service.Consumers.OrderConsumers;
 public class UpdatePaidOrderAndCreateTransactionConsumer : IConsumer<UpdatePaidOrderAndCreateTransactionEvent>
 {
     private readonly IUnitOfWork _unitOfWork;
-    public UpdatePaidOrderAndCreateTransactionConsumer(IUnitOfWork unitOfWork)
+    private readonly IPublishEndpoint _publishEndpoint;
+    public UpdatePaidOrderAndCreateTransactionConsumer(IUnitOfWork unitOfWork,
+        IPublishEndpoint publishEndpoint)
     {
         _unitOfWork = unitOfWork;
+        _publishEndpoint = publishEndpoint;
     }
     public async Task Consume(ConsumeContext<UpdatePaidOrderAndCreateTransactionEvent> context)
     {
@@ -59,5 +63,14 @@ public class UpdatePaidOrderAndCreateTransactionConsumer : IConsumer<UpdatePaidO
         
         await _unitOfWork.GetRepository<Transaction>().InsertAsync(order.Transaction);
         await _unitOfWork.SaveChangesAsync();
+        
+        // Publish event create announcement
+        await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+        {
+            Title = "Hóa đơn mua hàng",
+            Content = $"Hóa đơn mua hàng của bạn đã được khởi tạo thành công",
+            UserId = order.UserId,
+            IsRead = false
+        });
     }
 }

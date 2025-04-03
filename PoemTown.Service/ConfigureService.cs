@@ -13,6 +13,7 @@ using PoemTown.Service.BusinessModels.ConfigurationModels.Payment;
 using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
 using PoemTown.Service.BusinessModels.MappingModels;
 using PoemTown.Service.BusinessModels.ViewTemplateModels;
+using PoemTown.Service.Consumers.AnnouncementConsumers;
 using PoemTown.Service.Consumers.AuthenticationConsumers;
 using PoemTown.Service.Consumers.CollectionConsumers;
 using PoemTown.Service.Consumers.EmailConsumers;
@@ -132,7 +133,8 @@ public static class ConfigureService
             config.AddConsumer<CheckPoemPlagiarismConsumer>();
             config.AddConsumer<TrackingUserLoginConsumer>();
             config.AddConsumer<CreateCommissionConsumer>();
-
+            config.AddConsumer<SendUserAnnouncementConsumer>();
+            
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {

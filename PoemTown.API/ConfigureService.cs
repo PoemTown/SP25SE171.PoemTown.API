@@ -135,13 +135,15 @@ public static class ConfigureService
                         .AllowAnyHeader();
                 });
         });*/
-        var frontendUrl = configuration.GetSection("FrontEndDomain:Url").Value;
+        var hostFrontEndUrl = configuration.GetSection("FrontEndDomain:Host").Value ?? "";
+        var localFrontEndUrl = configuration.GetSection("FrontEndDomain:Local").Value ?? "";
+
         services.AddCors(options =>
         {
             options.AddPolicy("AllowFromSpecificOrigin",
                 builder =>
                 {
-                    builder.WithOrigins(frontendUrl ?? "")
+                    builder.WithOrigins(hostFrontEndUrl, localFrontEndUrl)
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials();

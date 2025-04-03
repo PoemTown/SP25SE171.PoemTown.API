@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
+using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.ChatResponse;
@@ -67,7 +70,7 @@ namespace PoemTown.Service.Services
 
 
 
-        public async Task<PaginationResponse<GetBasicUserInformationResponse>> GetChatPartners(Guid? userId, RequestOptionsBase<GetChatPartnerFilter, GetChatPartnerSort> request)
+        public async Task<PaginationResponse<GetChatPartner>> GetChatPartners(Guid? userId, RequestOptionsBase<GetChatPartnerFilter, GetChatPartnerSort> request)
         {
             var message = _unitOfWork.GetRepository<Message>().AsQueryable();
             var fromUsers = message
@@ -82,12 +85,25 @@ namespace PoemTown.Service.Services
 
             var queryPaging = await _unitOfWork.GetRepository<User>()
                             .GetPagination(partnerUsers, request.PageNumber, request.PageSize);
+            IList<GetChatPartner> partners = new List<GetChatPartner>();
+            foreach (var partnerUser in queryPaging.Data)
+            {
+                var chatPartner = _mapper.Map<GetChatPartner>(partnerUser);
+                partners.Add(chatPartner);
+                var lastMessage = await _unitOfWork.GetRepository<Message>()
+                        .AsQueryable()
+                        .Where(m =>
+                            (m.FromUserId == userId && m.ToUserId == partnerUser.Id) ||
+                            (m.FromUserId == partnerUser.Id && m.ToUserId == userId))
+                        .OrderByDescending(m => m.CreatedTime)
+                        .FirstOrDefaultAsync();
 
-            var mappedUsers = _mapper.Map<List<GetBasicUserInformationResponse>>(partnerUsers);
-
-            
-
-            return new PaginationResponse<GetBasicUserInformationResponse>(mappedUsers, queryPaging.PageNumber, queryPaging.PageSize,
+                if (lastMessage != null)
+                {
+                    chatPartner.LastMessage = _mapper.Map<GetMesssageWithPartner>(lastMessage);
+                }
+            }
+            return new PaginationResponse<GetChatPartner>(partners, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 

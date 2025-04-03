@@ -74,6 +74,7 @@ public class AnnouncementService : IAnnouncementService
         var announcements = await _unitOfWork.GetRepository<Announcement>()
             .AsQueryable()
             .Where(a => a.UserId == userId)
+            .OrderByDescending(p => p.CreatedTime)
             .ToListAsync();
 
         return _mapper.Map<IEnumerable<GetAnnouncementResponse>>(announcements);

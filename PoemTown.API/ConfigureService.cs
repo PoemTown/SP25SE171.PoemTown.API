@@ -25,7 +25,7 @@ public static class ConfigureService
         services.AddControllerConfigs();
         services.AddRouteConfigs();
         services.AddSwaggerConfigs();
-        services.AddCorsConfigs();
+        services.AddCorsConfigs(configuration);
         services.AddIdentityServerConfig();
         services.AddJwtSettings(configuration);
         services.AddAuthenticationJwt();
@@ -42,8 +42,9 @@ public static class ConfigureService
         });
 
 
-        app.UseCors("AllowAll");
-
+        //app.UseCors("AllowAll");
+        app.UseCors("AllowFromSpecificOrigin");
+        
         app.UseWebSockets();
         app.UseRouting();
         
@@ -122,9 +123,9 @@ public static class ConfigureService
         });
     }
     
-    private static void AddCorsConfigs(this IServiceCollection services)
+    private static void AddCorsConfigs(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddCors(options =>
+        /*services.AddCors(options =>
         {
             options.AddPolicy("AllowAll",
                 builder =>
@@ -132,6 +133,20 @@ public static class ConfigureService
                     builder.AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader();
+                });
+        });*/
+        var hostFrontEndUrl = configuration.GetSection("FrontEndDomain:Host").Value ?? "";
+        var localFrontEndUrl = configuration.GetSection("FrontEndDomain:Local").Value ?? "";
+
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFromSpecificOrigin",
+                builder =>
+                {
+                    builder.WithOrigins(hostFrontEndUrl, localFrontEndUrl)
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials();
                 });
         });
     }

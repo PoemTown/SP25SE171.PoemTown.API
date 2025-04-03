@@ -5,11 +5,13 @@ using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AnnouncementRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AnnouncementResponses;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.SignalR;
 using PoemTown.Service.SignalR.IReceiveClients;
+using PoemTown.Service.SignalR.ReceiveClientModels.AnnouncementClientModels;
 
 namespace PoemTown.Service.Services;
 
@@ -31,11 +33,21 @@ public class AnnouncementService : IAnnouncementService
     public async Task SendAnnouncementAsync(CreateNewAnnouncementRequest request)
     {
         var connectionId = AnnouncementHub.GetConnectionId(request.UserId);
+
+        Guid announcementId = Guid.NewGuid();
+        DateTimeOffset createdTime = DateTimeHelper.SystemTimeNow;
         
         // Send SignalR if user is online
         if (connectionId != string.Empty)
         {
-            await _hubContext.Clients.Client(connectionId).ReceiveAnnouncement(request);
+            await _hubContext.Clients.Client(connectionId).ReceiveAnnouncement(new CreateNewAnnouncementClientModel()
+            {
+                Id = announcementId,
+                Title = request.Title,
+                Content = request.Content,
+                IsRead = request.IsRead,
+                CreatedTime = createdTime
+            });
         }
         
         // Check if user exists
@@ -47,9 +59,11 @@ public class AnnouncementService : IAnnouncementService
         
         await _unitOfWork.GetRepository<Announcement>().InsertAsync(new Announcement
         {
+            Id = announcementId,
             Title = request.Title,
             Content = request.Content,
-            UserId = request.UserId
+            UserId = request.UserId,
+            CreatedTime = createdTime
         });
         
         await _unitOfWork.SaveChangesAsync();

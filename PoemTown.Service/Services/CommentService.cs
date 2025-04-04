@@ -1,15 +1,18 @@
 ﻿using AutoMapper;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.CommentRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.CommentResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.CommentFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -21,11 +24,15 @@ public class CommentService : ICommentService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IPublishEndpoint _publishEndpoint;
 
-    public CommentService(IUnitOfWork unitOfWork, IMapper mapper)
+    public CommentService(IUnitOfWork unitOfWork, 
+        IMapper mapper,
+        IPublishEndpoint publishEndpoint)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task CommentPoem(Guid userId, CommentPoemRequest request)
@@ -53,6 +60,28 @@ public class CommentService : ICommentService
         
         await _unitOfWork.GetRepository<Comment>().InsertAsync(comment);
         await _unitOfWork.SaveChangesAsync();
+        
+        // Get user information who like the poem
+        User? user = await _unitOfWork.GetRepository<User>()
+            .FindAsync(p => p.Id == userId);
+        if (user != null)
+        {
+            // Get total likes for the poem
+            var totalComments = await _unitOfWork.GetRepository<Comment>()
+                .AsQueryable()
+                .Where(p => p.PoemId == poem.Id)
+                .CountAsync() - 1; // Exclude the current user who liked the poem
+            
+            // Announce to poem owner that their poem has been liked
+            await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
+            {
+                UserId = userId,
+                Title = "Bài thơ của bạn có bình luận mới",
+                Content = $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác.",
+                IsRead = false,
+                Type = AnnouncementType.Comment
+            });
+        }
     }
     
     public async Task ReplyComment(Guid userId, ReplyCommentRequest request)
@@ -89,6 +118,35 @@ public class CommentService : ICommentService
         await _unitOfWork.GetRepository<Comment>().InsertAsync(comment);
         await _unitOfWork.SaveChangesAsync();
         
+        User? user = await _unitOfWork.GetRepository<User>()
+            .FindAsync(p => p.Id == userId);
+        if (user != null)
+        {
+            // Get poem information
+            var poem = await _unitOfWork.GetRepository<Poem>()
+                .FindAsync(p => p.Id == parentComment.PoemId);
+
+            if (poem == null)
+            {
+                return;
+            }
+            
+            // Get total likes for the poem
+            var totalComments = await _unitOfWork.GetRepository<Comment>()
+                .AsQueryable()
+                .Where(p => p.PoemId == poem.Id)
+                .CountAsync() - 1; // Exclude the current user who liked the poem
+            
+            // Announce to poem owner that their poem has been liked
+            await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
+            {
+                UserId = userId,
+                Title = "Bài thơ của bạn có bình luận mới",
+                Content = $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác.",
+                IsRead = false,
+                Type = AnnouncementType.Comment
+            });
+        }
     }
     
     public async Task DeleteCommentPermanent(Guid userId, Guid commentId)

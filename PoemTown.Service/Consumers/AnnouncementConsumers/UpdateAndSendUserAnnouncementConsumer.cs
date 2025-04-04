@@ -33,7 +33,7 @@ public class UpdateAndSendUserAnnouncementConsumer : IConsumer<UpdateAndSendUser
         }
 
         // Update announcement
-        var announcement = await _unitOfWork.GetRepository<Announcement>().FindAsync(p => p.Id == message.AnnouncementId);
+        var announcement = await _unitOfWork.GetRepository<Announcement>().FindAsync(p => p.UserId == user.Id && p.Type == message.Type);
         if (announcement == null)
         {
             throw new Exception("Announcement not found");
@@ -53,10 +53,10 @@ public class UpdateAndSendUserAnnouncementConsumer : IConsumer<UpdateAndSendUser
         {
             await _hubContext.Clients.Client(connectionId).ReceiveAnnouncement(new CreateNewAnnouncementClientModel()
             {
-                Id = message.AnnouncementId,
-                Title = message.Title,
-                Content = message.Content,
-                IsRead = message.IsRead,
+                Id = announcement.Id,
+                Title = announcement.Title,
+                Content = announcement.Content,
+                IsRead = announcement.IsRead,
                 CreatedTime = announcement.CreatedTime
             });
         }

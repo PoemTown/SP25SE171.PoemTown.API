@@ -2,5 +2,6 @@
 
 public enum AnnouncementType
 {
-    
+    Like = 1,
+    Comment = 2,
 }

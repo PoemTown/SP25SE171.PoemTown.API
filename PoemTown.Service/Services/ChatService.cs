@@ -111,7 +111,11 @@ namespace PoemTown.Service.Services
         public async Task<PaginationResponse<GetMesssageWithPartner>> GetPrivateMessagesWithUser(Guid? fromUserId, Guid toUserId, RequestOptionsBase<object, object> request)
         {
             var message = _unitOfWork.GetRepository<Message>().AsQueryable();
-            var messageContent = message.Where(m => m.FromUserId == fromUserId && m.ToUserId == toUserId && m.DeletedTime == null);
+            var messageContent = message.Where(m =>
+                        ((m.FromUserId == fromUserId && m.ToUserId == toUserId) ||
+                         (m.FromUserId == toUserId && m.ToUserId == fromUserId)) &&
+                         m.DeletedTime == null
+                    ).OrderByDescending(m => m.CreatedTime);    
 
             var mappedMessage = _mapper.Map<List<GetMesssageWithPartner>>(messageContent);
 

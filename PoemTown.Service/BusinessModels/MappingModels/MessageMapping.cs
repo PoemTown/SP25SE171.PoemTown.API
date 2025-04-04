@@ -14,7 +14,10 @@ namespace PoemTown.Service.BusinessModels.MappingModels
     {
         public MessageMapping()
         {
-            CreateMap<Message, GetMesssageWithPartner>().ReverseMap();
+            CreateMap<Message, GetMesssageWithPartner>()
+                    .ForMember(dest => dest.FromUser, opt => opt.MapFrom(src => src.FromUser))
+                    .ForMember(dest => dest.ToUser, opt => opt.MapFrom(src => src.ToUser))
+                    .ReverseMap();
             CreateMap<User, GetChatPartner>().ReverseMap();
 
         }

@@ -40,6 +40,7 @@ namespace PoemTown.Service.Services
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _awsS3Service = awsS3Service;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task CreateCollection(Guid userId, CreateCollectionRequest request, string role)

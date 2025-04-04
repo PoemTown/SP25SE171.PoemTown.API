@@ -173,8 +173,16 @@ public class CommentService : ICommentService
             // Map parent comment author information
             if (commentEntity.ParentCommentId != null)
             {
+                // Get parentComment
+                var parentComment = await _unitOfWork.GetRepository<Comment>()
+                    .FindAsync(p => p.Id == commentEntity.ParentCommentId);
+                
+                if (parentComment == null)
+                {
+                    continue;    
+                }
                 comments.Last().ParentCommentAuthor = _mapper.Map<GetBasicUserInformationResponse>(
-                    await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == commentEntity.ParentCommentId));
+                    await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == parentComment.AuthorCommentId));
             }
         }
         

@@ -38,5 +38,6 @@ namespace PoemTown.Repository.Entities
         public virtual UserEWallet? UserEWallet { get; set; }
         public virtual UserEWallet? ReceiveUserEWallet { get; set; }
         public virtual Order? Order { get; set; }
+        public virtual ICollection<Announcement>? Announcements { get; set; }
     }
 }

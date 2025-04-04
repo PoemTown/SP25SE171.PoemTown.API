@@ -5,6 +5,8 @@ using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.Reports;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+using PoemTown.Service.Consumers.AnnouncementConsumers;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.PoemEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.PlagiarismDetector.Interfaces;
@@ -93,6 +95,16 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
             
             await _unitOfWork.GetRepository<Report>().InsertAsync(report);
             await _unitOfWork.SaveChangesAsync();
+            
+            // Send announcement to user about plagiarism
+            await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+            {
+                UserId = poem.UserId,
+                Title = "Thông báo từ hệ thống",
+                Content =
+                    "Bài thơ của bạn bị nghi ngờ là đạo văn, hệ thống đã tự động GỠ BÀI của bạn và đang được xem xét bởi quản trị viên.",
+                IsRead = false
+            });
         }
         
         // If the poem is not plagiarism, store the poem embedding

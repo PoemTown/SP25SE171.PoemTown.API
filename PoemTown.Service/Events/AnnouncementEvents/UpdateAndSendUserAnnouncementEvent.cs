@@ -4,9 +4,21 @@ namespace PoemTown.Service.Events.AnnouncementEvents;
 
 public class UpdateAndSendUserAnnouncementEvent
 {
-    public Guid UserId { get; set; }
+    public Guid Id { get; set; }
     public string Title { get; set; } = default!;
     public AnnouncementType Type { get; set; }
     public string Content { get; set; } = default!;
     public bool? IsRead { get; set; } = false;
+    
+    public Guid? UserId { get; set; }
+    public Guid? ReportId { get; set; }
+    public Guid? CollectionId { get; set; }
+    public Guid? PoemId { get; set; }
+    public Guid? CommentId { get; set; }
+    public Guid? LikeId { get; set; }
+    public Guid? TransactionId { get; set; }
+    public Guid? AchievementId { get; set; }
+    public Guid? PoemLeaderboardId { get; set; }
+    public Guid? UserLeaderboardId { get; set; }
+    
 }

@@ -13,4 +13,5 @@ public class Like : BaseEntity
     public Guid? PoemId { get; set; }
     public virtual User? User { get; set; }
     public virtual Poem? Poem { get; set; }
+    public virtual ICollection<Announcement>? Announcements { get; set; }
 }

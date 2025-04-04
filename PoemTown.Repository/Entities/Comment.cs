@@ -27,6 +27,7 @@ namespace PoemTown.Repository.Entities
         [ForeignKey("ParentCommentId")]
         public virtual Comment? ParentComment { get; set; } = null;
         public virtual Poem Poem { get; set; }
+        public virtual ICollection<Announcement>? Announcements { get; set; }
         public virtual ICollection<Comment>? ChildComments { get; set; }
 
     }

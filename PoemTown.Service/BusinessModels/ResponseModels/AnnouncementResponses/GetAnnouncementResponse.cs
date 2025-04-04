@@ -8,4 +8,13 @@ public class GetAnnouncementResponse
     public Guid? UserId { get; set; }
     public bool IsRead { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
+    public Guid? ReportId { get; set; }
+    public Guid? CollectionId { get; set; }
+    public Guid? PoemId { get; set; }
+    public Guid? CommentId { get; set; }
+    public Guid? LikeId { get; set; }
+    public Guid? TransactionId { get; set; }
+    public Guid? AchievementId { get; set; }
+    public Guid? PoemLeaderboardId { get; set; }
+    public Guid? UserLeaderboardId { get; set; }
 }

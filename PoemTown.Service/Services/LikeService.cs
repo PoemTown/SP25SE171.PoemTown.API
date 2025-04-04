@@ -63,15 +63,17 @@ public class LikeService : ILikeService
                 .CountAsync() - 1; // Exclude the current user who liked the poem
             
             // Announce to poem owner that their poem has been liked
-            await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
+            await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
             {
                 UserId = poem.UserId!.Value,
                 Title = "Bài thơ của bạn đã được thích",
                 Content = totalLikes > 0 
                     ? $"Bài thơ: \"{poem.Title}\" của bạn đã được thích bởi {user.UserName} và {totalLikes} người khác."
                     : $"Bài thơ: \"{poem.Title}\" của bạn đã được thích bởi {user.UserName}.",
+                LikeId = like.Id,
                 IsRead = false,
-                Type = AnnouncementType.Like
+                Type = AnnouncementType.Like,
+                PoemId = poem.Id,
             });
         }
     }

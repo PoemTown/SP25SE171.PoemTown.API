@@ -23,6 +23,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MassTransit;
+using PoemTown.Repository.Enums.Announcements;
+using PoemTown.Service.Events.AnnouncementEvents;
 
 namespace PoemTown.Service.Services
 {
@@ -30,10 +33,14 @@ namespace PoemTown.Service.Services
     {
         private readonly IMapper _mapper;
         private readonly IUnitOfWork _unitOfWork;
-        public LeaderBoardService(IUnitOfWork unitOfWork, IMapper mapper) 
+        private readonly IPublishEndpoint _publishEndpoint;
+        public LeaderBoardService(IUnitOfWork unitOfWork, 
+            IMapper mapper,
+            IPublishEndpoint publishEndpoint) 
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
         }
         public async Task CalculateTopPoemsAsync()
         {
@@ -101,6 +108,7 @@ namespace PoemTown.Service.Services
             }
             var lbDetailRepo = _unitOfWork.GetRepository<PoemLeaderBoard>();
             int rank = 1;
+            
             foreach (var item in topPoems)
             {
                 // Skip items that don't have an AuthorId if needed.
@@ -117,6 +125,23 @@ namespace PoemTown.Service.Services
                 await lbDetailRepo.InsertAsync(detail);
                 leaderboard.PoemLeaderBoards.Add(detail);
                 rank++;
+                
+                // Announce the poem leaderboard to the user
+                var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == item.Poem.UserId);
+                if (user != null)
+                {
+                    await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
+                    {
+                        UserId = user.Id,
+                        Type = AnnouncementType.PoemLeaderboard,
+                        Title = "Thứ hạng bài thơ",
+                        Content =
+                            $"Hiện bài thơ '{item.Poem.Title}' của bạn đã đạt thứ hạng {rank} trong bảng xếp hạng",
+                        IsRead = false,
+                        PoemLeaderboardId = detail.Id,
+                    });
+                }
+
             }
             await _unitOfWork.SaveChangesAsync();
         }
@@ -196,6 +221,22 @@ namespace PoemTown.Service.Services
                 await userLbRepo.InsertAsync(userEntry);
                 leaderboard.UserLeaderBoards.Add(userEntry);
                 rank++;
+                
+                // Announce the poem leaderboard to the user
+                var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == item.User.Id);
+                if (user != null)
+                {
+                    await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
+                    {
+                        UserId = user.Id,
+                        Type = AnnouncementType.UserLeaderboard,
+                        Title = "Thứ hạng trang cá nhân của bạn",
+                        Content =
+                            $"Hiện trang cá nhân của bạn đã đạt thứ hạng {rank} trong bảng xếp hạng",
+                        IsRead = false,
+                        UserLeaderboardId = userEntry.Id,
+                    });
+                }
             }
 
             await _unitOfWork.SaveChangesAsync();

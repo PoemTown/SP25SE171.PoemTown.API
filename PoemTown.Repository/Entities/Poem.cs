@@ -46,6 +46,7 @@ namespace PoemTown.Repository.Entities
         public virtual ICollection<PlagiarismPoemReport>? PlagiarismPoemReports { get; set; }
         public virtual ICollection<Comment>? Comments { get; set; }
         public virtual ICollection<SaleVersion>? SaleVersions { get; set; }
+        public virtual ICollection<Announcement>? Announcements { get; set; }
         /*
         public virtual ICollection<UserCopyRight>? UserCopyRights { get; set; }
     */

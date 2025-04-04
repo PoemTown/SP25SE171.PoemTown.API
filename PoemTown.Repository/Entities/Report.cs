@@ -39,6 +39,7 @@ namespace PoemTown.Repository.Entities
 
         public virtual Poem? Poem { get; set; }
         public virtual ICollection<PlagiarismPoemReport>? PlagiarismPoemReports { get; set; }
+        public virtual ICollection<Announcement>? Announcements { get; set; }
         //public virtual Poem? PlagiarismFromPoem { get; set; }
     }
 }

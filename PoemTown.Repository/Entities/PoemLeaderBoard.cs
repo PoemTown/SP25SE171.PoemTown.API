@@ -17,5 +17,6 @@ namespace PoemTown.Repository.Entities
         public int Rank { get; set; }
         public virtual Poem? Poem { get; set; }
         public virtual LeaderBoard? LeaderBoard { get; set; }
+        public virtual ICollection<Announcement>? Announcements { get; set; }
     }
 }

@@ -81,7 +81,8 @@ public class CommentService : ICommentService
                     ? $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác." 
                     : $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName}",
                 IsRead = false,
-                Type = AnnouncementType.Comment
+                Type = AnnouncementType.Comment,
+                PoemId = poem.Id
             });
         }
     }
@@ -133,22 +134,17 @@ public class CommentService : ICommentService
                 return;
             }
             
-            // Get total likes for the poem
-            var totalComments = await _unitOfWork.GetRepository<Comment>()
-                .AsQueryable()
-                .Where(p => p.PoemId == poem.Id && p.AuthorCommentId != poem.UserId)
-                .CountAsync() - 1; // Exclude the current user who liked the poem
             
             // Announce to poem owner that their poem has been liked
             await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
             {
-                UserId = poem.UserId!.Value,
-                Title = "Bài thơ của bạn có bình luận mới",
-                Content = totalComments > 0 
-                    ? $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác." 
-                    : $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName}",
+                UserId = parentComment.AuthorCommentId,
+                Title = "Hồi đáp bình luận mới",
+                Content = $"Bạn có phản hồi trong bình luận bài thơ {poem.Title}",
                 IsRead = false,
-                Type = AnnouncementType.Comment
+                Type = AnnouncementType.Comment,
+                CommentId = comment.Id,
+                PoemId = poem.Id
             });
         }
     }

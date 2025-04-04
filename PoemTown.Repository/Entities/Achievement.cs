@@ -13,4 +13,5 @@ public class Achievement : BaseEntity
     public DateTimeOffset EarnedDate { get; set; }
     public Guid UserId { get; set; }
     public virtual User? User { get; set; }
+    public virtual ICollection<Announcement>? Announcements { get; set; }
 }

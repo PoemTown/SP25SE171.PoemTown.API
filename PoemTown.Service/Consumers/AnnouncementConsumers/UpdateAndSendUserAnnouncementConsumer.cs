@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.Events.AnnouncementEvents;
@@ -35,33 +36,21 @@ public class UpdateAndSendUserAnnouncementConsumer : IConsumer<UpdateAndSendUser
 
         // Update announcement
         var announcement = await _unitOfWork.GetRepository<Announcement>()
-            .FindAsync(p => p.UserId == user.Id && p.Type == message.Type);
-        
-        // If announcement is null, create a new one
+            .FindAsync(p => p.UserId == user.Id && p.Id == message.Id);
+
+        // If announcement is null, throw exception
         if (announcement == null)
         {
-            announcement = new Announcement
-            {
-                UserId = message.UserId,
-                Type = message.Type,
-                Title = message.Title,
-                Content = message.Content,
-                IsRead = message.IsRead ?? false,
-                CreatedTime = DateTimeHelper.SystemTimeNow
-            };
-            await _unitOfWork.GetRepository<Announcement>().InsertAsync(announcement);
+            throw new Exception("Announcement not found");
         }
-        
-        // If announcement is not null, update it
-        else
-        {
-            announcement.Title = message.Title;
-            announcement.Content = message.Content;
-            announcement.IsRead = message.IsRead;
-            announcement.CreatedTime = DateTimeHelper.SystemTimeNow;
 
-            _unitOfWork.GetRepository<Announcement>().Update(announcement);
-        }
+        // If announcement is not null, update it
+        announcement.Title = message.Title;
+        announcement.Content = message.Content;
+        announcement.IsRead = message.IsRead;
+        announcement.CreatedTime = DateTimeHelper.SystemTimeNow;
+
+        _unitOfWork.GetRepository<Announcement>().Update(announcement);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -75,7 +64,17 @@ public class UpdateAndSendUserAnnouncementConsumer : IConsumer<UpdateAndSendUser
                 Title = announcement.Title,
                 Content = announcement.Content,
                 IsRead = announcement.IsRead,
-                CreatedTime = announcement.CreatedTime
+                CreatedTime = announcement.CreatedTime,
+                Type = announcement.Type,
+                ReportId = announcement.ReportId,
+                CollectionId = announcement.CollectionId,
+                PoemId = announcement.PoemId,
+                CommentId = announcement.CommentId,
+                LikeId = announcement.LikeId,
+                TransactionId = announcement.TransactionId,
+                AchievementId = announcement.AchievementId,
+                PoemLeaderboardId = announcement.PoemLeaderboardId,
+                UserLeaderboardId = announcement.UserLeaderboardId
             });
         }
     }

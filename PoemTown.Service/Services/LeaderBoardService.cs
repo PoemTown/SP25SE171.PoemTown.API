@@ -108,6 +108,8 @@ namespace PoemTown.Service.Services
             }
             var lbDetailRepo = _unitOfWork.GetRepository<PoemLeaderBoard>();
             int rank = 1;
+
+            IList<PoemLeaderBoard> poemLeaderBoards = new List<PoemLeaderBoard>();
             
             foreach (var item in topPoems)
             {
@@ -126,24 +128,31 @@ namespace PoemTown.Service.Services
                 leaderboard.PoemLeaderBoards.Add(detail);
                 rank++;
                 
+                // Add poem to list
+                poemLeaderBoards.Add(detail);
+
+            }
+            await _unitOfWork.SaveChangesAsync();
+
+            foreach (var item in poemLeaderBoards)
+            {
                 // Announce the poem leaderboard to the user
-                var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == item.Poem.UserId);
+                var user = await _unitOfWork.GetRepository<User>().FindAsync(p => item.Poem != null && p.Id == item.Poem.UserId);
                 if (user != null)
                 {
                     await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
                     {
                         UserId = user.Id,
                         Type = AnnouncementType.PoemLeaderboard,
+                        PoemId = item.PoemId,
                         Title = "Thứ hạng bài thơ",
                         Content =
                             $"Hiện bài thơ '{item.Poem.Title}' của bạn đã đạt thứ hạng {rank} trong bảng xếp hạng",
                         IsRead = false,
-                        PoemLeaderboardId = detail.Id,
+                        PoemLeaderboardId = item.Id,
                     });
                 }
-
             }
-            await _unitOfWork.SaveChangesAsync();
         }
         public async Task CalculateTopUsersAsync()
         {
@@ -208,6 +217,8 @@ namespace PoemTown.Service.Services
 
             var userLbRepo = _unitOfWork.GetRepository<UserLeaderBoard>();
             int rank = 1;
+
+            IList<UserLeaderBoard> userLeaderBoards = new List<UserLeaderBoard>();
             foreach (var item in topUsers)
             {
                 var userEntry = new UserLeaderBoard
@@ -222,8 +233,16 @@ namespace PoemTown.Service.Services
                 leaderboard.UserLeaderBoards.Add(userEntry);
                 rank++;
                 
-                // Announce the poem leaderboard to the user
-                var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == item.User.Id);
+                // Add user to list
+                userLeaderBoards.Add(userEntry);
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+            
+            // Announce the user leaderboard to the users.
+            foreach (var item in userLeaderBoards)
+            {
+                var user = await _unitOfWork.GetRepository<User>().FindAsync(p => item.User != null && p.Id == item.User.Id);
                 if (user != null)
                 {
                     await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
@@ -234,12 +253,10 @@ namespace PoemTown.Service.Services
                         Content =
                             $"Hiện trang cá nhân của bạn đã đạt thứ hạng {rank} trong bảng xếp hạng",
                         IsRead = false,
-                        UserLeaderboardId = userEntry.Id,
+                        UserLeaderboardId = item.Id,
                     });
                 }
             }
-
-            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<GetLeaderBoardResponse> GetTopPoemsLeaderBoard(RequestOptionsBase<GetLeaderBoardFilterOption, GetLeaderBoardSortOption> request)

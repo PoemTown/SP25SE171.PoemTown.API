@@ -77,7 +77,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
             case AnnouncementType.Comment:
                 isUpdate = true;
                 
-                isExist = await announcementQuery.AnyAsync(p => p.CommentId == message.CommentId);
+                isExist = await announcementQuery.AnyAsync();
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();
@@ -87,7 +87,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
             case AnnouncementType.Like:
                 isUpdate = true;
                 
-                isExist = await announcementQuery.AnyAsync(p => p.LikeId == message.LikeId);
+                isExist = await announcementQuery.AnyAsync();
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();
@@ -97,7 +97,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
             case AnnouncementType.PoemLeaderboard:
                 isUpdate = true;
                 
-                isExist = await announcementQuery.AnyAsync(p => p.PoemLeaderboardId == message.PoemLeaderboardId);
+                isExist = await announcementQuery.AnyAsync();
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();
@@ -107,7 +107,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
             case AnnouncementType.UserLeaderboard:
                 isUpdate = true;
                 
-                isExist = await announcementQuery.AnyAsync(p => p.UserLeaderboardId == message.UserLeaderboardId);
+                isExist = await announcementQuery.AnyAsync();
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();

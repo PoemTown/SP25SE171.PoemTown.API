@@ -134,6 +134,7 @@ public static class ConfigureService
             config.AddConsumer<TrackingUserLoginConsumer>();
             config.AddConsumer<CreateCommissionConsumer>();
             config.AddConsumer<SendUserAnnouncementConsumer>();
+            config.AddConsumer<SendBulkUserAnnouncementConsumer>();
             
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>

@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MassTransit;
 using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
@@ -24,6 +25,7 @@ using PoemTown.Repository.Utils;
 using PoemTown.Service.ThirdParties.Models.AwsS3;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Repository.Enums.Accounts;
+using PoemTown.Service.Events.AnnouncementEvents;
 
 namespace PoemTown.Service.Services
 {
@@ -32,7 +34,8 @@ namespace PoemTown.Service.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IAwsS3Service _awsS3Service;
-        public CollectionService(IUnitOfWork unitOfWork, IMapper mapper, IAwsS3Service awsS3Service)
+        private readonly IPublishEndpoint _publishEndpoint;
+        public CollectionService(IUnitOfWork unitOfWork, IMapper mapper, IAwsS3Service awsS3Service, IPublishEndpoint publishEndpoint)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -59,6 +62,22 @@ namespace PoemTown.Service.Services
             collection.UserId = userId;
             await _unitOfWork.GetRepository<Collection>().InsertAsync(collection);
             await _unitOfWork.SaveChangesAsync();
+            
+            // Get all userId
+            var userIds = await _unitOfWork.GetRepository<User>()
+                .AsQueryable()
+                .Where(p => p.DeletedTime == null && p.Status == AccountStatus.Active)
+                .Select(p => p.Id)
+                .ToListAsync();
+            
+            // Announce to all user about new community collection
+            await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
+            {
+                Title = "Bộ sưu tập thơ cộng đồng mới đã được ra mắt!",
+                Content = $"Quản trị viên đã tạo mới bộ sưu tập thơ cộng đồng mới: '{request.CollectionName}'. Hãy tham gia ngay để khám phá những tác phẩm thơ độc đáo và thú vị từ cộng đồng!",
+                UserIds = userIds,
+                IsRead = false
+            });
         }
         public async Task UpdateCollection(UpdateCollectionRequest request)
         {

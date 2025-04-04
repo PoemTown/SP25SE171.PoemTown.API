@@ -22,6 +22,8 @@ using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
+using PoemTown.Service.Consumers.AnnouncementConsumers;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.OrderEvents;
 using PoemTown.Service.Events.PoemEvents;
 using PoemTown.Service.Interfaces;
@@ -190,6 +192,9 @@ public class PoemService : IPoemService
                 UserId = userId,
                 PoemContent = poem.Content
             });
+            
+            // Announce user when poem created
+            await AnnounceUserWhenPoemCreated(userId, poem);
         }
 
         // Save changes
@@ -286,6 +291,9 @@ public class PoemService : IPoemService
                 UserId = userId,
                 PoemContent = poem.Content
             });
+            
+            // Announce user when poem created
+            await AnnounceUserWhenPoemCreated(userId, poem);
         }
 
         // Save changes
@@ -536,6 +544,47 @@ public class PoemService : IPoemService
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
 
+    private async Task AnnounceUserWhenPoemCreated(Guid poetId, Poem poem)
+    {
+        // --------------Follower-------------- //
+            
+        // Get all users who follow this user
+        var rawUserIds = await _unitOfWork.GetRepository<Follower>()
+            .AsQueryable()
+            .Where(p => p.FollowedUserId == poetId && p.FollowUserId != null)
+            .Select(p => p.FollowUserId)
+            .ToListAsync();
+
+        var userIds = rawUserIds.Where(id => id.HasValue).Select(id => id ?? default).ToList();
+            
+        // Send announcement to all users who follow this user
+        await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
+        {
+            UserIds = userIds,
+            Title = "Có một bài thơ mới được đăng tải",
+            Content = $"Bài thơ {poem.Title} của {poem.User!.UserName} đã được đăng tải"
+        });
+            
+        // --------------Bookmarks-------------- //
+
+        // Get all users who bookmark this poem collection
+        var rawBookMarkUserIds = await _unitOfWork.GetRepository<TargetMark>()
+            .AsQueryable()
+            .Where(p => p.CollectionId == poem.CollectionId && p.MarkByUserId != null)
+            .Select(p => p.MarkByUserId)
+            .ToListAsync();
+            
+        var bookMarkUserIds = rawBookMarkUserIds.Where(id => id.HasValue).Select(id => id ?? default).ToList();
+            
+        // Send announcement to all users who bookmark this poem collection
+        await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
+        {
+            UserIds = bookMarkUserIds,
+            Title = "Bộ sưu tập bạn theo dõi có bài thơ mới được đăng tải",
+            Content = $"Bộ sưu tập mà bạn đã theo dõi: {poem.Collection!.CollectionName} có bài thơ {poem.Title} đã được đăng tải, hãy ghé xem ngay nhé!"
+        });
+    }
+    
     public async Task UpdatePoem(Guid userId, UpdatePoemRequest request)
     {
         // (Nếu có) Trong trường hợp chỉnh sửa status của poem thành POSTED thì không cần lưu bản history (Chưa hoàn thiện)
@@ -643,6 +692,9 @@ public class PoemService : IPoemService
                 UserId = userId,
                 PoemContent = poem.Content
             });
+            
+            // Announce user when poem created
+            await AnnounceUserWhenPoemCreated(userId, poem);
         }
 
         await _unitOfWork.SaveChangesAsync();
@@ -1384,6 +1436,21 @@ public class PoemService : IPoemService
             UserId = userId
         };
         await _publishEndpoint.Publish(message);
+        
+        // Get purchase user information
+        User? purchaseUser = await _unitOfWork.GetRepository<User>()
+            .FindAsync(p => p.Id == userId);
+        if (purchaseUser != null)
+        {
+            // Send announcement to UsageRight Holder
+            await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+            {
+                UserId = saleVersion.Poem.UserId,
+                Title = $"Quyền sử dụng bài thơ '{saleVersion.Poem.Title}'",
+                Content = $"{purchaseUser.UserName}: đã mua quyền sử dụng bài thơ '{saleVersion.Poem.Title}' của bạn",
+                IsRead = false
+            });
+        }
     }
 
     public async Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request)

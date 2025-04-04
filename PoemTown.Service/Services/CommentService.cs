@@ -75,7 +75,7 @@ public class CommentService : ICommentService
             // Announce to poem owner that their poem has been liked
             await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
             {
-                UserId = userId,
+                UserId = poem.UserId!.Value,
                 Title = "Bài thơ của bạn có bình luận mới",
                 Content = totalComments > 0 
                     ? $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác." 
@@ -142,7 +142,7 @@ public class CommentService : ICommentService
             // Announce to poem owner that their poem has been liked
             await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
             {
-                UserId = userId,
+                UserId = poem.UserId!.Value,
                 Title = "Bài thơ của bạn có bình luận mới",
                 Content = totalComments > 0 
                     ? $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác." 

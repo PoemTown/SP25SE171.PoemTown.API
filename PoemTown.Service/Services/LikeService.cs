@@ -65,7 +65,7 @@ public class LikeService : ILikeService
             // Announce to poem owner that their poem has been liked
             await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
             {
-                UserId = userId,
+                UserId = poem.UserId!.Value,
                 Title = "Bài thơ của bạn đã được thích",
                 Content = totalLikes > 0 
                     ? $"Bài thơ: \"{poem.Title}\" của bạn đã được thích bởi {user.UserName} và {totalLikes} người khác."

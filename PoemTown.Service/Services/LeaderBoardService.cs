@@ -130,7 +130,7 @@ namespace PoemTown.Service.Services
                 var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == item.Poem.UserId);
                 if (user != null)
                 {
-                    await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
+                    await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
                     {
                         UserId = user.Id,
                         Type = AnnouncementType.PoemLeaderboard,
@@ -226,7 +226,7 @@ namespace PoemTown.Service.Services
                 var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == item.User.Id);
                 if (user != null)
                 {
-                    await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
+                    await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
                     {
                         UserId = user.Id,
                         Type = AnnouncementType.UserLeaderboard,

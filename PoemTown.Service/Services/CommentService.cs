@@ -73,7 +73,7 @@ public class CommentService : ICommentService
                 .CountAsync() - 1; // Exclude the current user who liked the poem
             
             // Announce to poem owner that their poem has been liked
-            await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
+            await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
             {
                 UserId = poem.UserId!.Value,
                 Title = "Bài thơ của bạn có bình luận mới",
@@ -136,14 +136,14 @@ public class CommentService : ICommentService
             
             
             // Announce to poem owner that their poem has been liked
-            await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
+            await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
             {
                 UserId = parentComment.AuthorCommentId,
                 Title = "Hồi đáp bình luận mới",
                 Content = $"Bạn có phản hồi trong bình luận bài thơ {poem.Title}",
                 IsRead = false,
                 Type = AnnouncementType.Comment,
-                CommentId = comment.Id,
+                //CommentId = comment.Id,
                 PoemId = poem.Id
             });
         }

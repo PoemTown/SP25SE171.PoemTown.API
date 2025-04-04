@@ -95,7 +95,21 @@ public class LikeService : ILikeService
         {
             return;
         }
+        
+        // Get announcements
+        var announcements = await _unitOfWork.GetRepository<Announcement>()
+            .AsQueryable()
+            .Where(p => p.LikeId == like.Id && p.UserId == poem.UserId)
+            .ToListAsync();
 
+        // Set LikeId to null for all
+        foreach (var announcement in announcements)
+        {
+            announcement.LikeId = null;
+        }
+
+        _unitOfWork.GetRepository<Announcement>().UpdateRange(announcements);
+        
         _unitOfWork.GetRepository<Like>().DeletePermanent(like);
         await _unitOfWork.SaveChangesAsync();
     }

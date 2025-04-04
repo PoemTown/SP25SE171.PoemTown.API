@@ -9,6 +9,7 @@ using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.UserEWalletRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.UserEWalletResponses;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.TransactionEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.Scheduler.PaymentJobs;
@@ -185,6 +186,15 @@ public class UserEWalletService : IUserEWalletService
         };
         
         await _publishEndpoint.Publish(createDonateTransactionEvent);
+        
+        // Announcement to receive user
+        await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+        {
+            UserId = receiveUser.Id,
+            Title = "Tiền quyên tặng",
+            Content = $"Bạn đã nhận được khoản quyên tặng: {request.Amount}VNĐ từ {userEWallet.User.UserName}",
+            IsRead = false
+        });
     }
     
     public async Task<GetUserEWalletResponse> GetUserEWalletAsync(Guid userId)

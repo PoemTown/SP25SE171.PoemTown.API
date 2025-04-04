@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
@@ -6,6 +7,7 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.FollowerResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.FollowerFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -17,11 +19,15 @@ public class FollowerService : IFollowerService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IPublishEndpoint _publishEndpoint;
 
-    public FollowerService(IUnitOfWork unitOfWork, IMapper mapper)
+    public FollowerService(IUnitOfWork unitOfWork,
+        IMapper mapper,
+        IPublishEndpoint publishEndpoint)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task FollowUserAsync(Guid userId, Guid followedUserId)
@@ -57,12 +63,28 @@ public class FollowerService : IFollowerService
 
         await _unitOfWork.GetRepository<Follower>().InsertAsync(newFollower);
         await _unitOfWork.SaveChangesAsync();
+
+        // Get follower user information
+        var followerUser = await _unitOfWork.GetRepository<User>()
+            .FindAsync(p => p.Id == userId);
+
+        if (followerUser != null)
+        {
+            // Announce the new follower to the followed user
+            await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+            {
+                UserId = followedUser.Id,
+                Title = "Người theo dõi mới",
+                Content = $"{followerUser.UserName} đã theo dõi bạn",
+            });
+        }
     }
 
     public async Task UnfollowUserAsync(Guid userId, Guid followerId)
     {
-        var follower = await _unitOfWork.GetRepository<Follower>().FindAsync(p => p.FollowedUserId == followerId && p.FollowUserId == userId);
-        
+        var follower = await _unitOfWork.GetRepository<Follower>()
+            .FindAsync(p => p.FollowedUserId == followerId && p.FollowUserId == userId);
+
         // Check if the follower exists
         if (follower == null)
         {
@@ -70,11 +92,11 @@ public class FollowerService : IFollowerService
         }
 
         // Check if the user is authorized to unfollow this user
-        if(follower.FollowUserId != userId)
+        if (follower.FollowUserId != userId)
         {
             throw new CoreException(StatusCodes.Status401Unauthorized, "You are not authorized to unfollow this user");
         }
-        
+
         _unitOfWork.GetRepository<Follower>().DeletePermanent(follower);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -130,7 +152,7 @@ public class FollowerService : IFollowerService
             followers.Add(_mapper.Map<GetFollowersResponse>(user));
             followers.Last().User = _mapper.Map<GetBasicUserInformationResponse>(user.FollowUser);
         }
-        
+
         return new PaginationResponse<GetFollowersResponse>
         (followers, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
             queryPaging.CurrentPageRecords);
@@ -188,7 +210,7 @@ public class FollowerService : IFollowerService
             followers.Add(_mapper.Map<GetFollowersResponse>(user));
             followers.Last().User = _mapper.Map<GetBasicUserInformationResponse>(user.FollowedUser);
         }
-        
+
         return new PaginationResponse<GetFollowersResponse>
         (followers, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
             queryPaging.CurrentPageRecords);

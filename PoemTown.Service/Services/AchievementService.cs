@@ -20,6 +20,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using MassTransit;
+using PoemTown.Service.Events.AnnouncementEvents;
 
 namespace PoemTown.Service.Services
 {
@@ -27,11 +29,12 @@ namespace PoemTown.Service.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-
-        public AchievementService(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IPublishEndpoint _publishEndpoint;
+        public AchievementService(IUnitOfWork unitOfWork, IMapper mapper, IPublishEndpoint publishEndpoint)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
         }
         public async Task CreateMonthlyAchievementsAsync()
         {
@@ -50,6 +53,8 @@ namespace PoemTown.Service.Services
 
             if (poemLeaderboard != null)
             {
+                var userAchievements = new Dictionary<Guid, List<string>>();
+                
                 // Create achievements for each leaderboard detail entry.
                 foreach (var detail in poemLeaderboard.PoemLeaderBoards)
                 {
@@ -82,11 +87,38 @@ namespace PoemTown.Service.Services
 
                     var achievementRepo = _unitOfWork.GetRepository<Achievement>();
                     await achievementRepo.InsertAsync(achievement);
+                    
+                    // Add userId to the dictionary if it doesn't exist
+                    if (!userAchievements.ContainsKey(userIDE))
+                    {
+                        userAchievements[userIDE] = new List<string>();
+                    }
+                    
+                    // Add the achievement name to the user's list
+                    userAchievements[userIDE].Add(achievementName);
                 }
 
                 // Mark the leaderboard as done.
                 poemLeaderboard.Status = LeaderBoardStatus.Done;
                 await _unitOfWork.SaveChangesAsync();
+                
+                // Send announcements to users.
+                foreach (var userAchievement in userAchievements)
+                {
+                    Guid userId = userAchievement.Key;
+                    List<string> achievements = userAchievement.Value;
+
+                    foreach (var achievement in achievements)
+                    {
+                        await _publishEndpoint.Publish(new SendUserAnnouncementEvent
+                        {
+                            UserId = userId,
+                            Title = "Thành tích mới",
+                            Content = $"Chúc mừng bạn đã nhận được thành tích: \"{achievement}\"",
+                            IsRead = false
+                        });
+                    }
+                }
             }
 
             // Process User Leaderboard
@@ -99,6 +131,8 @@ namespace PoemTown.Service.Services
 
             if (userLeaderboard != null)
             {
+                var userAchievements = new Dictionary<Guid, List<string>>();
+
                 foreach (var userEntry in userLeaderboard.UserLeaderBoards)
                 {
                     string monthYear = userLeaderboard.StartDate?.ToString("M/yyyy", CultureInfo.InvariantCulture) ?? "";
@@ -118,10 +152,41 @@ namespace PoemTown.Service.Services
 
                     var achievementRepo = _unitOfWork.GetRepository<Achievement>();
                     await achievementRepo.InsertAsync(achievement);
+                    
+                    // Add userId to the dictionary if it doesn't exist
+                    if (userEntry.UserId != null)
+                    {
+                        if (!userAchievements.ContainsKey(userEntry.UserId.Value))
+                        {
+                            userAchievements[userEntry.UserId.Value] = new List<string>();
+                        }
+                    
+                        // Add the achievement name to the user's list
+                        userAchievements[userEntry.UserId.Value].Add(achievementName);
+                    }
                 }
 
                 userLeaderboard.Status = LeaderBoardStatus.Done;
                 await _unitOfWork.SaveChangesAsync();
+                
+                // Send announcements to users.
+                foreach (var userAchievement in userAchievements)
+                {
+                    Guid userId = userAchievement.Key;
+                    List<string> achievements = userAchievement.Value;
+
+                    foreach (var achievement in achievements)
+                    {
+                        // Send announcement to each user
+                        await _publishEndpoint.Publish(new SendUserAnnouncementEvent
+                        {
+                            UserId = userId,
+                            Title = "Thành tích mới",
+                            Content = $"Chúc mừng bạn đã nhận được thành tích: \"{achievement}\"",
+                            IsRead = false
+                        });
+                    }
+                }
             }
         }
 

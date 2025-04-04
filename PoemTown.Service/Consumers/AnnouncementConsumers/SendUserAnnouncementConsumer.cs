@@ -80,7 +80,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
                 if (isExist)
                 {
-                    var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();
+                    var existAnnouncement = await announcementQuery.FirstOrDefaultAsync(p => p.PoemId == message.PoemId);
                     announcement.Id = existAnnouncement!.Id;
                 }
                 break;
@@ -90,7 +90,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
                 if (isExist)
                 {
-                    var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();
+                    var existAnnouncement = await announcementQuery.FirstOrDefaultAsync(p => p.PoemId == message.PoemId);
                     announcement.Id = existAnnouncement!.Id;
                 }
                 break;

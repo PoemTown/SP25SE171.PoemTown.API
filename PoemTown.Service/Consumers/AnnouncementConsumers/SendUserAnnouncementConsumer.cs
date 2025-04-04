@@ -92,13 +92,10 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 isUpdate = true;
                 
                 isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
-                _logger.LogInformation("isExist: " + isExist);
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync(p => p.PoemId == message.PoemId);
-                    _logger.LogInformation("existAnnouncementId: " + existAnnouncement.Id);
-                    announcement.Id = existAnnouncement.Id;
-                    _logger.LogInformation("announcementId: " + announcement.Id);
+                    announcement.Id = existAnnouncement!.Id;
                 }
                 break;
             case AnnouncementType.PoemLeaderboard:
@@ -184,7 +181,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
         {
             await _hubContext.Clients.Client(connectionId).ReceiveAnnouncement(new CreateNewAnnouncementClientModel()
             {
-                Id = announcementId,
+                Id = announcement.Id,
                 Title = message.Title,
                 Content = message.Content,
                 IsRead = message.IsRead,

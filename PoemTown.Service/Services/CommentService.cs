@@ -69,7 +69,7 @@ public class CommentService : ICommentService
             // Get total likes for the poem
             var totalComments = await _unitOfWork.GetRepository<Comment>()
                 .AsQueryable()
-                .Where(p => p.PoemId == poem.Id)
+                .Where(p => p.PoemId == poem.Id && p.AuthorCommentId != poem.UserId)
                 .CountAsync() - 1; // Exclude the current user who liked the poem
             
             // Announce to poem owner that their poem has been liked
@@ -136,7 +136,7 @@ public class CommentService : ICommentService
             // Get total likes for the poem
             var totalComments = await _unitOfWork.GetRepository<Comment>()
                 .AsQueryable()
-                .Where(p => p.PoemId == poem.Id)
+                .Where(p => p.PoemId == poem.Id && p.AuthorCommentId != poem.UserId)
                 .CountAsync() - 1; // Exclude the current user who liked the poem
             
             // Announce to poem owner that their poem has been liked

@@ -59,8 +59,8 @@ public class LikeService : ILikeService
             // Get total likes for the poem
             var totalLikes = await _unitOfWork.GetRepository<Like>()
                 .AsQueryable()
-                .Where(p => p.PoemId == poemId)
-                .CountAsync(); // Exclude the current user who liked the poem
+                .Where(p => p.PoemId == poemId && p.UserId != poem.UserId)
+                .CountAsync() - 1; // Exclude the current user who liked the poem
             
             // Announce to poem owner that their poem has been liked
             await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()

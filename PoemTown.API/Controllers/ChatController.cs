@@ -32,11 +32,12 @@ namespace PoemTown.API.Controllers
 
         [Authorize]
         [HttpPost("send")]
-        public async Task<IActionResult> Send([FromBody] MessageRequest request)
+        public async Task<ActionResult<BaseResponse<GetMesssageWithPartner>>> Send([FromBody] MessageRequest request)
         {
             Guid fromUserId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-            await _chatService.SendPrivateMessageAsync(fromUserId, request.ToUserId, request.Message);
-            return Ok(new { status = "sent" });
+            var response = await _chatService.SendPrivateMessageAsync(fromUserId, request.ToUserId, request.Message);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get sent message successfully", response));
+
         }
 
 

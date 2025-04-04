@@ -44,7 +44,7 @@ namespace PoemTown.Service.Services
             await _hubContext.Clients.All.SendAsync("ReceiveMessage", user, message);
         }
 
-        public async Task SendPrivateMessageAsync(Guid fromUser, Guid toUser, string message)
+        public async Task<GetMesssageWithPartner>SendPrivateMessageAsync(Guid fromUser, Guid toUser, string message)
         {
             // Gửi SignalR nếu user online
             if (_userConnections.TryGetValue(toUser.ToString(), out var connectionId))
@@ -64,6 +64,25 @@ namespace PoemTown.Service.Services
 
             await _unitOfWork.GetRepository<Message>().InsertAsync(msg);
             await _unitOfWork.SaveChangesAsync();
+
+            // Lấy lại message với thông tin user
+            var fromUserEntity = await _unitOfWork.GetRepository<User>()
+                .AsQueryable()
+                .FirstOrDefaultAsync(u => u.Id == fromUser);
+
+            var toUserEntity = await _unitOfWork.GetRepository<User>()
+                .AsQueryable()
+                .FirstOrDefaultAsync(u => u.Id == toUser);
+
+            var mappedMessage = _mapper.Map<GetMesssageWithPartner>(msg);
+
+            if (fromUserEntity != null)
+                mappedMessage.FromUser = _mapper.Map<GetBasicUserInformationResponse>(fromUserEntity);
+
+            if (toUserEntity != null)
+                mappedMessage.ToUser = _mapper.Map<GetBasicUserInformationResponse>(toUserEntity);
+
+            return mappedMessage;
         }
 
 
@@ -115,7 +134,7 @@ namespace PoemTown.Service.Services
                         ((m.FromUserId == fromUserId && m.ToUserId == toUserId) ||
                          (m.FromUserId == toUserId && m.ToUserId == fromUserId)) &&
                          m.DeletedTime == null
-                    ).OrderByDescending(m => m.CreatedTime);    
+                    ).OrderBy(m => m.CreatedTime);    
 
 
             var queryPaging = await _unitOfWork.GetRepository<Message>()

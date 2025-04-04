@@ -15,7 +15,7 @@ namespace PoemTown.Service.Interfaces
     public interface IChatService
     {
         Task SendMessageToAllAsync(string user, string message);
-        Task SendPrivateMessageAsync(Guid fromUser, Guid toUser, string message);
+        Task<GetMesssageWithPartner> SendPrivateMessageAsync(Guid fromUser, Guid toUser, string message);
         Task<PaginationResponse<GetChatPartner>> GetChatPartners(Guid? userId, RequestOptionsBase<GetChatPartnerFilter, GetChatPartnerSort> request);
         Task<PaginationResponse<GetMesssageWithPartner>> GetPrivateMessagesWithUser(Guid? fromUserId, Guid toUserId, RequestOptionsBase<object, object> request);
     }

@@ -1,6 +1,7 @@
 ﻿using MassTransit;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Interfaces;
@@ -17,14 +18,17 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
     private readonly IHubContext<AnnouncementHub, IAnnouncementClient> _hubContext;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPublishEndpoint _publishEndpoint;
+    private readonly ILogger<SendUserAnnouncementConsumer> _logger;
 
     public SendUserAnnouncementConsumer(IHubContext<AnnouncementHub, IAnnouncementClient> hubContext,
         IUnitOfWork unitOfWork,
-        IPublishEndpoint publishEndpoint)
+        IPublishEndpoint publishEndpoint,
+        ILogger<SendUserAnnouncementConsumer> logger)
     {
         _hubContext = hubContext;
         _unitOfWork = unitOfWork;
         _publishEndpoint = publishEndpoint;
+        _logger = logger;
     }
 
     public async Task Consume(ConsumeContext<SendUserAnnouncementEvent> context)
@@ -88,10 +92,13 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 isUpdate = true;
                 
                 isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
+                _logger.LogInformation("isExist: " + isExist);
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync(p => p.PoemId == message.PoemId);
-                    announcement.Id = existAnnouncement!.Id;
+                    _logger.LogInformation("existAnnouncementId: " + existAnnouncement.Id);
+                    announcement.Id = existAnnouncement.Id;
+                    _logger.LogInformation("announcementId: " + announcement.Id);
                 }
                 break;
             case AnnouncementType.PoemLeaderboard:

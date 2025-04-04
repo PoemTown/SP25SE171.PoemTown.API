@@ -53,6 +53,24 @@ namespace PoemTown.Service.Services
             collection.UserId = userId;
             await _unitOfWork.GetRepository<Collection>().InsertAsync(collection);
             await _unitOfWork.SaveChangesAsync();
+            
+            if(collection.IsCommunity) {
+                // Get all userId
+                var userIds = await _unitOfWork.GetRepository<User>()
+                    .AsQueryable()
+                    .Where(p => p.DeletedTime == null && p.Status == AccountStatus.Active)
+                    .Select(p => p.Id)
+                    .ToListAsync();
+            
+                // Announce to all user about new community collection
+                await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
+                {
+                    Title = "Bộ sưu tập thơ cộng đồng mới đã được ra mắt!",
+                    Content = $"Quản trị viên đã tạo mới bộ sưu tập thơ cộng đồng mới: '{request.CollectionName}'. Hãy tham gia ngay để khám phá những tác phẩm thơ độc đáo và thú vị từ cộng đồng!",
+                    UserIds = userIds,
+                    IsRead = false
+                });
+            }
         }
         public async Task CreateCollectionCommunity(Guid userId, CreateCollectionRequest request)
         {

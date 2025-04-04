@@ -123,7 +123,7 @@ public class CommentService : ICommentService
         
         User? user = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
-        if (user != null && comment.Poem.UserId != userId)
+        if (user != null && parentComment.Poem.UserId != userId)
         {
             // Get poem information
             var poem = await _unitOfWork.GetRepository<Poem>()

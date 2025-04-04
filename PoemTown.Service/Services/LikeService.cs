@@ -54,7 +54,7 @@ public class LikeService : ILikeService
         // Get user information who like the poem
         User? user = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
-        if (user != null && user.Id != userId)
+        if (user != null && poem.UserId != userId)
         {
             // Get total likes for the poem
             var totalLikes = await _unitOfWork.GetRepository<Like>()

@@ -64,7 +64,7 @@ public class CommentService : ICommentService
         // Get user information who like the poem
         User? user = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
-        if (user != null && user.Id != userId)
+        if (user != null && poem.UserId != userId)
         {
             // Get total likes for the poem
             var totalComments = await _unitOfWork.GetRepository<Comment>()
@@ -122,7 +122,7 @@ public class CommentService : ICommentService
         
         User? user = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
-        if (user != null && user.Id != userId)
+        if (user != null && comment.Poem.UserId != userId)
         {
             // Get poem information
             var poem = await _unitOfWork.GetRepository<Poem>()

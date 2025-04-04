@@ -77,7 +77,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
             case AnnouncementType.Comment:
                 isUpdate = true;
                 
-                isExist = await announcementQuery.AnyAsync();
+                isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();
@@ -87,7 +87,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
             case AnnouncementType.Like:
                 isUpdate = true;
                 
-                isExist = await announcementQuery.AnyAsync();
+                isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();

@@ -120,10 +120,30 @@ namespace PoemTown.Service.Services
 
             var queryPaging = await _unitOfWork.GetRepository<Message>()
                 .GetPagination(messageContent, request.PageNumber, request.PageSize);
-            messageContent.ToList();
-            var mappedMessage = _mapper.Map<List<GetMesssageWithPartner>>(messageContent);
 
-            return new PaginationResponse<GetMesssageWithPartner>(mappedMessage, queryPaging.PageNumber, queryPaging.PageSize,
+            IList<GetMesssageWithPartner> messages = new List<GetMesssageWithPartner>();
+            foreach (var content in queryPaging.Data)
+            {
+                var chatContent = _mapper.Map<GetMesssageWithPartner>(content);
+                messages.Add(chatContent);
+                var fromUser = await _unitOfWork.GetRepository<User>()
+                        .AsQueryable()
+                        .Where(m =>
+                            (m.Id == content.FromUserId))
+                        .FirstOrDefaultAsync();
+                var toUser = await _unitOfWork.GetRepository<User>()
+                        .AsQueryable()
+                        .Where(m =>
+                            (m.Id == content.ToUserId))
+                        .FirstOrDefaultAsync();
+                if (fromUser != null || toUser != null)
+                {
+                    chatContent.FromUser = _mapper.Map<GetBasicUserInformationResponse>(fromUser);
+                    chatContent.ToUser = _mapper.Map<GetBasicUserInformationResponse>(toUser);
+                }
+            }
+
+            return new PaginationResponse<GetMesssageWithPartner>(messages, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 

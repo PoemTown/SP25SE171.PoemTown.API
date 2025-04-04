@@ -153,7 +153,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
         {
             await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
             {
-                Id = announcementId,
+                Id = announcement.Id,
                 Title = message.Title,
                 Content = message.Content,
                 Type = message.Type,

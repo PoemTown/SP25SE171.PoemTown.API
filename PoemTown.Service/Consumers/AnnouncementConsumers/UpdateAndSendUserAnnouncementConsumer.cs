@@ -14,13 +14,14 @@ public class UpdateAndSendUserAnnouncementConsumer : IConsumer<UpdateAndSendUser
 {
     private readonly IHubContext<AnnouncementHub, IAnnouncementClient> _hubContext;
     private readonly IUnitOfWork _unitOfWork;
-    
+
     public UpdateAndSendUserAnnouncementConsumer(IHubContext<AnnouncementHub, IAnnouncementClient> hubContext,
         IUnitOfWork unitOfWork)
     {
         _hubContext = hubContext;
         _unitOfWork = unitOfWork;
     }
+
     public async Task Consume(ConsumeContext<UpdateAndSendUserAnnouncementEvent> context)
     {
         var message = context.Message;
@@ -33,18 +34,35 @@ public class UpdateAndSendUserAnnouncementConsumer : IConsumer<UpdateAndSendUser
         }
 
         // Update announcement
-        var announcement = await _unitOfWork.GetRepository<Announcement>().FindAsync(p => p.UserId == user.Id && p.Type == message.Type);
+        var announcement = await _unitOfWork.GetRepository<Announcement>()
+            .FindAsync(p => p.UserId == user.Id && p.Type == message.Type);
+        
+        // If announcement is null, create a new one
         if (announcement == null)
         {
-            throw new Exception("Announcement not found");
+            announcement = new Announcement
+            {
+                UserId = message.UserId,
+                Type = message.Type,
+                Title = message.Title,
+                Content = message.Content,
+                IsRead = message.IsRead ?? false,
+                CreatedTime = DateTimeHelper.SystemTimeNow
+            };
+            await _unitOfWork.GetRepository<Announcement>().InsertAsync(announcement);
+        }
+        
+        // If announcement is not null, update it
+        else
+        {
+            announcement.Title = message.Title;
+            announcement.Content = message.Content;
+            announcement.IsRead = message.IsRead;
+            announcement.CreatedTime = DateTimeHelper.SystemTimeNow;
+
+            _unitOfWork.GetRepository<Announcement>().Update(announcement);
         }
 
-        announcement.Title = message.Title;
-        announcement.Content = message.Content;
-        announcement.IsRead = message.IsRead;
-        announcement.CreatedTime = DateTimeHelper.SystemTimeNow;
-
-        _unitOfWork.GetRepository<Announcement>().Update(announcement);
         await _unitOfWork.SaveChangesAsync();
 
         // Send SignalR if user is online

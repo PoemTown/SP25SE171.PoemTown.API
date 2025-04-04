@@ -117,10 +117,11 @@ namespace PoemTown.Service.Services
                          m.DeletedTime == null
                     ).OrderByDescending(m => m.CreatedTime);    
 
-            var mappedMessage = _mapper.Map<List<GetMesssageWithPartner>>(messageContent);
 
             var queryPaging = await _unitOfWork.GetRepository<Message>()
                 .GetPagination(messageContent, request.PageNumber, request.PageSize);
+            messageContent.ToList();
+            var mappedMessage = _mapper.Map<List<GetMesssageWithPartner>>(messageContent);
 
             return new PaginationResponse<GetMesssageWithPartner>(mappedMessage, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);

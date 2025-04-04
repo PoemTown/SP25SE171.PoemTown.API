@@ -59,7 +59,6 @@ namespace PoemTown.Service.Services
                 FromUserId = fromUser,
                 ToUserId = toUser,
                 MessageText = message ,
-                CreatedTime = DateTime.UtcNow
             };
 
             await _unitOfWork.GetRepository<Message>().InsertAsync(msg);

@@ -64,7 +64,7 @@ public class CommentService : ICommentService
         // Get user information who like the poem
         User? user = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
-        if (user != null)
+        if (user != null && user.Id != userId)
         {
             // Get total likes for the poem
             var totalComments = await _unitOfWork.GetRepository<Comment>()
@@ -77,7 +77,9 @@ public class CommentService : ICommentService
             {
                 UserId = userId,
                 Title = "Bài thơ của bạn có bình luận mới",
-                Content = $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác.",
+                Content = totalComments > 0 
+                    ? $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác." 
+                    : $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName}",
                 IsRead = false,
                 Type = AnnouncementType.Comment
             });
@@ -120,7 +122,7 @@ public class CommentService : ICommentService
         
         User? user = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
-        if (user != null)
+        if (user != null && user.Id != userId)
         {
             // Get poem information
             var poem = await _unitOfWork.GetRepository<Poem>()
@@ -142,7 +144,9 @@ public class CommentService : ICommentService
             {
                 UserId = userId,
                 Title = "Bài thơ của bạn có bình luận mới",
-                Content = $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác.",
+                Content = totalComments > 0 
+                    ? $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName} và {totalComments} người khác." 
+                    : $"Bài thơ: \"{poem.Title}\" của bạn đã được bình luận bởi {user.UserName}",
                 IsRead = false,
                 Type = AnnouncementType.Comment
             });

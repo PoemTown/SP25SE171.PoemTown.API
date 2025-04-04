@@ -54,20 +54,22 @@ public class LikeService : ILikeService
         // Get user information who like the poem
         User? user = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
-        if (user != null)
+        if (user != null && user.Id != userId)
         {
             // Get total likes for the poem
             var totalLikes = await _unitOfWork.GetRepository<Like>()
                 .AsQueryable()
                 .Where(p => p.PoemId == poemId)
-                .CountAsync() - 1; // Exclude the current user who liked the poem
+                .CountAsync(); // Exclude the current user who liked the poem
             
             // Announce to poem owner that their poem has been liked
             await _publishEndpoint.Publish(new UpdateAndSendUserAnnouncementEvent()
             {
                 UserId = userId,
                 Title = "Bài thơ của bạn đã được thích",
-                Content = $"Bài thơ: \"{poem.Title}\" của bạn đã được thích bởi {user.UserName} và {totalLikes} người khác.",
+                Content = totalLikes > 0 
+                    ? $"Bài thơ: \"{poem.Title}\" của bạn đã được thích bởi {user.UserName} và {totalLikes} người khác."
+                    : $"Bài thơ: \"{poem.Title}\" của bạn đã được thích bởi {user.UserName}.",
                 IsRead = false,
                 Type = AnnouncementType.Like
             });

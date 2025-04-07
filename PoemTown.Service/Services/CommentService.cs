@@ -126,7 +126,7 @@ public class CommentService : ICommentService
             .FindAsync(p => p.Id == userId);
 
         // Check if user is not null and the parent comment is not the same user
-        if (user != null && parentComment.Poem.UserId != userId)
+        if (user != null && parentComment.AuthorCommentId != userId)
         {
             // Get poem information
             var poem = await _unitOfWork.GetRepository<Poem>()

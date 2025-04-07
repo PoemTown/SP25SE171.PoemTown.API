@@ -81,7 +81,10 @@ namespace PoemTown.Service.Services
                 lb.Type == LeaderBoardType.Poem &&
                 lb.Status == LeaderBoardStatus.InProgress &&
                 lb.StartDate == startOfMonth);
-
+            
+            // Initialize a dictionary to store previous ranks.
+            Dictionary<Guid, int> previousPoemRanks = new Dictionary<Guid, int>();
+            
             if (leaderboard == null)
             {
                 leaderboard = new LeaderBoard
@@ -99,6 +102,11 @@ namespace PoemTown.Service.Services
             {
                 // Remove existing leaderboard details.
                 var lbDetailRepository = _unitOfWork.GetRepository<PoemLeaderBoard>();
+                
+                previousPoemRanks = leaderboard.PoemLeaderBoards
+                    .Where(d => d.PoemId != null)
+                    .ToDictionary(d => d.PoemId!.Value, d => d.Rank);
+                
                 foreach (var detail in leaderboard.PoemLeaderBoards.ToList())
                 {
                     lbDetailRepository.DeletePermanent(detail);
@@ -148,6 +156,15 @@ namespace PoemTown.Service.Services
 
             foreach (var item in poemLeaderBoards)
             {
+                // Check if the poem has a previous rank
+                if (previousPoemRanks.TryGetValue(item.PoemId!.Value, out var previousRank))
+                {
+                    if (previousRank == item.Rank)
+                    {
+                        continue; // Skip announcement if rank hasn't changed
+                    }
+                }
+                
                 // Announce the poem leaderboard to the user
                 var user = await _unitOfWork.GetRepository<User>().FindAsync(p => item.Poem != null && p.Id == item.Poem.UserId);
                 if (user != null)
@@ -202,6 +219,10 @@ namespace PoemTown.Service.Services
                     lb.Type == LeaderBoardType.User &&
                     lb.Status == LeaderBoardStatus.InProgress &&
                     lb.StartDate == startOfMonth);
+            
+            // Initialize a dictionary to store previous ranks.
+            Dictionary<Guid, int> previousUserRanks = new Dictionary<Guid, int>();
+            
             if (leaderboard == null)
             {
                 leaderboard = new LeaderBoard
@@ -219,6 +240,11 @@ namespace PoemTown.Service.Services
             {
                 // Remove existing user leaderboard entries.
                 var userLeaderboardRepo = _unitOfWork.GetRepository<UserLeaderBoard>();
+                
+                previousUserRanks = leaderboard.UserLeaderBoards
+                    .Where(d => d.UserId != null)
+                    .ToDictionary(d => d.UserId!.Value, d => d.Rank);
+                
                 foreach (var entry in leaderboard.UserLeaderBoards.ToList())
                 {
                     userLeaderboardRepo.DeletePermanent(entry);
@@ -265,6 +291,16 @@ namespace PoemTown.Service.Services
             // Announce the user leaderboard to the users.
             foreach (var item in userLeaderBoards)
             {
+                // Check if the user has a previous rank
+                if (previousUserRanks.TryGetValue(item.UserId!.Value, out var previousRank))
+                {
+                    if (previousRank == item.Rank)
+                    {
+                        continue; // Skip announcement if rank hasn't changed
+                    }
+                }
+                
+                // Announce the user leaderboard to the user
                 var user = await _unitOfWork.GetRepository<User>().FindAsync(p => item.User != null && p.Id == item.User.Id);
                 if (user != null)
                 {

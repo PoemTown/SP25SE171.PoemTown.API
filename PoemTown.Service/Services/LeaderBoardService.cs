@@ -109,7 +109,11 @@ namespace PoemTown.Service.Services
                         .Where(a => a.PoemLeaderboardId == detail.Id)
                         .ToListAsync();
                     
-                    _unitOfWork.GetRepository<Announcement>().DeletePermanentRange(announcements);
+                    foreach (var announcement in announcements)
+                    {
+                        announcement.PoemLeaderboardId = null;
+                        _unitOfWork.GetRepository<Announcement>().Update(announcement);
+                    }
                 }
                 leaderboard.PoemLeaderBoards.Clear();
                 await _unitOfWork.SaveChangesAsync();
@@ -224,7 +228,11 @@ namespace PoemTown.Service.Services
                         .AsQueryable()
                         .Where(a => a.UserLeaderboardId == entry.Id)
                         .ToListAsync();
-                    _unitOfWork.GetRepository<Announcement>().DeletePermanentRange(announcements);
+                    foreach (var announcement in announcements)
+                    {
+                        announcement.UserLeaderboardId = null;
+                        _unitOfWork.GetRepository<Announcement>().Update(announcement);
+                    }
                 }
                 leaderboard.UserLeaderBoards.Clear();
                 await _unitOfWork.SaveChangesAsync();

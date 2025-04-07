@@ -51,7 +51,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
         // Some of announcement that could be updated and override
         bool isUpdate = false;
         bool isExist = false;
-        
+
         Guid announcementId = Guid.NewGuid();
         DateTimeOffset createdTime = DateTimeHelper.SystemTimeNow;
 
@@ -75,74 +75,82 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
             PoemLeaderboardId = message.PoemLeaderboardId,
             UserLeaderboardId = message.UserLeaderboardId
         };
-        
+
         switch (message.Type)
         {
             case AnnouncementType.Comment:
                 isUpdate = true;
-                
+
                 isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
                 if (isExist)
                 {
-                    var existAnnouncement = await announcementQuery.FirstOrDefaultAsync(p => p.PoemId == message.PoemId);
+                    var existAnnouncement =
+                        await announcementQuery.FirstOrDefaultAsync(p => p.PoemId == message.PoemId);
                     announcement.Id = existAnnouncement!.Id;
                 }
+
                 break;
             case AnnouncementType.Like:
                 isUpdate = true;
-                
+
+                isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
+                if (isExist)
+                {
+                    var existAnnouncement =
+                        await announcementQuery.FirstOrDefaultAsync(p => p.PoemId == message.PoemId);
+                    announcement.Id = existAnnouncement!.Id;
+                }
+
+                break;
+            case AnnouncementType.PoemLeaderboard:
+                isUpdate = true;
+
                 isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync(p => p.PoemId == message.PoemId);
                     announcement.Id = existAnnouncement!.Id;
+                    announcement.PoemLeaderboardId = message.PoemLeaderboardId;
                 }
-                break;
-            case AnnouncementType.PoemLeaderboard:
-                isUpdate = true;
-                
-                isExist = await announcementQuery.AnyAsync();
-                if (isExist)
-                {
-                    var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();
-                    announcement.Id = existAnnouncement!.Id;
-                }
+
                 break;
             case AnnouncementType.UserLeaderboard:
                 isUpdate = true;
-                
+
                 isExist = await announcementQuery.AnyAsync();
                 if (isExist)
                 {
                     var existAnnouncement = await announcementQuery.FirstOrDefaultAsync();
                     announcement.Id = existAnnouncement!.Id;
+                    announcement.UserLeaderboardId = message.UserLeaderboardId;
                 }
+
                 break;
-            
+
             case AnnouncementType.Report:
                 isUpdate = false;
-                
+
                 isExist = await announcementQuery.AnyAsync(p => p.ReportId == message.ReportId);
                 break;
             case AnnouncementType.Collection:
                 isUpdate = false;
-                
+
                 isExist = await announcementQuery.AnyAsync(p => p.CollectionId == message.CollectionId);
                 break;
             case AnnouncementType.Poem:
                 isUpdate = false;
-                
+
                 isExist = await announcementQuery.AnyAsync(p => p.PoemId == message.PoemId);
                 break;
 
             case AnnouncementType.Transaction:
                 isUpdate = false;
-                
+
                 isExist = await announcementQuery.AnyAsync(p => p.TransactionId == message.TransactionId);
                 break;
             case AnnouncementType.Achievement:
                 isUpdate = false;
-                
+
                 isExist = await announcementQuery.AnyAsync(p => p.AchievementId == message.AchievementId);
                 break;
             default:

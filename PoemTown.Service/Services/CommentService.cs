@@ -137,15 +137,10 @@ public class CommentService : ICommentService
                 return;
             }
 
-            if (parentComment.ParentComment == null)
-            {
-                return;
-            }
-
             // Announce to poem owner that their poem has been liked
             await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
             {
-                UserId = parentComment.ParentComment.AuthorCommentId,
+                UserId = parentComment.AuthorCommentId,
                 Title = "Hồi đáp bình luận mới",
                 Content = $"Bạn có phản hồi trong bình luận bài thơ {poem.Title}",
                 IsRead = false,

@@ -28,10 +28,12 @@ namespace PoemTown.Repository.Entities
         public decimal Price { get; set; }
         public Guid? SourceCopyRightId { get; set; }
         public Guid? CollectionId { get; set; }
+        public Guid? PoetSampleId { get; set; }
         public Guid? UserId { get; set; }
         public bool? IsSellUsageRight { get; set; } = false;
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }
+        public virtual PoetSample? PoetSample { get; set; }
         public virtual Collection? Collection { get; set; }
         //public virtual OrderDetail? OrderDetail { get; set; }
         public virtual ICollection<PoemLeaderBoard> PoemLeaderBoards { get; set; }

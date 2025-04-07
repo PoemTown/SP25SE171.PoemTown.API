@@ -10,4 +10,5 @@ public class UpdateMyProfileRequest
     public string? PhoneNumber { get; set; }
     public string? Avatar { get; set; }
     public string? DisplayName { get; set; }
+    public string? Bio { get; set; }
 }

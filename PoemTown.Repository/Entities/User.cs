@@ -14,7 +14,7 @@ public class User : IdentityUser<Guid>, IBaseEntity
     public DateOnly? DateOfBirth { get; set; }
     public string? Salt { get; set; }
     public string? GoogleId { get; set; }
-    
+    public string? Bio { get; set; }
     public string? EmailOtp { get; set; }
     public string? EmailOtpExpiration { get; set; }
     

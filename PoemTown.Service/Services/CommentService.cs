@@ -86,11 +86,12 @@ public class CommentService : ICommentService
             });
         }
     }
-    
+
     public async Task ReplyComment(Guid userId, ReplyCommentRequest request)
     {
         // Check if comment exists
-        Comment? parentComment = await _unitOfWork.GetRepository<Comment>().FindAsync(c => c.Id == request.ParrentCommentId);
+        Comment? parentComment =
+            await _unitOfWork.GetRepository<Comment>().FindAsync(c => c.Id == request.ParrentCommentId);
         if (parentComment == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Comment not found");
@@ -120,9 +121,11 @@ public class CommentService : ICommentService
 
         await _unitOfWork.GetRepository<Comment>().InsertAsync(comment);
         await _unitOfWork.SaveChangesAsync();
-        
+
         User? user = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
+
+        // Check if user is not null and the parent comment is not the same user
         if (user != null && parentComment.Poem.UserId != userId)
         {
             // Get poem information
@@ -133,12 +136,16 @@ public class CommentService : ICommentService
             {
                 return;
             }
-            
-            
+
+            if (parentComment.ParentComment == null)
+            {
+                return;
+            }
+
             // Announce to poem owner that their poem has been liked
             await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
             {
-                UserId = parentComment.AuthorCommentId,
+                UserId = parentComment.ParentComment.AuthorCommentId,
                 Title = "Hồi đáp bình luận mới",
                 Content = $"Bạn có phản hồi trong bình luận bài thơ {poem.Title}",
                 IsRead = false,
@@ -148,7 +155,7 @@ public class CommentService : ICommentService
             });
         }
     }
-    
+
     public async Task DeleteCommentPermanent(Guid userId, Guid commentId)
     {
         Comment? comment = await _unitOfWork.GetRepository<Comment>().FindAsync(c => c.Id == commentId);

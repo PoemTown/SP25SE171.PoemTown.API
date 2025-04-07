@@ -11,5 +11,6 @@ public enum AnnouncementType
     Transaction = 7,
     Achievement = 8,
     PoemLeaderboard = 9,
-    UserLeaderboard = 10
+    UserLeaderboard = 10,
+    ReplyComment = 11,
 }

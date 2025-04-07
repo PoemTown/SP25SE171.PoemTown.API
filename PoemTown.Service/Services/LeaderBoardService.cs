@@ -102,6 +102,14 @@ namespace PoemTown.Service.Services
                 foreach (var detail in leaderboard.PoemLeaderBoards.ToList())
                 {
                     lbDetailRepository.DeletePermanent(detail);
+                    
+                    // Delete the associated announcement if it exists.
+                    var announcements = await _unitOfWork.GetRepository<Announcement>()
+                        .AsQueryable()
+                        .Where(a => a.PoemLeaderboardId == detail.Id)
+                        .ToListAsync();
+                    
+                    _unitOfWork.GetRepository<Announcement>().DeletePermanentRange(announcements);
                 }
                 leaderboard.PoemLeaderBoards.Clear();
                 await _unitOfWork.SaveChangesAsync();
@@ -147,7 +155,7 @@ namespace PoemTown.Service.Services
                         PoemId = item.PoemId,
                         Title = "Thứ hạng bài thơ",
                         Content =
-                            $"Hiện bài thơ '{item.Poem.Title}' của bạn đã đạt thứ hạng {rank} trong bảng xếp hạng",
+                            $"Hiện bài thơ '{item.Poem.Title}' của bạn đã đạt thứ hạng {item.Rank} trong bảng xếp hạng",
                         IsRead = false,
                         PoemLeaderboardId = item.Id,
                     });
@@ -210,6 +218,13 @@ namespace PoemTown.Service.Services
                 foreach (var entry in leaderboard.UserLeaderBoards.ToList())
                 {
                     userLeaderboardRepo.DeletePermanent(entry);
+                    
+                    // Delete the associated announcement if it exists.
+                    var announcements = await _unitOfWork.GetRepository<Announcement>()
+                        .AsQueryable()
+                        .Where(a => a.UserLeaderboardId == entry.Id)
+                        .ToListAsync();
+                    _unitOfWork.GetRepository<Announcement>().DeletePermanentRange(announcements);
                 }
                 leaderboard.UserLeaderBoards.Clear();
                 await _unitOfWork.SaveChangesAsync();
@@ -251,7 +266,7 @@ namespace PoemTown.Service.Services
                         Type = AnnouncementType.UserLeaderboard,
                         Title = "Thứ hạng trang cá nhân của bạn",
                         Content =
-                            $"Hiện trang cá nhân của bạn đã đạt thứ hạng {rank} trong bảng xếp hạng",
+                            $"Hiện trang cá nhân của bạn đã đạt thứ hạng {item.Rank} trong bảng xếp hạng",
                         IsRead = false,
                         UserLeaderboardId = item.Id,
                     });

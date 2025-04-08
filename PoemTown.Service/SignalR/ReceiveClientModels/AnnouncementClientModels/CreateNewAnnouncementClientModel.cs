@@ -20,6 +20,6 @@ public class CreateNewAnnouncementClientModel
     public Guid? PoemLeaderboardId { get; set; }
     public Guid? UserLeaderboardId { get; set; }
     public Guid? FollowerId { get; set; }
-    public Guid? FollowerUserId { get; set; }
+    public string? FollowerUserName { get; set; }
     public Guid? RecordFileId { get; set; }
 }

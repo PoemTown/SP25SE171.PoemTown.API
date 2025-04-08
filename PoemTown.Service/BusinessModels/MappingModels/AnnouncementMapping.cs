@@ -9,7 +9,7 @@ public class AnnouncementMapping : Profile
     public AnnouncementMapping()
     {
         CreateMap<GetAnnouncementResponse, Announcement>().ReverseMap()
-            .ForMember(dest => dest.FollowerUserId,
-                opt => opt.MapFrom(src => src.Follower != null ? src.Follower.FollowUserId : null));
+            .ForMember(dest => dest.FollowerUserName,
+                opt => opt.MapFrom(src => src.Follower != null ? src.Follower.FollowUser!.UserName : null));
     }
 }

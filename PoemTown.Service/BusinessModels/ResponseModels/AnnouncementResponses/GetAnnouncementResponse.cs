@@ -19,5 +19,5 @@ public class GetAnnouncementResponse
     public Guid? UserLeaderboardId { get; set; }
     public Guid? RecordFileId { get; set; }
     public Guid? FollowerId { get; set; }
-    public Guid? FollowerUserId { get; set; }
+    public string? FollowerUserName { get; set; }
 }

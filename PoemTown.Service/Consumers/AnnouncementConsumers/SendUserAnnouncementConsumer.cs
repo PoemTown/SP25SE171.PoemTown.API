@@ -187,15 +187,16 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
         await _unitOfWork.GetRepository<Announcement>().InsertAsync(announcement);
         await _unitOfWork.SaveChangesAsync();
 
-        Guid? followerUserId = null;
+        string? followerUserName = null;
         
+        // Get follower user name
         if(message.FollowerId != null)
         {
             var follower = await _unitOfWork.GetRepository<Follower>()
                 .FindAsync(p => p.Id == message.FollowerId);
-            if (follower != null)
+            if (follower is { FollowUser: not null })
             {
-                followerUserId = follower.FollowUserId;
+                followerUserName = follower.FollowUser.UserName;
             }
         }
         
@@ -222,7 +223,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 UserLeaderboardId = message.UserLeaderboardId,
                 RecordFileId = message.RecordFileId,
                 FollowerId = message.FollowerId,
-                FollowerUserId = followerUserId,
+                FollowerUserName = followerUserName,
             });
         }
     }

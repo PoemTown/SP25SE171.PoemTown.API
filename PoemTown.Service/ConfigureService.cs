@@ -96,6 +96,7 @@ public static class ConfigureService
         services.AddScoped<IAchievementService, AchievementService>();
         services.AddScoped<IUsageRightService, UsageRightService>();
         services.AddScoped<IAnnouncementService, AnnouncementService>();
+        services.AddScoped<IPoetSampleService, PoetSampleService>();
 
         //Plagiarism detector
         services.AddScoped<IEmbeddingService, EmbeddingService>();

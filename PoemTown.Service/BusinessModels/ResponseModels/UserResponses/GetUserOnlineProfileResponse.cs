@@ -12,6 +12,8 @@ public class GetUserOnlineProfileResponse
     public string DisplayName { get; set; }
     public string Avatar { get; set; }
     public string Email { get; set; }
+    public string Gender { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
     public int TotalFollowers { get; set; }
     public int TotalFollowings { get; set; }
     public bool IsMine { get; set; }

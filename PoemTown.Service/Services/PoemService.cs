@@ -57,7 +57,6 @@ public class PoemService : IPoemService
     public PoemService(IUnitOfWork unitOfWork,
         IMapper mapper,
         IAwsS3Service awsS3Service,
-
         IOpenAIService openAiService,
         ITheHiveAiService theHiveAiService,
         IPublishEndpoint publishEndpoint,
@@ -68,7 +67,7 @@ public class PoemService : IPoemService
         _awsS3Service = awsS3Service;
         _openAiService = openAiService;
         _theHiveAiService = theHiveAiService;
-        _publishEndpoint = publishEndpoint; 
+        _publishEndpoint = publishEndpoint;
         _qDrantService = qDrantService;
     }
 
@@ -181,11 +180,11 @@ public class PoemService : IPoemService
                     CopyRightValidTo = now.AddYears(100),
                     SaleVersion = saleVersion,
                 });
-                
+
                 // Adjust created time of poem when it is posted
                 poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             }
-            
+
             // Publish event to store poem embedding
             await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
             {
@@ -281,12 +280,12 @@ public class PoemService : IPoemService
                     CopyRightValidTo = now.AddYears(100),
                     SaleVersion = saleVersion,
                 });
-                
+
                 // Adjust created time of poem when it is posted
                 poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             }
-            
-            
+
+
             // Publish event to store poem embedding
             await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
             {
@@ -311,7 +310,7 @@ public class PoemService : IPoemService
             RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
     {
         Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
-        
+
         if (poem == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
@@ -333,19 +332,19 @@ public class PoemService : IPoemService
         if (userId != null)
         {
             poemDetail.IsMine = false;
-            
+
             User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
             // Check if user own this poem
             if (user == null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
             }
-            
-            if(poem.UserId == userId)
+
+            if (poem.UserId == userId)
             {
                 poemDetail.IsMine = true;
             }
-            
+
             // Check if user is able to upload record file for this poem
             bool isAbleToUploadRecordFile =
                 // Allow to upload record file if poem is free
@@ -364,15 +363,15 @@ public class PoemService : IPoemService
                                    && p.Status == UsageRightStatus.StillValid);
 
             poemDetail.IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
-            
+
             poemDetail.Like =
                 _mapper.Map<GetLikeResponse>(
                     poem.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poem.Id));
-            
+
             poemDetail.TargetMark = _mapper.Map<GetTargetMarkResponse>(
                 poem.TargetMarks!.FirstOrDefault(tm =>
                     tm.MarkByUserId == userId && tm.PoemId == poem.Id && tm.Type == TargetMarkType.Poem));
-            
+
             // Check if user is followed this user
             poemDetail.IsFollowed = poem.User!.FollowedUser!.Any(p => p.FollowUserId == userId);
         }
@@ -552,7 +551,7 @@ public class PoemService : IPoemService
     private async Task AnnounceUserWhenPoemCreated(Guid poetId, Poem poem)
     {
         // --------------Follower-------------- //
-            
+
         // Get all users who follow this user
         var rawUserIds = await _unitOfWork.GetRepository<Follower>()
             .AsQueryable()
@@ -560,18 +559,26 @@ public class PoemService : IPoemService
             .Select(p => p.FollowUserId)
             .ToListAsync();
 
-        var userIds = rawUserIds.Where(id => id.HasValue).Select(id => id ?? default).ToList();
-            
-        // Send announcement to all users who follow this user
-        await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
+        Poem? authorPoem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.UserId == poetId);
+        
+        // Filter out the author of the poem from the list of user ids
+        var userIds = rawUserIds.Where(id => id.HasValue && id.Value != poetId)
+            .Select(id => id ?? default).ToList();
+        
+        // Announce to all users who follow this user if authorPoem is not null
+        if (authorPoem != null)
         {
-            UserIds = userIds,
-            Title = "Có một bài thơ mới được đăng tải",
-            Content = $"Bài thơ {poem.Title} của {poem.User!.UserName} đã được đăng tải",
-            Type = AnnouncementType.Poem,
-            PoemId = poem.Id
-        });
-            
+            // Send announcement to all users who follow this user
+            await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
+            {
+                UserIds = userIds,
+                Title = "Có một bài thơ mới được đăng tải",
+                Content = $"Bài thơ {authorPoem.Title} của {authorPoem.User!.UserName} đã được đăng tải",
+                Type = AnnouncementType.Poem,
+                PoemId = poem.Id
+            });
+        }
+
         // --------------Bookmarks-------------- //
 
         // Get all users who bookmark this poem collection
@@ -580,20 +587,28 @@ public class PoemService : IPoemService
             .Where(p => p.CollectionId == poem.CollectionId && p.MarkByUserId != null)
             .Select(p => p.MarkByUserId)
             .ToListAsync();
-            
-        var bookMarkUserIds = rawBookMarkUserIds.Where(id => id.HasValue).Select(id => id ?? default).ToList();
-            
-        // Send announcement to all users who bookmark this poem collection
-        await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
+
+        Collection? authorCollection = await _unitOfWork.GetRepository<Collection>()
+            .FindAsync(p => p.UserId == poetId);
+        
+        // Filter out the author of the poem from the list of user ids
+        var bookMarkUserIds = rawBookMarkUserIds.Where(id => id.HasValue && id.Value != poetId).Select(id => id ?? default).ToList();
+
+        if (authorCollection != null)
         {
-            UserIds = bookMarkUserIds,
-            Title = "Bộ sưu tập bạn theo dõi có bài thơ mới được đăng tải",
-            Content = $"Bộ sưu tập mà bạn đã theo dõi: {poem.Collection!.CollectionName} có bài thơ {poem.Title} đã được đăng tải, hãy ghé xem ngay nhé!",
-            Type = AnnouncementType.Poem,
-            PoemId = poem.Id
-        });
+            // Send announcement to all users who bookmark this poem collection
+            await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
+            {
+                UserIds = bookMarkUserIds,
+                Title = "Bộ sưu tập bạn theo dõi có bài thơ mới được đăng tải",
+                Content =
+                    $"Bộ sưu tập mà bạn đã theo dõi: {poem.Collection!.CollectionName} có bài thơ {poem.Title} đã được đăng tải, hãy ghé xem ngay nhé!",
+                Type = AnnouncementType.Poem,
+                PoemId = poem.Id
+            });
+        }
     }
-    
+
     public async Task UpdatePoem(Guid userId, UpdatePoemRequest request)
     {
         // (Nếu có) Trong trường hợp chỉnh sửa status của poem thành POSTED thì không cần lưu bản history (Chưa hoàn thiện)
@@ -689,11 +704,11 @@ public class PoemService : IPoemService
                     CopyRightValidTo = now.AddYears(100),
                     SaleVersion = saleVersion,
                 });
-                
+
                 // Adjust created time of poem when it is posted
                 poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             }
-            
+
             // Publish event to store poem embedding
             await _publishEndpoint.Publish<CheckPoemPlagiarismEvent>(new
             {
@@ -732,7 +747,6 @@ public class PoemService : IPoemService
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
     }
-
 
 
     public async Task DeletePoemInCommunity(Guid userId, Guid poemId)
@@ -1051,7 +1065,6 @@ public class PoemService : IPoemService
             {
                 poems.Last().IsMine = true;
             }
-            
         }
 
         return new PaginationResponse<GetPoemInCollectionResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
@@ -1419,7 +1432,7 @@ public class PoemService : IPoemService
             UserId = userId,
             Type = UserPoemType.PoemBuyer,
             SaleVersion = saleVersion,
-            Status = UsageRightStatus.StillValid,           
+            Status = UsageRightStatus.StillValid,
             CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
             CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(saleVersion.DurationTime).DateTime
         };
@@ -1446,7 +1459,7 @@ public class PoemService : IPoemService
             UserId = userId
         };
         await _publishEndpoint.Publish(message);
-        
+
         // Get purchase user information
         User? purchaseUser = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
@@ -1562,7 +1575,7 @@ public class PoemService : IPoemService
         };
 
         var response = await _theHiveAiService.ConvertTextToImageWithFluxSchnellEnhanced(model);
-        
+
         return response;
     }
 
@@ -1570,9 +1583,9 @@ public class PoemService : IPoemService
     {
         var folderName = $"poems/{StringHelper.CapitalizeString(userId.ToString())}";
 
-        return  await _awsS3Service.DownloadAndUploadToS3Async(request.ImageUrl, folderName);
+        return await _awsS3Service.DownloadAndUploadToS3Async(request.ImageUrl, folderName);
     }
-    
+
     public async Task<TheHiveAiResponse> ConvertPoemTextToImageWithTheHiveAiSdxlEnhanced(
         Guid userId, ConvertPoemTextToImageWithTheHiveAiSdxlEnhancedRequest request)
     {
@@ -1696,7 +1709,8 @@ public class PoemService : IPoemService
     }
 
     public async Task<PaginationResponse<GetUserPoemResponse>>
-        GetUserPoems(Guid? userId, string userName, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+        GetUserPoems(Guid? userId, string userName,
+            RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
     {
         var poemQuery = _unitOfWork.GetRepository<Poem>().AsQueryable();
 
@@ -1808,19 +1822,19 @@ public class PoemService : IPoemService
                                    && p.Status == UsageRightStatus.StillValid);
 
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
-            
+
             // Search User
             User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == userId);
-            if(user == null)
+            if (user == null)
             {
                 continue;
             }
-            
+
             // Assign like to poem by adding into the last element of the list
             poems.Last().Like =
                 _mapper.Map<GetLikeResponse>(
                     poemEntity.Likes!.FirstOrDefault(l => l.UserId == user.Id && l.PoemId == poemEntity.Id));
-            
+
             // Assign target mark to poem by adding into the last element of the list
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
             (poemEntity.TargetMarks!.FirstOrDefault(tm =>
@@ -1834,19 +1848,16 @@ public class PoemService : IPoemService
     public async Task AdminUpdatePoemStatus(Guid poemId, PoemStatus status)
     {
         Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poemId);
-        
+
         // If poem not found then throw exception
         if (poem == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
         }
-        
+
         poem.Status = status;
-        
+
         _unitOfWork.GetRepository<Poem>().Update(poem);
         await _unitOfWork.SaveChangesAsync();
     }
-
-
-
 }

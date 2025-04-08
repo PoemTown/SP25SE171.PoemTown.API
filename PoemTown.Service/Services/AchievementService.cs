@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using MassTransit;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Service.Events.AnnouncementEvents;
 
 namespace PoemTown.Service.Services
@@ -53,7 +54,7 @@ namespace PoemTown.Service.Services
 
             if (poemLeaderboard != null)
             {
-                var userAchievements = new Dictionary<Guid, List<string>>();
+                var userAchievements = new Dictionary<Guid, Dictionary<Guid, string>>();
                 
                 // Create achievements for each leaderboard detail entry.
                 foreach (var detail in poemLeaderboard.PoemLeaderBoards)
@@ -91,11 +92,11 @@ namespace PoemTown.Service.Services
                     // Add userId to the dictionary if it doesn't exist
                     if (!userAchievements.ContainsKey(userIDE))
                     {
-                        userAchievements[userIDE] = new List<string>();
+                        userAchievements[userIDE] = new Dictionary<Guid, string>();
                     }
                     
                     // Add the achievement name to the user's list
-                    userAchievements[userIDE].Add(achievementName);
+                    userAchievements[userIDE].Add(achievement.Id, achievementName);
                 }
 
                 // Mark the leaderboard as done.
@@ -106,7 +107,9 @@ namespace PoemTown.Service.Services
                 foreach (var userAchievement in userAchievements)
                 {
                     Guid userId = userAchievement.Key;
-                    List<string> achievements = userAchievement.Value;
+                    
+                    Guid achievementId = userAchievement.Key;
+                    Dictionary<Guid, string> achievements = userAchievement.Value;
 
                     foreach (var achievement in achievements)
                     {
@@ -115,6 +118,8 @@ namespace PoemTown.Service.Services
                             UserId = userId,
                             Title = "Thành tích mới",
                             Content = $"Chúc mừng bạn đã nhận được thành tích: \"{achievement}\"",
+                            Type = AnnouncementType.Achievement,
+                            AchievementId = achievementId,
                             IsRead = false
                         });
                     }
@@ -131,7 +136,7 @@ namespace PoemTown.Service.Services
 
             if (userLeaderboard != null)
             {
-                var userAchievements = new Dictionary<Guid, List<string>>();
+                var userAchievements = new Dictionary<Guid, Dictionary<Guid, string>>();
 
                 foreach (var userEntry in userLeaderboard.UserLeaderBoards)
                 {
@@ -158,11 +163,11 @@ namespace PoemTown.Service.Services
                     {
                         if (!userAchievements.ContainsKey(userEntry.UserId.Value))
                         {
-                            userAchievements[userEntry.UserId.Value] = new List<string>();
+                            userAchievements[userEntry.UserId.Value] = new Dictionary<Guid, string>();
                         }
                     
                         // Add the achievement name to the user's list
-                        userAchievements[userEntry.UserId.Value].Add(achievementName);
+                        userAchievements[userEntry.UserId.Value].Add(achievement.Id, achievementName);
                     }
                 }
 
@@ -173,8 +178,10 @@ namespace PoemTown.Service.Services
                 foreach (var userAchievement in userAchievements)
                 {
                     Guid userId = userAchievement.Key;
-                    List<string> achievements = userAchievement.Value;
-
+                    
+                    Guid achievementId = userAchievement.Key;
+                    Dictionary<Guid, string> achievements = userAchievement.Value;
+                    
                     foreach (var achievement in achievements)
                     {
                         // Send announcement to each user
@@ -183,6 +190,8 @@ namespace PoemTown.Service.Services
                             UserId = userId,
                             Title = "Thành tích mới",
                             Content = $"Chúc mừng bạn đã nhận được thành tích: \"{achievement}\"",
+                            Type = AnnouncementType.Achievement,
+                            AchievementId = achievementId,
                             IsRead = false
                         });
                     }

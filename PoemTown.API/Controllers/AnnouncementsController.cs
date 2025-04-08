@@ -39,6 +39,27 @@ public class AnnouncementsController : BaseController
     /// <summary>
     /// Lấy danh sách thông báo của tôi, yêu cầu đăng nhập
     /// </summary>
+    /// <remarks>
+    /// type:
+    ///
+    /// - Like = 1,
+    /// - Comment = 2,
+    /// - User = 3,
+    /// - Report = 4,
+    /// - Collection = 5,
+    /// - Poem = 6,
+    /// - Transaction = 7,
+    /// - Achievement = 8,
+    /// - PoemLeaderboard = 9,
+    /// - UserLeaderboard = 10,
+    /// - RecordFile = 11,
+    /// - Follower = 12,
+    ///
+    /// sortOptions:
+    ///
+    /// - CreatedtimeAscending = 1,
+    /// - CreatedtimeDescending = 2,
+    /// </remarks>
     /// <returns></returns>
     [HttpGet]
     [Route("v1/mine")]

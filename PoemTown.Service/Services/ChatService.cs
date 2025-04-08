@@ -100,9 +100,10 @@ namespace PoemTown.Service.Services
                 .Select(m => m.FromUser); // Chỉ chọn FromUser
 
             var partnerUsers = fromUsers.Concat(toUsers).Distinct();
-
+            //----------------------------------------------------------------------------------------------------------------------------------//
             var queryPaging = await _unitOfWork.GetRepository<User>()
                             .GetPagination(partnerUsers, request.PageNumber, request.PageSize);
+
             IList<GetChatPartner> partners = new List<GetChatPartner>();
             foreach (var partnerUser in queryPaging.Data)
             {

@@ -9,6 +9,7 @@ using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.SaleVersionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UsageResponse;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
@@ -99,7 +100,12 @@ namespace PoemTown.Service.Services
                                                 .AsQueryable()
                                                 .Where(u => u.Id == userId && u.DeletedTime == null)
                                                 .FirstOrDefault());
-                soldPoems.Last().Poem = _mapper.Map<GetPoemDetailResponse>(usageRightPoem.SaleVersion.Poem);
+                var poemDto = _mapper.Map<GetPoemDetailResponse>(usageRightPoem.SaleVersion.Poem);
+                poemDto.SaleVersion = null; // Xóa hoặc gán lại tùy mục đích
+                soldPoems.Last().Poem = poemDto;
+
+                soldPoems.Last().SaleVersion = _mapper.Map<GetSaleVersionResponse>(usageRightPoem.SaleVersion);
+
             }
 
 
@@ -110,15 +116,14 @@ namespace PoemTown.Service.Services
 
         public async Task<PaginationResponse<GetBoughtPoemResponse>> GetBoughtPoem(Guid userId, RequestOptionsBase<GetUsageRightPoemFilter, GetUsageRightPoemSort> request)
         {
-            
+            var utc7Now = DateTime.UtcNow.AddHours(7);
+            var utc7Today = utc7Now.Date;
             var usageRights = _unitOfWork.GetRepository<UsageRight>()
                                          .AsQueryable()
-                                         .Where(ur => ur.UserId == userId && ur.DeletedTime == null && ur.Type == UserPoemType.PoemBuyer);
-
-
-            
-
-
+                                         .Where(ur => ur.UserId == userId
+                                          && ur.DeletedTime == null
+                                          && ur.Type == UserPoemType.PoemBuyer
+                                          && ur.CopyRightValidTo > utc7Today);
 
             if (request.FilterOptions != null)
             {
@@ -136,7 +141,7 @@ namespace PoemTown.Service.Services
             var queryPaging = await _unitOfWork.GetRepository<UsageRight>()
                 .GetPagination(usageRights, request.PageNumber, request.PageSize);
 
-            IList<GetBoughtPoemResponse> soldPoems = new List<GetBoughtPoemResponse>();
+            IList<GetBoughtPoemResponse> boughtPoems = new List<GetBoughtPoemResponse>();
 
             foreach (var usageRightPoem in queryPaging.Data)
             {
@@ -145,16 +150,21 @@ namespace PoemTown.Service.Services
                 {
                     throw new CoreException(StatusCodes.Status400BadRequest, "Usage right not found");
                 }
-                soldPoems.Add(_mapper.Map<GetBoughtPoemResponse>(usageEntity));
-                soldPoems.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(usageRightPoem.SaleVersion.Poem.User);
-                soldPoems.Last().Buyer = _mapper.Map<GetBasicUserInformationResponse>(
+                var saleVersion = await _unitOfWork.GetRepository<SaleVersion>().FindAsync(ur => ur.Id == usageRightPoem.SaleVersionId);
+                boughtPoems.Add(_mapper.Map<GetBoughtPoemResponse>(usageEntity));
+                boughtPoems.Last().SaleVersion = _mapper.Map<GetSaleVersionResponse>(saleVersion);
+                boughtPoems.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(saleVersion.Poem.User);
+                boughtPoems.Last().Buyer = _mapper.Map<GetBasicUserInformationResponse>(
                                             _unitOfWork.GetRepository<User>()
                                                 .AsQueryable()
                                                 .Where(u => u.Id == userId && u.DeletedTime == null)
                                                 .FirstOrDefault());
-                soldPoems.Last().Poem = _mapper.Map<GetPoemDetailResponse>(usageRightPoem.SaleVersion.Poem);
+                var poemDto = _mapper.Map<GetPoemDetailResponse>(saleVersion.Poem);
+                poemDto.SaleVersion = null; // Xóa hoặc gán lại tùy mục đích
+                boughtPoems.Last().Poem = poemDto;
+
             }
-            return new PaginationResponse<GetBoughtPoemResponse>(soldPoems, queryPaging.PageNumber, queryPaging.PageSize,
+            return new PaginationResponse<GetBoughtPoemResponse>(boughtPoems, queryPaging.PageNumber, queryPaging.PageSize,
                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 

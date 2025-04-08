@@ -118,39 +118,41 @@ namespace PoemTown.Service.Services
                     await _unitOfWork.SaveChangesAsync();
                 }
                 
-                // List of userId who targetMark this poem
-                var userIds = _unitOfWork.GetRepository<TargetMark>()
-                    .AsQueryable()
-                    .Where(p => p.PoemId == poemID)
-                    .Select(b => b.Id)
-                    .ToList();
-                
-                // Include poem owner
-                userIds.Add(poem.UserId!.Value);
-                
-                /*// Announce to Poem Usage Right Holder new record file
-                await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
-                {
-                    UserId = poem.UserId,
-                    Title = $"Bản ghi âm mới từ bài thơ '{poem.Title}'",
-                    Content = $"Người dùng {recordFile.User!.UserName} đã tạo bản ghi âm mới từ bài thơ '{poem.Title}'",
-                    Type = AnnouncementType.RecordFile,
-                    PoemId = poem.Id,
-                    RecordFileId = recordFile.Id,
-                    IsRead = false
-                });*/
-                // Announce to Poem Usage Right Holder new record file
-                await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent()
-                {
-                    UserIds = userIds,
-                    Title = $"Bản ghi âm mới từ bài thơ '{poem.Title}'",
-                    Content = $"Người dùng {recordFile.User!.UserName} đã tạo bản ghi âm mới từ bài thơ '{poem.Title}'",
-                    Type = AnnouncementType.RecordFile,
-                    PoemId = poem.Id,
-                    RecordFileId = recordFile.Id,
-                    IsRead = false
-                });
+               
             }
+            User user = await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == userId);
+            // List of userId who targetMark this poem
+            var userIds = _unitOfWork.GetRepository<TargetMark>()
+                .AsQueryable()
+                .Where(p => p.PoemId == poemID)
+                .Select(b => b.Id)
+                .ToList();
+
+            // Include poem owner
+            userIds.Add(poem.UserId!.Value);
+
+            /*// Announce to Poem Usage Right Holder new record file
+            await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+            {
+                UserId = poem.UserId,
+                Title = $"Bản ghi âm mới từ bài thơ '{poem.Title}'",
+                Content = $"Người dùng {recordFile.User!.UserName} đã tạo bản ghi âm mới từ bài thơ '{poem.Title}'",
+                Type = AnnouncementType.RecordFile,
+                PoemId = poem.Id,
+                RecordFileId = recordFile.Id,
+                IsRead = false
+            });*/
+            // Announce to Poem Usage Right Holder new record file
+            await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent()
+            {
+                UserIds = userIds,
+                Title = $"Bản ghi âm mới từ bài thơ '{poem.Title}'",
+                Content = $"Người dùng {user.UserName} đã tạo bản ghi âm mới từ bài thơ '{poem.Title}'",
+                Type = AnnouncementType.RecordFile,
+                PoemId = poem.Id,
+                RecordFileId = recordFile.Id,
+                IsRead = false
+            });
         }
 
         public async Task UpdateNewRecord(Guid userId, UpdateRecordRequest request)

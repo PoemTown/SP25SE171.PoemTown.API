@@ -399,7 +399,7 @@ public class PoemService : IPoemService
         var recordFilesQuery = _unitOfWork.GetRepository<RecordFile>()
             .AsQueryable();
 
-        recordFilesQuery = recordFilesQuery.Where(p => p.PoemId == poemId);
+        recordFilesQuery = recordFilesQuery.Where(p => p.PoemId == poemId && p.DeletedTime == null);
 
         switch (request.SortOptions)
         {

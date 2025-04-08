@@ -4,6 +4,7 @@ using PoemTown.Service.BusinessModels.RequestModels.PoemRequests;
 using PoemTown.Service.BusinessModels.RequestModels.RecordFileRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.OrderResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.MappingModels;
 
@@ -25,6 +26,11 @@ public class RecordFileMapping : Profile
 
         CreateMap<RecordFile, GetRecordFileResponse>().ReverseMap()
             .ForMember(dest => dest.Poem, opt => opt.MapFrom(p => p.Poem));
+
+        CreateMap<RecordFile, GetRecordFileResponse>()
+            .ForMember(dest => dest.Poem, opt => opt.MapFrom(p => p.Poem))
+            .ForMember(dest => dest.Owner, opt => opt.MapFrom(src => src.User));
+
 
         CreateMap<RecordFile, GetRecordFileInOrderDetailResponse>().ReverseMap();
     }

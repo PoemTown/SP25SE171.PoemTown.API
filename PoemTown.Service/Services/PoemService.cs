@@ -589,7 +589,7 @@ public class PoemService : IPoemService
             .ToListAsync();
 
         Collection? authorCollection = await _unitOfWork.GetRepository<Collection>()
-            .FindAsync(p => p.UserId == poetId);
+            .FindAsync(p => p.Id == poem.CollectionId);
         
         // Filter out the author of the poem from the list of user ids
         var bookMarkUserIds = rawBookMarkUserIds.Where(id => id.HasValue && id.Value != poetId).Select(id => id ?? default).ToList();

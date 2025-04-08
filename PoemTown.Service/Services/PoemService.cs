@@ -199,8 +199,15 @@ public class PoemService : IPoemService
 
         if (poem.Status == PoemStatus.Posted)
         {
+            var announcePoem = await _unitOfWork.GetRepository<Poem>()
+                .FindAsync(p => p.Id == poem.Id);
+            
+            if (announcePoem == null)
+            {
+                return;
+            }
             // Announce user when poem created
-            await AnnounceUserWhenPoemCreated(userId, poem);
+            await AnnounceUserWhenPoemCreated(userId, announcePoem);
         }
     }
 
@@ -299,8 +306,15 @@ public class PoemService : IPoemService
         await _unitOfWork.SaveChangesAsync();
         if (poem.Status == PoemStatus.Posted)
         {
+            var announcePoem = await _unitOfWork.GetRepository<Poem>()
+                .FindAsync(p => p.Id == poem.Id);
+            
+            if (announcePoem == null)
+            {
+                return;
+            }
             // Announce user when poem created
-            await AnnounceUserWhenPoemCreated(userId, poem);
+            await AnnounceUserWhenPoemCreated(userId, announcePoem);
         }
     }
 
@@ -559,25 +573,20 @@ public class PoemService : IPoemService
             .Select(p => p.FollowUserId)
             .ToListAsync();
 
-        Poem? authorPoem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == poem.Id);
-        
         // Filter out the author of the poem from the list of user ids
         var userIds = rawUserIds.Where(id => id.HasValue && id.Value != poetId)
             .Select(id => id ?? default).ToList();
-        
+
         // Announce to all users who follow this user if authorPoem is not null
-        if (authorPoem != null)
+        // Send announcement to all users who follow this user
+        await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
         {
-            // Send announcement to all users who follow this user
-            await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
-            {
-                UserIds = userIds,
-                Title = "Có một bài thơ mới được đăng tải",
-                Content = $"Bài thơ {authorPoem.Title} của {authorPoem.User!.UserName} đã được đăng tải",
-                Type = AnnouncementType.Poem,
-                PoemId = poem.Id
-            });
-        }
+            UserIds = userIds,
+            Title = "Có một bài thơ mới được đăng tải",
+            Content = $"Bài thơ {poem.Title} của {poem.User!.UserName} đã được đăng tải",
+            Type = AnnouncementType.Poem,
+            PoemId = poem.Id
+        });
 
         // --------------Bookmarks-------------- //
 
@@ -588,25 +597,20 @@ public class PoemService : IPoemService
             .Select(p => p.MarkByUserId)
             .ToListAsync();
 
-        Collection? authorCollection = await _unitOfWork.GetRepository<Collection>()
-            .FindAsync(p => p.Id == poem.CollectionId);
-        
         // Filter out the author of the poem from the list of user ids
-        var bookMarkUserIds = rawBookMarkUserIds.Where(id => id.HasValue && id.Value != poetId).Select(id => id ?? default).ToList();
+        var bookMarkUserIds = rawBookMarkUserIds.Where(id => id.HasValue && id.Value != poetId)
+            .Select(id => id ?? default).ToList();
 
-        if (authorCollection != null)
+        // Send announcement to all users who bookmark this poem collection
+        await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
         {
-            // Send announcement to all users who bookmark this poem collection
-            await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
-            {
-                UserIds = bookMarkUserIds,
-                Title = "Bộ sưu tập bạn theo dõi có bài thơ mới được đăng tải",
-                Content =
-                    $"Bộ sưu tập mà bạn đã theo dõi: {poem.Collection!.CollectionName} có bài thơ {poem.Title} đã được đăng tải, hãy ghé xem ngay nhé!",
-                Type = AnnouncementType.Poem,
-                PoemId = poem.Id
-            });
-        }
+            UserIds = bookMarkUserIds,
+            Title = "Bộ sưu tập bạn theo dõi có bài thơ mới được đăng tải",
+            Content =
+                $"Bộ sưu tập mà bạn đã theo dõi: {poem.Collection!.CollectionName} có bài thơ {poem.Title} đã được đăng tải, hãy ghé xem ngay nhé!",
+            Type = AnnouncementType.Poem,
+            PoemId = poem.Id
+        });
     }
 
     public async Task UpdatePoem(Guid userId, UpdatePoemRequest request)
@@ -721,8 +725,15 @@ public class PoemService : IPoemService
         await _unitOfWork.SaveChangesAsync();
         if (poem.Status == PoemStatus.Posted)
         {
+            var announcePoem = await _unitOfWork.GetRepository<Poem>()
+                .FindAsync(p => p.Id == poem.Id);
+            
+            if (announcePoem == null)
+            {
+                return;
+            }
             // Announce user when poem created
-            await AnnounceUserWhenPoemCreated(userId, poem);
+            await AnnounceUserWhenPoemCreated(userId, announcePoem);
         }
     }
 

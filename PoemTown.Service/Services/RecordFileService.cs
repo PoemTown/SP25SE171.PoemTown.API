@@ -121,11 +121,17 @@ namespace PoemTown.Service.Services
                
             }
             User user = await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == userId);
+            
+            if(user == null)
+            {
+                return;
+            }
+            
             // List of userId who targetMark this poem
             var userIds = _unitOfWork.GetRepository<TargetMark>()
                 .AsQueryable()
-                .Where(p => p.PoemId == poemID)
-                .Select(b => b.Id)
+                .Where(p => p.PoemId == poemID && p.MarkByUserId != null)
+                .Select(b => b.MarkByUserId!.Value)
                 .ToList();
 
             // Include poem owner

@@ -36,6 +36,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Service.Events.AnnouncementEvents;
 
 namespace PoemTown.Service.Services
@@ -117,12 +118,36 @@ namespace PoemTown.Service.Services
                     await _unitOfWork.SaveChangesAsync();
                 }
                 
-                // Announce to Poem Usage Right Holder new record file
+                // List of userId who targetMark this poem
+                var userIds = _unitOfWork.GetRepository<TargetMark>()
+                    .AsQueryable()
+                    .Where(p => p.PoemId == poemID)
+                    .Select(b => b.Id)
+                    .ToList();
+                
+                // Include poem owner
+                userIds.Add(poem.UserId!.Value);
+                
+                /*// Announce to Poem Usage Right Holder new record file
                 await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
                 {
                     UserId = poem.UserId,
                     Title = $"Bản ghi âm mới từ bài thơ '{poem.Title}'",
                     Content = $"Người dùng {recordFile.User!.UserName} đã tạo bản ghi âm mới từ bài thơ '{poem.Title}'",
+                    Type = AnnouncementType.RecordFile,
+                    PoemId = poem.Id,
+                    RecordFileId = recordFile.Id,
+                    IsRead = false
+                });*/
+                // Announce to Poem Usage Right Holder new record file
+                await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent()
+                {
+                    UserIds = userIds,
+                    Title = $"Bản ghi âm mới từ bài thơ '{poem.Title}'",
+                    Content = $"Người dùng {recordFile.User!.UserName} đã tạo bản ghi âm mới từ bài thơ '{poem.Title}'",
+                    Type = AnnouncementType.RecordFile,
+                    PoemId = poem.Id,
+                    RecordFileId = recordFile.Id,
                     IsRead = false
                 });
             }
@@ -320,22 +345,13 @@ namespace PoemTown.Service.Services
                     Description = $"Tiền hoa hồng từ bản quyền từ bài thơ {recordFile.Poem.Title}",
                     Type = TransactionType.CommissionFee,
                     UserEWalletId = userEWalletPoemOwner.Id,
+                    PoemId = recordFile.PoemId
                 };
                 await _publishEndpoint.Publish(createTransactionEvent);
 
                 _unitOfWork.GetRepository<UserEWallet>().Update(userEWalletPoemOwner);
                 _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
                 await _unitOfWork.SaveChangesAsync();
-
-                // Send usage right commission percentage announcement to Poem UsageRight Holder 
-                await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
-                {
-                    UserId = recordFile.Poem.UserId,
-                    Title = $"Bán quyền sử dụng bài thơ '{recordFile.Poem.Title}'",
-                    Content =
-                        $"Bạn đã nhận được: {usageRightCommissionPrice} từ khoản tiền hoa hồng quyền sử dụng bài thơ '{recordFile.Poem.Title}'",
-                    IsRead = false
-                });
             }
 
 
@@ -359,6 +375,8 @@ namespace PoemTown.Service.Services
                 UserId = recordFile.UserId,
                 Title = $"Phí hoa hồng quyền sử dụng bài thơ: '{recordFile.Poem!.Title}'",
                 Content = $"Đã nhận được  '{recordFile.FileName}' của bạn",
+                Type = AnnouncementType.RecordFile,
+                RecordFileId = recordFile.Id,
                 IsRead = false
             });
         }

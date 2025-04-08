@@ -10,6 +10,7 @@ public class SendBulkUserAnnouncementEvent
     public bool IsRead { get; set; } = false;
     public AnnouncementType Type { get; set; }
     public Guid? ReportId { get; set; }
+    public Guid? RecordFileId { get; set; }
     public Guid? CollectionId { get; set; }
     public Guid? PoemId { get; set; }
     public Guid? CommentId { get; set; }

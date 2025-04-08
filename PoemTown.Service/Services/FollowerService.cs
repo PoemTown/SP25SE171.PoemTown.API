@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.FollowerResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
@@ -53,10 +54,13 @@ public class FollowerService : IFollowerService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "You cannot follow yourself");
         }
-
+        
+        Guid followerId = Guid.NewGuid();
+        
         // Create a new follower
         var newFollower = new Follower
         {
+            Id = followerId,
             FollowUserId = userId,
             FollowedUserId = followedUserId
         };
@@ -75,7 +79,9 @@ public class FollowerService : IFollowerService
             {
                 UserId = followedUser.Id,
                 Title = "Người theo dõi mới",
+                Type = AnnouncementType.Follower,
                 Content = $"{followerUser.UserName} đã theo dõi bạn",
+                FollowerId = followerId,
             });
         }
     }

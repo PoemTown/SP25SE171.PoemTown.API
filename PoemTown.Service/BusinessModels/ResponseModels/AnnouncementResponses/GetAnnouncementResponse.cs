@@ -17,4 +17,7 @@ public class GetAnnouncementResponse
     public Guid? AchievementId { get; set; }
     public Guid? PoemLeaderboardId { get; set; }
     public Guid? UserLeaderboardId { get; set; }
+    public Guid? RecordFileId { get; set; }
+    public Guid? FollowerId { get; set; }
+    public Guid? FollowerUserId { get; set; }
 }

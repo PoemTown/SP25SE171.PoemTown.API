@@ -13,5 +13,6 @@ namespace PoemTown.Service.Events.TransactionEvents
         public decimal Amount { get; set; }
         public TransactionType Type { get; set; }
         public Guid UserEWalletId {  get; set; }
+        public Guid PoemId { get; set; }
     }
 }

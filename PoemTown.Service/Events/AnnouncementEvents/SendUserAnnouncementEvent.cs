@@ -16,7 +16,9 @@ public class SendUserAnnouncementEvent
     public Guid? CommentId { get; set; }
     public Guid? LikeId { get; set; }
     public Guid? TransactionId { get; set; }
+    public Guid? RecordFileId { get; set; }
     public Guid? AchievementId { get; set; }
     public Guid? PoemLeaderboardId { get; set; }
     public Guid? UserLeaderboardId { get; set; }
+    public Guid? FollowerId { get; set; }
 }

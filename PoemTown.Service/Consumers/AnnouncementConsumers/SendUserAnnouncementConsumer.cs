@@ -73,7 +73,9 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
             TransactionId = message.TransactionId,
             AchievementId = message.AchievementId,
             PoemLeaderboardId = message.PoemLeaderboardId,
-            UserLeaderboardId = message.UserLeaderboardId
+            UserLeaderboardId = message.UserLeaderboardId,
+            RecordFileId = message.RecordFileId,
+            FollowerId = message.FollowerId,
         };
 
         switch (message.Type)
@@ -175,7 +177,9 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 TransactionId = message.TransactionId,
                 AchievementId = message.AchievementId,
                 PoemLeaderboardId = message.PoemLeaderboardId,
-                UserLeaderboardId = message.UserLeaderboardId
+                UserLeaderboardId = message.UserLeaderboardId,
+                RecordFileId = message.RecordFileId,
+                FollowerId = message.FollowerId,
             });
             return;
         }
@@ -183,6 +187,18 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
         await _unitOfWork.GetRepository<Announcement>().InsertAsync(announcement);
         await _unitOfWork.SaveChangesAsync();
 
+        Guid? followerUserId = null;
+        
+        if(message.FollowerId != null)
+        {
+            var follower = await _unitOfWork.GetRepository<Follower>()
+                .FindAsync(p => p.Id == message.FollowerId);
+            if (follower != null)
+            {
+                followerUserId = follower.FollowUserId;
+            }
+        }
+        
         // Send SignalR if user is online
         var connectionId = AnnouncementHub.GetConnectionId(message.UserId);
         if (connectionId != string.Empty)
@@ -203,7 +219,10 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 TransactionId = message.TransactionId,
                 AchievementId = message.AchievementId,
                 PoemLeaderboardId = message.PoemLeaderboardId,
-                UserLeaderboardId = message.UserLeaderboardId
+                UserLeaderboardId = message.UserLeaderboardId,
+                RecordFileId = message.RecordFileId,
+                FollowerId = message.FollowerId,
+                FollowerUserId = followerUserId,
             });
         }
     }

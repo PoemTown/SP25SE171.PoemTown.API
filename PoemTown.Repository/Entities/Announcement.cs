@@ -61,5 +61,13 @@ namespace PoemTown.Repository.Entities
         // UserLeaderBoard
         public Guid? UserLeaderboardId { get; set; }
         public virtual UserLeaderBoard? UserLeaderboard { get; set; }
+        
+        // RecordFile
+        public Guid? RecordFileId { get; set; }
+        public virtual RecordFile? RecordFile { get; set; }
+        
+        // Follower
+        public Guid? FollowerId { get; set; }
+        public virtual Follower? Follower { get; set; }
     }
 }

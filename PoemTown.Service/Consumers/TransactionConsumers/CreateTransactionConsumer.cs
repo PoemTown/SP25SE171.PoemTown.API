@@ -1,5 +1,6 @@
 ﻿using MassTransit;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.RequestModels.AnnouncementRequests;
 using PoemTown.Service.Events.AnnouncementEvents;
@@ -56,6 +57,8 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
             Title = "Hóa đơn mua hàng",
             Content = $"Hóa đơn: {transaction.Description} đã khởi tạo thành công",
             UserId = order.User.Id,
+            Type = AnnouncementType.Transaction,
+            TransactionId = transaction.Id,
             IsRead = false
         });
     }

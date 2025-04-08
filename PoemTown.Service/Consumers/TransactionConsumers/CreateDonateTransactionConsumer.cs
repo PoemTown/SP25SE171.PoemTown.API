@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
 using MassTransit;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.TransactionEvents;
 
 namespace PoemTown.Service.Consumers.TransactionConsumers;
@@ -10,10 +12,12 @@ namespace PoemTown.Service.Consumers.TransactionConsumers;
 public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransactionEvent>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPublishEndpoint _publishEndpoint;
     
-    public CreateDonateTransactionConsumer(IUnitOfWork unitOfWork)
+    public CreateDonateTransactionConsumer(IUnitOfWork unitOfWork, IPublishEndpoint publishEndpoint)
     {
         _unitOfWork = unitOfWork;
+        _publishEndpoint = publishEndpoint;
     }
     
     public async Task Consume(ConsumeContext<CreateDonateTransactionEvent> context)
@@ -33,7 +37,8 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
         {
             throw new Exception("Receive user e-wallet not found");
         }
-        
+
+        Guid receiveTransactionId = Guid.NewGuid();
         // Create transaction lists
         List<Transaction> transactions =
         [
@@ -51,6 +56,7 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
             // Receive User Transaction
             new Transaction()
             {
+                Id = receiveTransactionId,
                 Amount = message.Amount,
                 Description = $"Nhận {message.Amount}VND từ người dùng: " + userEWallet.User.FullName,
                 UserEWallet = receiveUserEWallet,
@@ -61,5 +67,23 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
 
         await _unitOfWork.GetRepository<Transaction>().InsertRangeAsync(transactions);
         await _unitOfWork.SaveChangesAsync();
+
+        Transaction? receiveUserTransaction =
+            await _unitOfWork.GetRepository<Transaction>().FindAsync(p => p.Id == receiveTransactionId);
+        if (receiveUserTransaction == null)
+        {
+            return;
+        }
+        
+        // Publish event create announcement
+        await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+        {
+            Title = "Hóa đơn tiền quyên tặng",
+            Content = $"Hóa đơn: {receiveUserTransaction.Description} đã khởi tạo thành công",
+            UserId = userEWallet.User.Id,
+            Type = AnnouncementType.Transaction,
+            TransactionId = receiveTransactionId,
+            IsRead = false
+        });
     }
 }

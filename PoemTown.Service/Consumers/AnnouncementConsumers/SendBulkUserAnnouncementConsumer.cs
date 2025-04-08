@@ -42,7 +42,8 @@ public class SendBulkUserAnnouncementConsumer : IConsumer<SendBulkUserAnnounceme
                 TransactionId = message.TransactionId,
                 AchievementId = message.AchievementId,
                 PoemLeaderboardId = message.PoemLeaderboardId,
-                UserLeaderboardId = message.UserLeaderboardId
+                UserLeaderboardId = message.UserLeaderboardId,
+                RecordFileId = message.RecordFileId
             }));
         }
 

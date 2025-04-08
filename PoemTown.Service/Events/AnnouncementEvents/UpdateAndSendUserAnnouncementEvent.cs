@@ -13,6 +13,7 @@ public class UpdateAndSendUserAnnouncementEvent
     public Guid? UserId { get; set; }
     public Guid? ReportId { get; set; }
     public Guid? CollectionId { get; set; }
+    public Guid? RecordFileId { get; set; }
     public Guid? PoemId { get; set; }
     public Guid? CommentId { get; set; }
     public Guid? LikeId { get; set; }
@@ -20,5 +21,5 @@ public class UpdateAndSendUserAnnouncementEvent
     public Guid? AchievementId { get; set; }
     public Guid? PoemLeaderboardId { get; set; }
     public Guid? UserLeaderboardId { get; set; }
-    
+    public Guid? FollowerId { get; set; }
 }

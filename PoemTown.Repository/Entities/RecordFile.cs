@@ -1,6 +1,7 @@
 ﻿using PoemTown.Repository.Base.Interfaces;
 using PoemTown.Repository.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -30,6 +31,7 @@ namespace PoemTown.Repository.Entities
         public virtual SaleVersion? SaleVersion { get; set; }
         public virtual ICollection<UsageRight>? UsageRights { get; set; }
         public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
+        public virtual ICollection<Announcement>? Announcements { get; set; }
     }
 
 }

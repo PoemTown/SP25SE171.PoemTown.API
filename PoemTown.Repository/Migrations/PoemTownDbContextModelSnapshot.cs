@@ -70,7 +70,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Achievements");
+                    b.ToTable("Achievements", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Announcement", b =>
@@ -173,7 +173,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserLeaderboardId");
 
-                    b.ToTable("Announcements");
+                    b.ToTable("Announcements", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Collection", b =>
@@ -237,7 +237,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Collections");
+                    b.ToTable("Collections", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Comment", b =>
@@ -290,7 +290,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Follower", b =>
@@ -329,7 +329,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("FollowedUserId");
 
-                    b.ToTable("Followers");
+                    b.ToTable("Followers", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.LeaderBoard", b =>
@@ -370,7 +370,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LeaderBoards");
+                    b.ToTable("LeaderBoards", (string)null);
 
                     b.HasData(
                         new
@@ -434,7 +434,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Likes");
+                    b.ToTable("Likes", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.LoginTracking", b =>
@@ -471,7 +471,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("LoginTrackings");
+                    b.ToTable("LoginTrackings", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.MasterTemplate", b =>
@@ -518,7 +518,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("MasterTemplates");
+                    b.ToTable("MasterTemplates", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.MasterTemplateDetail", b =>
@@ -561,7 +561,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("MasterTemplateId");
 
-                    b.ToTable("MasterTemplateDetails");
+                    b.ToTable("MasterTemplateDetails", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Message", b =>
@@ -604,7 +604,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("ToUserId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Order", b =>
@@ -673,7 +673,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.OrderDetail", b =>
@@ -733,7 +733,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserEWalletId");
 
-                    b.ToTable("OrderDetails");
+                    b.ToTable("OrderDetails", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.PaymentGateway", b =>
@@ -772,7 +772,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PaymentGateways");
+                    b.ToTable("PaymentGateways", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.PlagiarismPoemReport", b =>
@@ -814,7 +814,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("ReportId");
 
-                    b.ToTable("PlagiarismPoemReports");
+                    b.ToTable("PlagiarismPoemReports", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Poem", b =>
@@ -891,7 +891,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Poems");
+                    b.ToTable("Poems", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.PoemHistory", b =>
@@ -961,7 +961,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("PoemId");
 
-                    b.ToTable("PoemHistories");
+                    b.ToTable("PoemHistories", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.PoemLeaderBoard", b =>
@@ -1003,7 +1003,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("PoemId");
 
-                    b.ToTable("PoemLeaderBoards");
+                    b.ToTable("PoemLeaderBoards", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.PoetSample", b =>
@@ -1046,7 +1046,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("PoetSamples");
+                    b.ToTable("PoetSamples", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.RecordFile", b =>
@@ -1102,7 +1102,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RecordFiles");
+                    b.ToTable("RecordFiles", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Report", b =>
@@ -1165,7 +1165,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("ReportedUserId");
 
-                    b.ToTable("Reports");
+                    b.ToTable("Reports", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Role", b =>
@@ -1326,7 +1326,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("PoemId");
 
-                    b.ToTable("SaleVersions");
+                    b.ToTable("SaleVersions", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.TargetMark", b =>
@@ -1373,7 +1373,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("PoemId");
 
-                    b.ToTable("TargetMarks");
+                    b.ToTable("TargetMarks", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Theme", b =>
@@ -1416,7 +1416,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Themes");
+                    b.ToTable("Themes", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.ThemeUserTemplateDetail", b =>
@@ -1455,7 +1455,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserTemplateDetailId");
 
-                    b.ToTable("ThemeUserTemplateDetails");
+                    b.ToTable("ThemeUserTemplateDetails", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.Transaction", b =>
@@ -1528,7 +1528,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserEWalletId");
 
-                    b.ToTable("Transactions");
+                    b.ToTable("Transactions", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.UsageRight", b =>
@@ -1584,7 +1584,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UsageRights");
+                    b.ToTable("UsageRights", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.User", b =>
@@ -1837,7 +1837,7 @@ namespace PoemTown.Repository.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("UserEWallets");
+                    b.ToTable("UserEWallets", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.UserLeaderBoard", b =>
@@ -1879,7 +1879,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserLeaderBoards");
+                    b.ToTable("UserLeaderBoards", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.UserLogin", b =>
@@ -2018,7 +2018,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserTemplates");
+                    b.ToTable("UserTemplates", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.UserTemplateDetail", b =>
@@ -2061,7 +2061,7 @@ namespace PoemTown.Repository.Migrations
 
                     b.HasIndex("UserTemplateId");
 
-                    b.ToTable("UserTemplateDetails");
+                    b.ToTable("UserTemplateDetails", (string)null);
                 });
 
             modelBuilder.Entity("PoemTown.Repository.Entities.UserToken", b =>

@@ -22,6 +22,6 @@ namespace PoemTown.Repository.Entities
         [ForeignKey("FollowedUserId")]
         public virtual User? FollowedUser { get; set; }
 
-        public ICollection<Announcement>? Announcements { get; set; }
+        public virtual ICollection<Announcement>? Announcements { get; set; }
     }
 }

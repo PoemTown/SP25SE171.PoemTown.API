@@ -575,15 +575,18 @@ public class PoemService : IPoemService
 
         // Filter out the author of the poem from the list of user ids
         var userIds = rawUserIds.Where(id => id.HasValue && id.Value != poetId)
-            .Select(id => id ?? default).ToList();
+            .Select(id => id ?? default)
+            .ToList();
 
+        var poet = await _unitOfWork.GetRepository<User>()
+            .FindAsync(p => p.Id == poetId);
         // Announce to all users who follow this user if authorPoem is not null
         // Send announcement to all users who follow this user
         await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent
         {
             UserIds = userIds,
             Title = "Có một bài thơ mới được đăng tải",
-            Content = $"Bài thơ {poem.Title} của {poem.User!.UserName} đã được đăng tải",
+            Content = $"Bài thơ {poem.Title} của {poet?.UserName} đã được đăng tải",
             Type = AnnouncementType.Poem,
             PoemId = poem.Id
         });
@@ -599,7 +602,9 @@ public class PoemService : IPoemService
 
         // Filter out the author of the poem from the list of user ids
         var bookMarkUserIds = rawBookMarkUserIds.Where(id => id.HasValue && id.Value != poetId)
-            .Select(id => id ?? default).ToList();
+            .Select(id => id ?? default)
+            .Except(userIds)
+            .ToList();
 
         // Send announcement to all users who bookmark this poem collection
         await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent

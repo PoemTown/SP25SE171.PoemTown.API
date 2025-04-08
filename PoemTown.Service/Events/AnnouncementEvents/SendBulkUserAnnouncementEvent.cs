@@ -19,4 +19,5 @@ public class SendBulkUserAnnouncementEvent
     public Guid? AchievementId { get; set; }
     public Guid? PoemLeaderboardId { get; set; }
     public Guid? UserLeaderboardId { get; set; }
+    public Guid? FollowerId { get; set; }
 }

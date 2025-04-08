@@ -1,21 +1,29 @@
 ﻿using System.Security.Claims;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
 using PoemTown.Service.BusinessModels.RequestModels.AnnouncementRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AnnouncementResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
+using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.QueryOptions.FilterOptions.AnnouncementFilters;
+using PoemTown.Service.QueryOptions.RequestOptions;
+using PoemTown.Service.QueryOptions.SortOptions.AnnouncementSorts;
 
 namespace PoemTown.API.Controllers;
 
 public class AnnouncementsController : BaseController
 {
     private readonly IAnnouncementService _announcementService;
+    private readonly IMapper _mapper;
     
-    public AnnouncementsController(IAnnouncementService announcementService)
+    public AnnouncementsController(IAnnouncementService announcementService,
+        IMapper mapper)
     {
         _announcementService = announcementService;
+        _mapper = mapper;
     }
     
     [HttpPost]
@@ -35,12 +43,18 @@ public class AnnouncementsController : BaseController
     [HttpGet]
     [Route("v1/mine")]
     [Authorize]
-    public async Task<ActionResult<BaseResponse<IEnumerable<GetAnnouncementResponse>>>> GetUserAnnouncements()
+    public async Task<ActionResult<BasePaginationResponse<GetAnnouncementResponse>>>
+        GetUserAnnouncements(RequestOptionsBase<GetAnnouncementFilterOption, GetAnnouncementSortOption> request)
     {
         Guid userId = Guid.Parse(User.Claims.First(p => p.Type == "UserId").Value);
      
-        var announcements = await _announcementService.GetUserAnnouncementsAsync(userId);
-        return Ok(new BaseResponse<IEnumerable<GetAnnouncementResponse>>(StatusCodes.Status200OK, "Get user announcement successfully" ,announcements));
+        var paginationResponse = await _announcementService.GetUserAnnouncementsAsync(userId, request);
+        
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetAnnouncementResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get user announcements successfully";
+
+        return basePaginationResponse;
     }
     
     /// <summary>
@@ -56,5 +70,34 @@ public class AnnouncementsController : BaseController
         Guid userId = Guid.Parse(User.Claims.First(p => p.Type == "UserId").Value);
         await _announcementService.UpdateAnnouncementToRead(userId, announcementId);
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Update announcement successfully"));
+    }
+    
+    /// <summary>
+    /// Xóa thông báo của tôi, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="announcementId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/mine/{announcementId}")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> DeleteUserAnnouncement(Guid announcementId)
+    {
+        Guid userId = Guid.Parse(User.Claims.First(p => p.Type == "UserId").Value);
+        await _announcementService.DeleteAnnouncementAsync(userId, announcementId);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Delete announcement successfully"));
+    }
+    
+    /// <summary>
+    /// Xóa tất cả thông báo của tôi, yêu cầu đăng nhập
+    /// </summary>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/mine/all")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> DeleteAllUserAnnouncements()
+    {
+        Guid userId = Guid.Parse(User.Claims.First(p => p.Type == "UserId").Value);
+        await _announcementService.DeleteAllUserAnnouncementsAsync(userId);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Delete all announcements successfully"));
     }
 }

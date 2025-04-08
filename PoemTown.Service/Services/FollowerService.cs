@@ -157,6 +157,65 @@ public class FollowerService : IFollowerService
         (followers, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
             queryPaging.CurrentPageRecords);
     }
+    
+    public async Task<PaginationResponse<GetFollowersResponse>>
+        GetUserFollower(string userName, RequestOptionsBase<GetFollowersFilterOption, GetFollowersSortOption> request)
+    {
+        User? user = await _unitOfWork.GetRepository<User>()
+            .FindAsync(p => p.UserName == userName);
+
+        if (user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        
+        var followerQuery = _unitOfWork.GetRepository<Follower>().AsQueryable();
+
+        // Get by my followers
+        followerQuery = followerQuery.Where(p => p.FollowedUserId == user.Id);
+
+        // Filter
+        if (request.FilterOptions != null)
+        {
+            if (!string.IsNullOrWhiteSpace(request.FilterOptions.DisplayName))
+            {
+                followerQuery = followerQuery.Where(p => p.FollowedUser!.DisplayName!
+                    .Contains(request.FilterOptions.DisplayName, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        // Sort
+        followerQuery = request.SortOptions switch
+        {
+            GetFollowersSortOption.Nearest => followerQuery.OrderByDescending(p => p.CreatedTime),
+            GetFollowersSortOption.Oldest => followerQuery.OrderBy(p => p.CreatedTime),
+            _ => followerQuery.OrderByDescending(p => p.CreatedTime),
+        };
+
+        // Pagination
+        var queryPaging = await _unitOfWork.GetRepository<Follower>()
+            .GetPagination(followerQuery, request.PageNumber, request.PageSize);
+
+        //var followers = _mapper.Map<IList<GetFollowersResponse>>(queryPaging.Data);
+        IList<GetFollowersResponse> followers = new List<GetFollowersResponse>();
+        foreach (var follower in queryPaging.Data)
+        {
+            // Get user who is following me
+            var userFollower = await _unitOfWork.GetRepository<Follower>()
+                .FindAsync(p => p.FollowUserId == follower.FollowUserId && p.FollowedUserId == user.Id);
+            if (userFollower == null)
+            {
+                continue;
+            }
+
+            followers.Add(_mapper.Map<GetFollowersResponse>(userFollower));
+            followers.Last().User = _mapper.Map<GetBasicUserInformationResponse>(userFollower.FollowUser);
+        }
+
+        return new PaginationResponse<GetFollowersResponse>
+        (followers, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
+            queryPaging.CurrentPageRecords);
+    }
 
     /// <summary>
     /// Get my follow list (people I have followed)
@@ -209,6 +268,67 @@ public class FollowerService : IFollowerService
 
             followers.Add(_mapper.Map<GetFollowersResponse>(user));
             followers.Last().User = _mapper.Map<GetBasicUserInformationResponse>(user.FollowedUser);
+        }
+
+        return new PaginationResponse<GetFollowersResponse>
+        (followers, queryPaging.PageNumber, queryPaging.PageSize, queryPaging.TotalRecords,
+            queryPaging.CurrentPageRecords);
+    }
+    
+    
+    public async Task<PaginationResponse<GetFollowersResponse>> GetUserFollowList(string userName,
+        RequestOptionsBase<GetFollowersFilterOption, GetFollowersSortOption> request)
+    {
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.UserName == userName);
+        
+        // Check if the user exists
+        if (user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        
+        var followerQuery = _unitOfWork.GetRepository<Follower>().AsQueryable();
+
+        // Get my user list that I have followed
+        followerQuery = followerQuery.Where(p => p.FollowUserId == user.Id);
+
+        // Filter
+        if (request.FilterOptions != null)
+        {
+            if (!string.IsNullOrWhiteSpace(request.FilterOptions.DisplayName))
+            {
+                followerQuery = followerQuery.Where(p => p.FollowedUser!.DisplayName!
+                    .Contains(request.FilterOptions.DisplayName, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        // Sort
+        followerQuery = request.SortOptions switch
+        {
+            GetFollowersSortOption.Nearest => followerQuery.OrderByDescending(p => p.CreatedTime),
+            GetFollowersSortOption.Oldest => followerQuery.OrderBy(p => p.CreatedTime),
+            _ => followerQuery.OrderByDescending(p => p.CreatedTime),
+        };
+
+        // Pagination
+        var queryPaging = await _unitOfWork.GetRepository<Follower>()
+            .GetPagination(followerQuery, request.PageNumber, request.PageSize);
+
+        //var followers = _mapper.Map<IList<GetFollowersResponse>>(queryPaging.Data);
+
+        IList<GetFollowersResponse> followers = new List<GetFollowersResponse>();
+        foreach (var follower in queryPaging.Data)
+        {
+            // Get user who is followed
+            var userFollowed = await _unitOfWork.GetRepository<Follower>()
+                .FindAsync(p => p.FollowedUserId == follower.FollowedUserId && p.FollowUserId == user.Id);
+            if (userFollowed == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+            }
+
+            followers.Add(_mapper.Map<GetFollowersResponse>(userFollowed));
+            followers.Last().User = _mapper.Map<GetBasicUserInformationResponse>(userFollowed.FollowedUser);
         }
 
         return new PaginationResponse<GetFollowersResponse>

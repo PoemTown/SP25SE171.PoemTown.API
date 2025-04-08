@@ -97,4 +97,46 @@ public class FollowersController : BaseController
         
         return Ok(basePaginationResponse);
     }
+    
+    /// <summary>
+    /// Lấy danh sách mà người dùng hiện đang theo dõi những người dùng khác
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("user/{userName}/follow-list")]
+    public async Task<ActionResult<BasePaginationResponse<GetFollowersResponse>>>
+        GetUserFollowList(string userName,
+            RequestOptionsBase<GetFollowersFilterOption, GetFollowersSortOption> request)
+    {
+        var paginationResponse = await _followerService.GetUserFollowList(userName, request);
+        
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetFollowersResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get user follow list successfully";
+        
+        return Ok(basePaginationResponse);
+    }
+    
+    /// <summary>
+    /// Lấy danh sách người dùng đang theo dõi một người dùng khác
+    /// </summary>
+    /// <param name="userName"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("user/{userName}")]
+    public async Task<ActionResult<BasePaginationResponse<GetFollowersResponse>>>
+        GetUserFollower(string userName,
+            RequestOptionsBase<GetFollowersFilterOption, GetFollowersSortOption> request)
+    {
+        var paginationResponse = await _followerService.GetUserFollower(userName, request);
+        
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetFollowersResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get user follower successfully";
+        
+        return Ok(basePaginationResponse);
+    }
 }

@@ -16,4 +16,10 @@ public interface IFollowerService
 
     Task<PaginationResponse<GetFollowersResponse>> GetMyFollowList(Guid userId,
         RequestOptionsBase<GetFollowersFilterOption, GetFollowersSortOption> request);
+
+    Task<PaginationResponse<GetFollowersResponse>>
+        GetUserFollower(string userName, RequestOptionsBase<GetFollowersFilterOption, GetFollowersSortOption> request);
+
+    Task<PaginationResponse<GetFollowersResponse>> GetUserFollowList(string userName,
+        RequestOptionsBase<GetFollowersFilterOption, GetFollowersSortOption> request);
 }

@@ -538,7 +538,7 @@ namespace PoemTown.Service.Services
         }
 
         public async Task<PaginationResponse<GetUserCollectionResponse>>
-            GetUserCollections(string userName, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+            GetUserCollections(Guid? userId, string userName, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
             collectionQuery = collectionQuery.Where(a => a.User.UserName == userName);
@@ -594,15 +594,20 @@ namespace PoemTown.Service.Services
                 // Assign author to poem by adding into the last element of the list
                 collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
 
-                collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
-                (collection.TargetMarks!.FirstOrDefault(tm =>
-                    tm.MarkByUserId == collection.User.Id && tm.CollectionId == collectionEntity.Id &&
-                    tm.Type == TargetMarkType.Collection));
-                
-                // Check if the collection is mine
-                if (userName == collection.User.UserName)
+                var loginUser = await _unitOfWork.GetRepository<User>()
+                    .FindAsync(p => p.Id == userId);
+                if (loginUser != null)
                 {
-                    collections.Last().IsMine = true;
+                    collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                    (collection.TargetMarks!.FirstOrDefault(tm =>
+                        tm.MarkByUserId == loginUser.Id && tm.CollectionId == collectionEntity.Id &&
+                        tm.Type == TargetMarkType.Collection));
+                    
+                    // Check if the collection is mine
+                    if (loginUser.UserName == collection.User.UserName)
+                    {
+                        collections.Last().IsMine = true;
+                    }
                 }
             }
 

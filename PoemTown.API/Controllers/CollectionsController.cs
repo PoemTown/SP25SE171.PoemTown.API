@@ -315,7 +315,14 @@ namespace PoemTown.API.Controllers
         public async Task<ActionResult<BasePaginationResponse<GetUserCollectionResponse>>>
             GetUserCollections(string userName, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
-            var result = await _service.GetUserCollections(userName, request);
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }  
+            
+            var result = await _service.GetUserCollections(userId, userName, request);
             
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetUserCollectionResponse>>(result);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;

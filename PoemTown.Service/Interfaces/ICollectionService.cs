@@ -29,7 +29,7 @@ namespace PoemTown.Service.Interfaces
         Task<string> UploadCollectionImage(Guid userId, IFormFile file);
 
         Task<PaginationResponse<GetUserCollectionResponse>>
-            GetUserCollections(string userName, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
+            GetUserCollections(Guid? userId, string userName, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
         Task<PaginationResponse<GetCollectionResponse>> GetUserCollections(Guid userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
 
     }

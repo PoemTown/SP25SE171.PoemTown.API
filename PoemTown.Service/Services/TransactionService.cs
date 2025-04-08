@@ -105,7 +105,7 @@ public class TransactionService : ITransactionService
             GetTransactionSortOption.AmountDescending => transactionQuery.OrderByDescending(p => p.Amount),
             GetTransactionSortOption.TransactionTypeAscending => transactionQuery.OrderBy(p => p.Type),
             GetTransactionSortOption.TransactionTypeDescending => transactionQuery.OrderByDescending(p => p.Type),
-            _ => transactionQuery.OrderBy(p => p.Type).ThenByDescending(p => p.CreatedTime)
+            _ => transactionQuery.OrderByDescending(p => p.CreatedTime)
         };
         
         // Pagination

@@ -127,7 +127,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
 
                 break;
 
-            case AnnouncementType.Report:
+            /*case AnnouncementType.Report:
                 isUpdate = false;
 
                 isExist = await announcementQuery.AnyAsync(p => p.ReportId == message.ReportId);
@@ -152,7 +152,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 isUpdate = false;
 
                 isExist = await announcementQuery.AnyAsync(p => p.AchievementId == message.AchievementId);
-                break;
+                break;*/
             default:
                 break;
         }

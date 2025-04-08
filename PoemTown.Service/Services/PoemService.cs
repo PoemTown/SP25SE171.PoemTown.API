@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.SaleVersions;
@@ -192,14 +193,16 @@ public class PoemService : IPoemService
                 UserId = userId,
                 PoemContent = poem.Content
             });
-            
-            // Announce user when poem created
-            await AnnounceUserWhenPoemCreated(userId, poem);
         }
 
         // Save changes
         await _unitOfWork.SaveChangesAsync();
 
+        if (poem.Status == PoemStatus.Posted)
+        {
+            // Announce user when poem created
+            await AnnounceUserWhenPoemCreated(userId, poem);
+        }
     }
 
     public async Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request)
@@ -291,13 +294,15 @@ public class PoemService : IPoemService
                 UserId = userId,
                 PoemContent = poem.Content
             });
-            
-            // Announce user when poem created
-            await AnnounceUserWhenPoemCreated(userId, poem);
         }
 
         // Save changes
         await _unitOfWork.SaveChangesAsync();
+        if (poem.Status == PoemStatus.Posted)
+        {
+            // Announce user when poem created
+            await AnnounceUserWhenPoemCreated(userId, poem);
+        }
     }
 
 
@@ -562,7 +567,9 @@ public class PoemService : IPoemService
         {
             UserIds = userIds,
             Title = "Có một bài thơ mới được đăng tải",
-            Content = $"Bài thơ {poem.Title} của {poem.User!.UserName} đã được đăng tải"
+            Content = $"Bài thơ {poem.Title} của {poem.User!.UserName} đã được đăng tải",
+            Type = AnnouncementType.Poem,
+            PoemId = poem.Id
         });
             
         // --------------Bookmarks-------------- //
@@ -581,7 +588,9 @@ public class PoemService : IPoemService
         {
             UserIds = bookMarkUserIds,
             Title = "Bộ sưu tập bạn theo dõi có bài thơ mới được đăng tải",
-            Content = $"Bộ sưu tập mà bạn đã theo dõi: {poem.Collection!.CollectionName} có bài thơ {poem.Title} đã được đăng tải, hãy ghé xem ngay nhé!"
+            Content = $"Bộ sưu tập mà bạn đã theo dõi: {poem.Collection!.CollectionName} có bài thơ {poem.Title} đã được đăng tải, hãy ghé xem ngay nhé!",
+            Type = AnnouncementType.Poem,
+            PoemId = poem.Id
         });
     }
     
@@ -692,13 +701,14 @@ public class PoemService : IPoemService
                 UserId = userId,
                 PoemContent = poem.Content
             });
-            
-            // Announce user when poem created
-            await AnnounceUserWhenPoemCreated(userId, poem);
         }
 
         await _unitOfWork.SaveChangesAsync();
-
+        if (poem.Status == PoemStatus.Posted)
+        {
+            // Announce user when poem created
+            await AnnounceUserWhenPoemCreated(userId, poem);
+        }
     }
 
     public async Task DeletePoem(Guid poemId)

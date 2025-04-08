@@ -25,6 +25,7 @@ using PoemTown.Repository.Utils;
 using PoemTown.Service.ThirdParties.Models.AwsS3;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Repository.Enums.Accounts;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Service.Events.AnnouncementEvents;
 
 namespace PoemTown.Service.Services
@@ -69,7 +70,9 @@ namespace PoemTown.Service.Services
                     Title = "Bộ sưu tập thơ cộng đồng mới đã được ra mắt!",
                     Content = $"Quản trị viên đã tạo mới bộ sưu tập thơ cộng đồng mới: '{request.CollectionName}'. Hãy tham gia ngay để khám phá những tác phẩm thơ độc đáo và thú vị từ cộng đồng!",
                     UserIds = userIds,
-                    IsRead = false
+                    IsRead = false,
+                    Type = AnnouncementType.Collection,
+                    CollectionId = collection.Id
                 });
             }
         }
@@ -95,7 +98,9 @@ namespace PoemTown.Service.Services
                 Title = "Bộ sưu tập thơ cộng đồng mới đã được ra mắt!",
                 Content = $"Quản trị viên đã tạo mới bộ sưu tập thơ cộng đồng mới: '{request.CollectionName}'. Hãy tham gia ngay để khám phá những tác phẩm thơ độc đáo và thú vị từ cộng đồng!",
                 UserIds = userIds,
-                IsRead = false
+                IsRead = false,
+                Type = AnnouncementType.Collection,
+                CollectionId = collection.Id
             });
         }
         public async Task UpdateCollection(UpdateCollectionRequest request)

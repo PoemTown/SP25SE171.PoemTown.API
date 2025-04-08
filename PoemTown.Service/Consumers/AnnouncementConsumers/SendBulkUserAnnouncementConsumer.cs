@@ -12,36 +12,48 @@ namespace PoemTown.Service.Consumers.AnnouncementConsumers;
 
 public class SendBulkUserAnnouncementConsumer : IConsumer<SendBulkUserAnnouncementEvent>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    private readonly IHubContext<AnnouncementHub, IAnnouncementClient> _hubContext;
-
-    public SendBulkUserAnnouncementConsumer(IUnitOfWork unitOfWork,
-        IHubContext<AnnouncementHub, IAnnouncementClient> hubContext)
+    private readonly IPublishEndpoint _publishEndpoint;
+    public SendBulkUserAnnouncementConsumer(IPublishEndpoint publishEndpoint)
     {
-        _unitOfWork = unitOfWork;
-        _hubContext = hubContext;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task Consume(ConsumeContext<SendBulkUserAnnouncementEvent> context)
     {
         var message = context.Message;
-        var createdTime = DateTimeHelper.SystemTimeNow;
-        var announcements = new List<Announcement>();
+        
+        // Initialize the list of announcement Events
+        var announcementsEvents = new List<SendUserAnnouncementEvent>();
 
         if (message.UserIds != null)
         {
-            announcements.AddRange(message.UserIds.Select(userId => new Announcement
+            announcementsEvents.AddRange(message.UserIds.Select(userId => new SendUserAnnouncementEvent
             {
-                Id = Guid.NewGuid(),
                 Title = message.Title,
                 Content = message.Content,
                 UserId = userId,
                 IsRead = message.IsRead,
-                CreatedTime = createdTime
+                Type = message.Type,
+                ReportId = message.ReportId,
+                CollectionId = message.CollectionId,
+                PoemId = message.PoemId,
+                CommentId = message.CommentId,
+                LikeId = message.LikeId,
+                TransactionId = message.TransactionId,
+                AchievementId = message.AchievementId,
+                PoemLeaderboardId = message.PoemLeaderboardId,
+                UserLeaderboardId = message.UserLeaderboardId
             }));
         }
 
-        await _unitOfWork.GetRepository<Announcement>().InsertRangeAsync(announcements);
+        // publish the announcement events
+        foreach (var announcementEvent in announcementsEvents)
+        {
+            await _publishEndpoint.Publish(announcementEvent);
+        }
+
+
+        /*await _unitOfWork.GetRepository<Announcement>().InsertRangeAsync(announcements);
         await _unitOfWork.SaveChangesAsync();
 
         // Send SignalR announcements
@@ -59,6 +71,6 @@ public class SendBulkUserAnnouncementConsumer : IConsumer<SendBulkUserAnnounceme
                     CreatedTime = announcement.CreatedTime
                 });
             }
-        }
+        }*/
     }
 }

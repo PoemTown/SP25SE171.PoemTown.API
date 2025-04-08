@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MassTransit;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
@@ -103,6 +104,16 @@ public class FollowerService : IFollowerService
             throw new CoreException(StatusCodes.Status401Unauthorized, "You are not authorized to unfollow this user");
         }
 
+        // Delete announcment related to this follower
+        var announcement = await _unitOfWork.GetRepository<Announcement>().FindAsync(p => p.FollowerId == follower.Id);
+        if(announcement == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Announcement not found");
+        }
+            
+        // Delete all announcements related to this follower
+        _unitOfWork.GetRepository<Announcement>().DeletePermanent(announcement);
+        
         _unitOfWork.GetRepository<Follower>().DeletePermanent(follower);
         await _unitOfWork.SaveChangesAsync();
     }

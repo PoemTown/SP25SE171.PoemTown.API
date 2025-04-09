@@ -274,6 +274,11 @@ namespace PoemTown.Service.Services
                 throw new CoreException(StatusCodes.Status400BadRequest, "This record file is yours, cannot buy");
             }
 
+            if (recordFile.PoemId == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "This Record file is not belong to any Poem");
+            }
+            
             // Find user by id
             UsageRight? userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
                 .FindAsync(p => p.UserId == userId && p.RecordFileId == recordId);
@@ -353,7 +358,7 @@ namespace PoemTown.Service.Services
                     Description = $"Tiền hoa hồng từ bản quyền từ bài thơ {recordFile.Poem.Title}",
                     Type = TransactionType.CommissionFee,
                     UserEWalletId = userEWalletPoemOwner.Id,
-                    PoemId = recordFile.PoemId
+                    PoemId = recordFile.PoemId.Value
                 };
                 await _publishEndpoint.Publish(createTransactionEvent);
 

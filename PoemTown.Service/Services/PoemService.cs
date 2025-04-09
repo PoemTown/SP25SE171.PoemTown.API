@@ -419,9 +419,34 @@ public class PoemService : IPoemService
         var queryPaging = await _unitOfWork.GetRepository<RecordFile>()
             .GetPagination(recordFilesQuery, request.PageNumber, request.PageSize);
 
+        IList<GetRecordFileResponse> recordFiles = new List<GetRecordFileResponse>();
+        foreach (var recordFile in recordFiles)
+        {
+            var recordFileEntity = await _unitOfWork.GetRepository<RecordFile>()
+                .FindAsync(p => p.Id == recordFile.Id);
+
+            // If record file not found then continue
+            if (recordFileEntity == null)
+            {
+                continue;
+            }
+
+            recordFiles.Add(_mapper.Map<GetRecordFileResponse>(recordFileEntity));
+
+            // Assign author to record file by adding into the last element of the list
+            recordFiles.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(recordFileEntity.User);
+
+            if (recordFileEntity.Poem != null)
+            {
+                // Check if user is able to remove record file from this poem
+                recordFiles.Last().IsAbleToRemoveFromPoem =
+                    recordFileEntity.UserId == userId && recordFileEntity.Poem.UserId == userId;
+            }
+        }
+
         poemDetail.RecordFiles = new PaginationResponse<GetRecordFileResponse>
         (
-            _mapper.Map<IList<GetRecordFileResponse>>(queryPaging.Data),
+            recordFiles,
             queryPaging.PageNumber,
             queryPaging.PageSize,
             queryPaging.TotalRecords,
@@ -790,6 +815,7 @@ public class PoemService : IPoemService
                 _unitOfWork.GetRepository<RecordFile>().Update(recordFile);
             }
         }
+
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -1910,7 +1936,7 @@ public class PoemService : IPoemService
     public async Task RemoveRecordFileFromPoem(Guid userId, Guid recordFileId)
     {
         RecordFile? recordFile = await _unitOfWork.GetRepository<RecordFile>().FindAsync(p => p.Id == recordFileId);
-        
+
         // Check if record file is exists
         if (recordFile == null)
         {
@@ -1918,15 +1944,15 @@ public class PoemService : IPoemService
         }
 
         // Check if record file have no poemId
-        if (recordFile.PoemId == null)
+        if (recordFile.Poem == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Record file is not attached to any poem");
         }
-        
+
         // Check if user have right to remove record file from poem
-        if(recordFile.Poem != null && recordFile.Poem.UserId != userId)
+        if (recordFile.Poem.UserId != userId || recordFile.UserId != userId)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "User is not the poem owner");
+            throw new CoreException(StatusCodes.Status400BadRequest, "User is not the poem owner or record file owner");
         }
 
         recordFile.PoemId = null;

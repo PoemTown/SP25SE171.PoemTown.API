@@ -842,7 +842,7 @@ public class PoemsController : BaseController
     /// <summary>
     /// Upload ảnh được tạo từ AI lên AWS s3 storage, yêu cầu đăng nhập 
     /// </summary>
-    /// <param name="imageUrl"></param>
+    /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost]
     [Route("v1/image/ai")]
@@ -854,4 +854,20 @@ public class PoemsController : BaseController
         var response = await _poemService.DownloadAiImageAndUploadToS3Storage(request, userId);
         return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Upload image with AI successfully", response));
     }
+    
+    /// <summary>
+    /// Xóa bài ghi âm khỏi bài thơ của mình, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="recordFileId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/record-file")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> DeleteRecordFile([FromQuery] Guid recordFileId)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.RemoveRecordFileFromPoem(userId, recordFileId);
+        return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Delete record file successfully"));
+    }
+    
 }

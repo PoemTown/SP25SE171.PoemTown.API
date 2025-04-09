@@ -1906,4 +1906,31 @@ public class PoemService : IPoemService
         _unitOfWork.GetRepository<Poem>().Update(poem);
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task RemoveRecordFileFromPoem(Guid userId, Guid recordFileId)
+    {
+        RecordFile? recordFile = await _unitOfWork.GetRepository<RecordFile>().FindAsync(p => p.Id == recordFileId);
+        
+        // Check if record file is exists
+        if (recordFile == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Record file not found");
+        }
+
+        // Check if record file have no poemId
+        if (recordFile.PoemId == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Record file is not attached to any poem");
+        }
+        
+        // Check if user have right to remove record file from poem
+        if(recordFile.Poem != null && recordFile.Poem.UserId != userId)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User is not the poem owner");
+        }
+
+        recordFile.PoemId = null;
+        _unitOfWork.GetRepository<RecordFile>().Update(recordFile);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

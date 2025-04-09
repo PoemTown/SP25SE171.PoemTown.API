@@ -57,4 +57,5 @@ public interface IPoemService
     IList<SearchPointsResult> GetListQDrantSearchPoint(QDrantResponse<SearchPointsResult> response, int top);
     Task AdminUpdatePoemStatus(Guid poemId, PoemStatus status);
     Task<string> DownloadAiImageAndUploadToS3Storage(UploadAiPoemImageRequest request, Guid userId);
+    Task RemoveRecordFileFromPoem(Guid userId, Guid recordFileId);
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.RecordFileRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
@@ -26,5 +27,6 @@ namespace PoemTown.Service.Interfaces
         Task<PaginationResponse<GetRecordFileResponse>> GetUserRecord(string username,RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
         Task<PaginationResponse<GetRecordFileResponse>> GetMyRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
         Task<string> UploadRecordFile(Guid userId, IFormFile file);
+        Task<IActionResult> GetAudioStreamResultAsync(Guid id);
     }
 }

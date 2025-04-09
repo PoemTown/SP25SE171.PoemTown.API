@@ -31,8 +31,17 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
             throw new Exception("Order not found");
         }*/
         
+        UserEWallet? userEWallet;
+        if (order == null)
+        {
+            userEWallet = await _unitOfWork.GetRepository<UserEWallet>().FindAsync(p => p.Id == message.UserEWalletId);
+        }
         // Check if user e-wallet is null
-        UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>().FindAsync(p => p.Id == order.User.EWallet!.Id);
+        else
+        {
+            userEWallet = await _unitOfWork.GetRepository<UserEWallet>().FindAsync(p => p.Id == order.User.EWallet!.Id);
+        }
+
         if(userEWallet == null)
         {
             throw new Exception("User e-wallet not found");

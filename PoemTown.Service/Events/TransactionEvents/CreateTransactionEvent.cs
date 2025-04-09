@@ -4,6 +4,7 @@ namespace PoemTown.Service.Events.TransactionEvents;
 
 public class CreateTransactionEvent
 {
+    public Guid? UserEWalletId { get; set; }
     public string Description { get; set; }
     public decimal Amount { get; set; }
     public Guid? OrderId { get; set; }

@@ -3,4 +3,6 @@
 public class TheHiveAiSettings
 {
     public string ApiKey { get; set; }
+    public string FluxSchnellEnhancedUrl { get; set; }
+    public string SdxlEnhancedUrl { get; set; }
 }

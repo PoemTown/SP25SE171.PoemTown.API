@@ -6,6 +6,7 @@ public class ZaloPaySettings
     public string Key1 { get; set; }
     public string Key2 { get; set; }
     public string CallbackUrl { get; set; }
+    public string ZalopayCreateOrderUrl { get; set; }
     public bool IsValid()
     {
         if (String.IsNullOrWhiteSpace(AppId))
@@ -23,6 +24,10 @@ public class ZaloPaySettings
         if (String.IsNullOrWhiteSpace(CallbackUrl))
         {
             throw new ArgumentNullException("CallbackUrl is required");
+        }
+        if (String.IsNullOrWhiteSpace(ZalopayCreateOrderUrl))
+        {
+            throw new ArgumentNullException("ZalopayCreateOrderUrl is required");
         }
         return true;
     }

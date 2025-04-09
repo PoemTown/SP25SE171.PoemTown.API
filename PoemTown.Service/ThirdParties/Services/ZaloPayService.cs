@@ -20,7 +20,7 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
 {
     private readonly ZaloPaySettings _zaloPaySettings;
     private readonly IUnitOfWork _unitOfWork;
-    private const string ZalopayCreateOrderUrl = "https://sandbox.zalopay.com.vn/v001/tpe/createorder";
+
     public ZaloPayService(ZaloPaySettings zaloPaySettings, IUnitOfWork unitOfWork)
     {
         _zaloPaySettings = zaloPaySettings;
@@ -58,7 +58,7 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
         
         param.Add("mac", mac);
 
-        var result = await HttpHelper.PostFormAsync(ZalopayCreateOrderUrl, param);
+        var result = await HttpHelper.PostFormAsync(_zaloPaySettings.ZalopayCreateOrderUrl, param);
 
         return new ZaloPayResponseData()
         {

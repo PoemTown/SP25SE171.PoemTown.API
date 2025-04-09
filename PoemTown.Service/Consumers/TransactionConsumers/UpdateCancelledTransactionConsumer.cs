@@ -26,6 +26,7 @@ public class UpdateCancelledTransactionConsumer : IConsumer<UpdateCancelledTrans
         }
         transaction.Status = TransactionStatus.Cancelled;
         transaction.CancelledDate = DateTimeHelper.SystemTimeNow;
+        transaction.Balance = transaction.UserEWallet!.WalletBalance;
         
         _unitOfWork.GetRepository<Transaction>().Update(transaction);   
         await _unitOfWork.SaveChangesAsync();

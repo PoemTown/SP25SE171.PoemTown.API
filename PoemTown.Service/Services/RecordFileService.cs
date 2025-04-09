@@ -341,11 +341,15 @@ namespace PoemTown.Service.Services
             await _unitOfWork.SaveChangesAsync();
 
 
+            decimal amountOfRecordOwnerEarn;
+                
             // Deduct user e-wallet balance
             if (recordFile.SaleVersion == null)
             {
                 userEWallet.WalletBalance -= recordFile.Price;
-                userEWalletRecordOwner.WalletBalance += recordFile.Price;
+
+                amountOfRecordOwnerEarn = recordFile.Price;
+                userEWalletRecordOwner.WalletBalance += amountOfRecordOwnerEarn;
                 _unitOfWork.GetRepository<UserEWallet>().Update(userEWalletPoemOwner);
                 _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
                 await _unitOfWork.SaveChangesAsync();
@@ -362,9 +366,10 @@ namespace PoemTown.Service.Services
                 // Add commission to Poem Usage Right Holder e-wallet balance
                 userEWalletPoemOwner.WalletBalance += usageRightCommissionPrice;
                 
+                amountOfRecordOwnerEarn = recordFile.Price * (100 - recordFile.SaleVersion.CommissionPercentage) / 100;
                 // Add money to Record file Owner e-wallet balance
-                userEWalletRecordOwner.WalletBalance +=
-                    recordFile.Price * (100 - recordFile.SaleVersion.CommissionPercentage) / 100;
+                userEWalletRecordOwner.WalletBalance += amountOfRecordOwnerEarn; 
+                
                 CreateCommissionTransactionEvent createTransactionEvent = new CreateCommissionTransactionEvent()
                 {
                     Amount = recordFile.Price * recordFile.SaleVersion.CommissionPercentage / 100,
@@ -395,7 +400,7 @@ namespace PoemTown.Service.Services
             };
             await _publishEndpoint.Publish(message);
 
-            // Send announcement to record file owner
+            /*// Send announcement to record file owner
             await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
             {
                 UserId = recordFile.UserId,
@@ -404,6 +409,21 @@ namespace PoemTown.Service.Services
                 Type = AnnouncementType.RecordFile,
                 RecordFileId = recordFile.Id,
                 IsRead = false
+            });*/
+            
+            // Create transaction and announce to usage right holder
+            await _publishEndpoint.Publish(new CreateTransactionEvent()
+            {
+                IsAddToWallet = true,
+                Amount = amountOfRecordOwnerEarn,
+                DiscountAmount = 0,
+                AnnouncementTitle = "Tiền từ bán quyền sử dụng bài ngâm thơ",
+                AnnouncementContent =
+                    $"Bạn nhận được '{amountOfRecordOwnerEarn}VND' từ việc bán quyền sử dụng bài ngâm thơ '{recordFile.FileName}'",
+                Type = TransactionType.RecordFiles,
+                TransactionCode = OrderCodeGenerator.Generate(),
+                Description = $"Tiền từ việc bán quyền sử dụng bài ngâm thơ '{recordFile.FileName}'",
+                UserEWalletId = userEWalletRecordOwner.Id
             });
         }
 

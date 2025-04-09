@@ -11,4 +11,7 @@ public class UserGetTransactionResponse
     public decimal Amount { get; set; }
     public decimal? DiscountAmount { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
+    public string? TransactionCode { get; set; }
+    public bool? IsAddToWallet { get; set; }
+
 }

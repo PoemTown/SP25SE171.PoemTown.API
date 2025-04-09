@@ -124,6 +124,8 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
         };
 
         await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
+        await _unitOfWork.SaveChangesAsync();
+
         /*// Create order
         Order order = new Order()
         {
@@ -152,8 +154,8 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
             });
         }
         await _unitOfWork.GetRepository<OrderDetail>().InsertRangeAsync(orderDetails);
+        */
 
-        await _unitOfWork.SaveChangesAsync();*/
         
         // Return when deposit failed
         return new DepositUserEWalletResponse()

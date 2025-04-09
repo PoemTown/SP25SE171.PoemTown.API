@@ -12,8 +12,6 @@ public class TheHiveAiService : ITheHiveAiService
 {
     private readonly TheHiveAiSettings _theHiveAiSettings;
     private readonly IHttpClientFactory _httpClientFactory;
-    private static string FluxSchnellEnhancedUrl = "https://api.thehive.ai/api/v3/hive/flux-schnell-enhanced";
-    private static string SdxlEnhancedUrl = "https://api.thehive.ai/api/v3/hive/sdxl-enhanced";
     
     public TheHiveAiService(TheHiveAiSettings theHiveAiSettings,
         IHttpClientFactory httpClientFactory)
@@ -64,7 +62,7 @@ public class TheHiveAiService : ITheHiveAiService
 
         // Add authorization header
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_theHiveAiSettings.ApiKey}");
-        var response = await client.PostAsJsonAsync(FluxSchnellEnhancedUrl, requestBody);
+        var response = await client.PostAsJsonAsync(_theHiveAiSettings.FluxSchnellEnhancedUrl, requestBody);
 
         // Read response content
         var responseContent = await response.Content.ReadAsStringAsync();
@@ -113,7 +111,7 @@ public class TheHiveAiService : ITheHiveAiService
         
         // Add authorization header
         client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_theHiveAiSettings.ApiKey}");
-        var response = await client.PostAsJsonAsync(SdxlEnhancedUrl, requestBody);
+        var response = await client.PostAsJsonAsync(_theHiveAiSettings.SdxlEnhancedUrl, requestBody);
         
         // Read response content
         var responseContent = await response.Content.ReadAsStringAsync();

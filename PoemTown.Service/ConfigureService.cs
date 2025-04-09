@@ -251,7 +251,8 @@ public static class ConfigureService
                 AppId = zaloPayConfig.GetSection("AppId").Value,
                 Key1 = zaloPayConfig.GetSection("Key1").Value,
                 Key2 = zaloPayConfig.GetSection("Key2").Value,
-                CallbackUrl = zaloPayConfig.GetSection("CallbackUrl").Value
+                CallbackUrl = zaloPayConfig.GetSection("CallbackUrl").Value,
+                ZalopayCreateOrderUrl = zaloPayConfig.GetSection("ZalopayCreateOrderUrl").Value
             };
             zaloPaySettings.IsValid();
             return zaloPaySettings;
@@ -326,12 +327,14 @@ public static class ConfigureService
 
     private static void AddTheHiveAiSettings(this IServiceCollection services, IConfiguration configuration)
     {
-        var theHiveAiConfig = configuration.GetSection("TheHiveAiService:ApiKey");
+        var theHiveAiConfig = configuration.GetSection("TheHiveAiService");
         services.AddSingleton<TheHiveAiSettings>(options =>
         {
             var theHiveAiSettings = new TheHiveAiSettings
             {
-                ApiKey = theHiveAiConfig.Value ?? ""
+                ApiKey = theHiveAiConfig.GetSection("ApiKey").Value ?? "",
+                SdxlEnhancedUrl = theHiveAiConfig.GetSection("SdxlEnhancedUrl").Value ?? "",
+                FluxSchnellEnhancedUrl = theHiveAiConfig.GetSection("FluxSchnellEnhancedUrl").Value ?? ""
             };
             return theHiveAiSettings;
         });

@@ -62,7 +62,7 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
         {
             Title = String.IsNullOrEmpty(message.AnnouncementTitle) ? message.AnnouncementTitle : "Hóa đơn mua hàng",
             Content = String.IsNullOrEmpty(message.AnnouncementContent) ? message.AnnouncementContent : $"Hóa đơn: {transaction.Description} đã khởi tạo thành công",
-            UserId = order.User.Id,
+            UserId = transaction.UserEWallet.UserId,
             Type = AnnouncementType.Transaction,
             TransactionId = transaction.Id,
             IsRead = false

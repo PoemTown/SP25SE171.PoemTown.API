@@ -1573,6 +1573,7 @@ public class PoemService : IPoemService
             Type = TransactionType.Poems,
             TransactionCode = OrderCodeGenerator.Generate(),
             Description = $"Tiền từ việc bán quyền sử dụng bài thơ '{saleVersion.Poem.Title}'",
+            UserEWalletId = poemAuthorEWallet.Id
         });
     }
 

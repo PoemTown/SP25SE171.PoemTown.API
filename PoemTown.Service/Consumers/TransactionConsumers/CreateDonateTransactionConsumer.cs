@@ -49,7 +49,7 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
             {
                 Id = userTransactionId,
                 Amount = message.Amount,
-                Description = $"Quyên tặng {message.Amount}VND tới người dùng: " + receiveUserEWallet.User.FullName,
+                Description = $"Quyên tặng {message.Amount}VND tới người dùng '{receiveUserEWallet.User.FullName}' với lời nhắn là: '{message.DonateMessage}'",
                 ReceiveUserEWallet = receiveUserEWallet,
                 UserEWallet = userEWallet,
                 Type = TransactionType.Donate,
@@ -65,7 +65,7 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
             {
                 Id = receiveTransactionId,
                 Amount = message.Amount,
-                Description = $"Nhận {message.Amount}VND từ người dùng: " + userEWallet.User.FullName,
+                Description = $"Nhận {message.Amount}VND từ người dùng: '{userEWallet.User.FullName}' với lời nhắn là: '{message.DonateMessage}'",
                 UserEWallet = receiveUserEWallet,
                 Type = TransactionType.Donate,
                 Balance = receiveUserEWallet.WalletBalance,

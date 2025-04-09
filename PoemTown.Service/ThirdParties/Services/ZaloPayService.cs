@@ -118,6 +118,7 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
             Description = orderCreationSettings.Description,
             Token = response.ZpTransToken,
             TransactionToken = response.OrderToken,
+            TransactionCode = response.OrderCode,
             Type = TransactionType.EWalletDeposit,
             Status = TransactionStatus.Pending,
             PaymentGateway = await _unitOfWork.GetRepository<PaymentGateway>().FindAsync(p => p.Name == "Zalopay"),

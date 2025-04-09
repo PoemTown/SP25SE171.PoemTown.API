@@ -1,20 +1,28 @@
 ﻿using System.Security.Claims;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
 using PoemTown.Service.BusinessModels.RequestModels.UserRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
+using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.QueryOptions.FilterOptions.UserFilters;
+using PoemTown.Service.QueryOptions.RequestOptions;
+using PoemTown.Service.QueryOptions.SortOptions.UserSorts;
 
 namespace PoemTown.API.Controllers;
 
 public class UsersController : BaseController
 {
     private readonly IUserService _userService;
-    public UsersController(IUserService userService)
+    private readonly IMapper _mapper;
+    public UsersController(IUserService userService,
+        IMapper mapper)
     {
         _userService = userService;
+        _mapper = mapper;
     }
     
     /// <summary>
@@ -133,5 +141,29 @@ public class UsersController : BaseController
         var response = await _userService.GetUserOnlineProfileResponse(userId, userName);
         return Ok(new BaseResponse<GetUserOnlineProfileResponse>(StatusCodes.Status200OK, "User online profile retrieved successfully", response));
     }
-    
+
+    /// <summary>
+    /// Lấy danh sách người dùng, không cần đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// sortOptions:
+    ///
+    /// - CreatedTimeAscending = 1,
+    /// - CreatedTimeDescending = 2,
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1")]
+    public async Task<ActionResult<BasePaginationResponse<GetUsersResponse>>>
+        GetUsers(RequestOptionsBase<GetUserFilterOption, GetUserSortOption> request)
+    {
+        var paginationResponse = await _userService.GetUserProfiles(request);
+
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetUsersResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Users retrieved successfully";
+
+        return Ok(basePaginationResponse);
+    }
 }

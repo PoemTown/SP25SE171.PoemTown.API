@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Accounts;
@@ -12,6 +13,9 @@ using PoemTown.Service.BusinessModels.RequestModels.UserRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.TemplateResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.QueryOptions.FilterOptions.UserFilters;
+using PoemTown.Service.QueryOptions.RequestOptions;
+using PoemTown.Service.QueryOptions.SortOptions.UserSorts;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Service.ThirdParties.Models.AwsS3;
 
@@ -163,5 +167,39 @@ public class UserService : IUserService
         userOnlineProfileResponse.IsFollowed = loginUser != null && loginUser.FollowUser != null && loginUser.FollowUser.Any(p => p.FollowedUserId == user.Id);
         
         return userOnlineProfileResponse;
+    }
+
+    public async Task<PaginationResponse<GetUsersResponse>> 
+        GetUserProfiles(RequestOptionsBase<GetUserFilterOption, GetUserSortOption> request)
+    {
+        var userProfileQuery = _unitOfWork.GetRepository<User>().AsQueryable();
+
+        userProfileQuery = userProfileQuery.Where(p => p.DeletedTime == null);
+        
+        // FIlter
+        if (request.FilterOptions != null)
+        {
+            if (request.FilterOptions.UserName != null)
+            {
+                userProfileQuery = userProfileQuery.Where(p => p.UserName!.ToLower().Trim().Contains(request.FilterOptions.UserName.Trim().ToLower()));
+            }
+        }
+        
+        // Sort
+        userProfileQuery = request.SortOptions switch
+        {
+            GetUserSortOption.CreatedTimeAscending => userProfileQuery.OrderBy(p => p.CreatedTime),
+            GetUserSortOption.CreatedTimeDescending => userProfileQuery.OrderByDescending(p => p.CreatedTime),
+            _ => userProfileQuery.OrderByDescending(p => p.CreatedTime)
+        };
+        
+        // Pagination
+        var queryPaging = await _unitOfWork.GetRepository<User>()
+            .GetPagination(userProfileQuery, request.PageNumber, request.PageSize);
+
+        var userProfiles = _mapper.Map<IList<GetUsersResponse>>(queryPaging.Data);
+
+        return new PaginationResponse<GetUsersResponse>(userProfiles, queryPaging.PageNumber, queryPaging.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
 }

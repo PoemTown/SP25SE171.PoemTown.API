@@ -12,7 +12,7 @@ public class GetTransactionResponse
     public decimal? Balance { get; set; } = default;
     public DateTimeOffset CreatedTime { get; set; }
     public string? TransactionCode { get; set; }
-    public string? Status { get; set; }
+    public TransactionStatus? Status { get; set; }
     public string? BankCode { get; set; }
     public DateTimeOffset? PaidDate { get; set; }
     public DateTimeOffset? CancelledDate { get; set; }

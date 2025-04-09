@@ -42,6 +42,12 @@ public class TransactionsController : BaseController
     /// - CreatedTimeDescending = 2,
     /// - AmountAscending = 3,
     /// - AmountDescending = 4,
+    ///
+    /// status:
+    ///
+    /// - Pending = 1,
+    /// - Paid = 2,
+    /// - Cancelled = 3,
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -85,6 +91,12 @@ public class TransactionsController : BaseController
     /// - AmountDescending = 4,
     /// - TransactionTypeAscending = 5,
     /// - TransactionTypeDescending = 6,
+    ///
+    /// status:
+    ///
+    /// - Pending = 1,
+    /// - Paid = 2,
+    /// - Cancelled = 3,
     /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -117,6 +129,12 @@ public class TransactionsController : BaseController
     /// - Poems = 4,
     /// - Withdraw = 5,
     /// - Donate = 6,
+    ///
+    /// status:
+    ///
+    /// - Pending = 1,
+    /// - Paid = 2,
+    /// - Cancelled = 3,
     /// </remarks>
     /// <param name="transactionId"></param>
     /// <returns></returns>

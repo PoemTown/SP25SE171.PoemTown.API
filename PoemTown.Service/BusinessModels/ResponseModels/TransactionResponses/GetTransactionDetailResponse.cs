@@ -17,7 +17,7 @@ public class GetTransactionDetailResponse
     public string? BankCode { get; set; }
     public string? Checksum { get; set; }
     public string? TransactionCode { get; set; }
-    public string? Status { get; set; }
+    public TransactionStatus? Status { get; set; }
     public DateTimeOffset? PaidDate { get; set; }
     public DateTimeOffset? CancelledDate { get; set; }
     public bool? IsAddToWallet { get; set; }

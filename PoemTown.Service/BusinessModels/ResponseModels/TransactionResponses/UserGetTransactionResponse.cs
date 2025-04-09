@@ -13,5 +13,6 @@ public class UserGetTransactionResponse
     public DateTimeOffset CreatedTime { get; set; }
     public string? TransactionCode { get; set; }
     public bool? IsAddToWallet { get; set; }
+    public TransactionStatus? Status { get; set; }
 
 }

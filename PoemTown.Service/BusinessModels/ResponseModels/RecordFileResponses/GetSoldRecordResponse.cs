@@ -10,6 +10,7 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses
 {
     public class GetSoldRecordResponse
     {
+        public Guid? Id { get; set; }
         public string? FileName { get; set; }
         public decimal Price { get; set; }
         public string FileUrl { get; set; }

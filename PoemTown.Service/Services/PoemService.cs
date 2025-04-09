@@ -13,6 +13,7 @@ using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.SaleVersions;
 using PoemTown.Repository.Enums.TargetMarks;
+using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Enums.UsageRights;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
@@ -27,6 +28,7 @@ using PoemTown.Service.Consumers.AnnouncementConsumers;
 using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.OrderEvents;
 using PoemTown.Service.Events.PoemEvents;
+using PoemTown.Service.Events.TransactionEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.PlagiarismDetector.Interfaces;
 using PoemTown.Service.PlagiarismDetector.PDModels;
@@ -1485,6 +1487,15 @@ public class PoemService : IPoemService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet balance is not enough");
         }
+        
+        // Get poem Author e-wallet
+        UserEWallet? poemAuthorEWallet = await _unitOfWork.GetRepository<UserEWallet>()
+            .FindAsync(p => p.UserId == saleVersion.Poem.UserId);
+        
+        if(poemAuthorEWallet == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem author e-wallet not found");
+        }
 
         UsageRight? usageRight = await _unitOfWork.GetRepository<UsageRight>()
             .FindAsync(p => p.UserId == userId
@@ -1513,8 +1524,11 @@ public class PoemService : IPoemService
 
         // Deduct user e-wallet balance
         userEWallet.WalletBalance -= saleVersion.Price;
-
         _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
+        
+        // Add poem author e-wallet ballance
+        poemAuthorEWallet.WalletBalance += saleVersion.Price;
+        _unitOfWork.GetRepository<UserEWallet>().Update(poemAuthorEWallet);
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -1528,11 +1542,11 @@ public class PoemService : IPoemService
             SaleVersionId = saleVersion.Id,
             PaidDate = DateTimeHelper.SystemTimeNow,
             DiscountAmount = 0,
-            UserId = userId
+            UserId = userId,
         };
         await _publishEndpoint.Publish(message);
 
-        // Get purchase user information
+        /*// Get purchase user information
         User? purchaseUser = await _unitOfWork.GetRepository<User>()
             .FindAsync(p => p.Id == userId);
         if (purchaseUser != null)
@@ -1541,11 +1555,25 @@ public class PoemService : IPoemService
             await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
             {
                 UserId = saleVersion.Poem.UserId,
-                Title = $"Quyền sử dụng bài thơ '{saleVersion.Poem.Title}'",
+                Title = message $"Quyền sử dụng bài thơ '{saleVersion.Poem.Title}'",
                 Content = $"{purchaseUser.UserName}: đã mua quyền sử dụng bài thơ '{saleVersion.Poem.Title}' của bạn",
                 IsRead = false
             });
-        }
+        }*/
+        
+        // Create transaction and announce to usage right holder
+        await _publishEndpoint.Publish(new CreateTransactionEvent()
+        {
+            IsAddToWallet = true,
+            Amount = saleVersion.Price,
+            DiscountAmount = 0,
+            AnnouncementTitle = "Bán quyền sử dụng bài thơ",
+            AnnouncementContent =
+                $"Bạn nhận được '{saleVersion.Price}VND' từ việc bán quyền sử dụng bài thơ '{saleVersion.Poem.Title}'",
+            Type = TransactionType.Poems,
+            TransactionCode = OrderCodeGenerator.Generate(),
+            Description = $"Tiền từ việc bán quyền sử dụng bài thơ '{saleVersion.Poem.Title}'",
+        });
     }
 
     public async Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request)

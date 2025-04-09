@@ -1,7 +1,9 @@
 ﻿using MassTransit;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Announcements;
+using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AnnouncementRequests;
 using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.TransactionEvents;
@@ -24,10 +26,10 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
         
         // Check if order is null
         Order? order = await _unitOfWork.GetRepository<Order>().FindAsync(p => p.Id == message.OrderId);
-        if(order == null)
+        /*if(order == null)
         {
             throw new Exception("Order not found");
-        }
+        }*/
         
         // Check if user e-wallet is null
         UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>().FindAsync(p => p.Id == order.User.EWallet!.Id);
@@ -41,11 +43,15 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
         {
             Amount = message.Amount,
             Description = message.Description,
-            Order = order,
+            Order = order ?? null,
             Type = message.Type,
             DiscountAmount = message.DiscountAmount,
             UserEWallet = userEWallet,
-            Balance = userEWallet.WalletBalance
+            Balance = userEWallet.WalletBalance,
+            Status = TransactionStatus.Paid,
+            PaidDate = DateTimeHelper.SystemTimeNow,
+            TransactionCode = message.TransactionCode,
+            IsAddToWallet = false,
         };
         
         await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);

@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Orders;
+using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.UserEWalletRequests;
@@ -109,7 +110,21 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
             };
         }
 
-        // Create order
+        Transaction transaction = new Transaction()
+        {
+            UserEWalletId = request.UserEWalletId,
+            Amount = request.Amount,
+            AppId = response.AppId,
+            Description = orderCreationSettings.Description,
+            Token = response.ZpTransToken,
+            TransactionToken = response.OrderToken,
+            Type = TransactionType.EWalletDeposit,
+            Status = TransactionStatus.Pending,
+            PaymentGateway = await _unitOfWork.GetRepository<PaymentGateway>().FindAsync(p => p.Name == "Zalopay"),
+        };
+
+        await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
+        /*// Create order
         Order order = new Order()
         {
             UserId = request.UserId,
@@ -138,7 +153,7 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
         }
         await _unitOfWork.GetRepository<OrderDetail>().InsertRangeAsync(orderDetails);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();*/
         
         // Return when deposit failed
         return new DepositUserEWalletResponse()

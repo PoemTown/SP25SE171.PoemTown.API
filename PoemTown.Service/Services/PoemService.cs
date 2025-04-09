@@ -898,13 +898,13 @@ public class PoemService : IPoemService
             if (!String.IsNullOrWhiteSpace(request.FilterOptions.Title))
             {
                 poemQuery = poemQuery.Where(p =>
-                    p.Title!.Contains(request.FilterOptions.Title, StringComparison.OrdinalIgnoreCase));
+                    p.Title!.Trim().ToLower().Contains(request.FilterOptions.Title.Trim().ToLower()));
             }
 
             if (!String.IsNullOrWhiteSpace(request.FilterOptions.ChapterName))
             {
                 poemQuery = poemQuery.Where(p =>
-                    p.ChapterName!.Contains(request.FilterOptions.ChapterName, StringComparison.OrdinalIgnoreCase));
+                    p.ChapterName!.ToLower().Trim().Contains(request.FilterOptions.ChapterName.ToLower().Trim()));
             }
 
             if (request.FilterOptions.Type != null)

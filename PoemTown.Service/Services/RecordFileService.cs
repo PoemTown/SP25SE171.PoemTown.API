@@ -38,6 +38,9 @@ using System.Text;
 using System.Threading.Tasks;
 using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Service.Events.AnnouncementEvents;
+using Microsoft.AspNetCore.Mvc;
+using System.Runtime.InteropServices;
+using static Betalgo.Ranul.OpenAI.ObjectModels.RealtimeModels.RealtimeEventTypes;
 
 namespace PoemTown.Service.Services
 {
@@ -47,17 +50,20 @@ namespace PoemTown.Service.Services
         private readonly IMapper _mapper;
         private readonly IAwsS3Service _awsS3Service;
         private readonly IPublishEndpoint _publishEndpoint;
-
+        private readonly IHttpClientFactory _httpClientFactory;
         public RecordFileService(IUnitOfWork unitOfWork,
             IMapper mapper,
             IAwsS3Service awsS3Service,
-            IPublishEndpoint publishEndpoint
+            IPublishEndpoint publishEndpoint,
+            IHttpClientFactory httpClientFactory
+
         )
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _awsS3Service = awsS3Service;
             _publishEndpoint = publishEndpoint;
+            _httpClientFactory = httpClientFactory;
         }
 
         public async Task CreateNewRecord(Guid userId, Guid poemID, CreateNewRecordFileRequest request)
@@ -277,6 +283,13 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "User already purchased this record file");
             }
+
+           /* var utc7Now = DateTime.UtcNow.AddHours(7);
+            var utc7Today = utc7Now.Date;
+            if (userPoemRecordFile.CopyRightValidTo < utc7Today)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Bài thơ hết quyền sử dụng nên không mua được bản ghi âm này nữa");
+            }*/
 
             UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>()
                 .FindAsync(p => p.UserId == userId);
@@ -690,5 +703,35 @@ namespace PoemTown.Service.Services
 
             return await _awsS3Service.UploadAudioToAwsS3Async(s3Model);
         }
+
+        public async Task<IActionResult> GetAudioStreamResultAsync(Guid id)
+        {
+            var record = await _unitOfWork.GetRepository<RecordFile>().FindAsync(r => r.Id == id);
+            if (record == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Record not found");
+            }
+
+            // Sử dụng IHttpClientFactory để lấy file stream từ URL gốc (S3, Firebase, v.v.)
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.GetAsync(record.FileUrl, HttpCompletionOption.ResponseHeadersRead);
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Lỗi khi truy xuất file từ server lưu trữ.");
+
+            }
+            // Đọc stream từ response
+            var stream = await response.Content.ReadAsStreamAsync();
+
+            // Lấy MIME type từ header, nếu không có dùng mặc định audio/mpeg
+            var contentType = response.Content.Headers.ContentType?.ToString() ?? "audio/mpeg";
+
+            // enableRangeProcessing: true cho phép client yêu cầu một đoạn (seek) của file
+            return new FileStreamResult(stream, contentType)
+            {
+                EnableRangeProcessing = true
+            };
+        }
+
     }
 }

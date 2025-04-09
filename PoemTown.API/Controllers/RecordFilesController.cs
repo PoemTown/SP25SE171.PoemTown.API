@@ -253,5 +253,23 @@ namespace PoemTown.API.Controllers
             var response = await _service.UploadRecordFile(userId, file);
             return Ok(new BaseResponse<string>(StatusCodes.Status201Created, "Upload audio successfully", response));
         }
+
+
+
+        [HttpGet]
+        [Route("v1/audio-stream/{id}")]
+        [Authorize]
+        public async Task<IActionResult> StreamAudio(Guid id)
+        {
+
+            var fileStreamResult = await _service.GetAudioStreamResultAsync(id);
+            if (fileStreamResult == null)
+            {
+                return NotFound("Không tìm thấy file audio.");
+            }
+            return fileStreamResult;
+
+        }
+
     }
 }

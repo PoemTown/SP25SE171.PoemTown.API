@@ -151,7 +151,7 @@ public class UserEWalletService : IUserEWalletService
             {
                 UserId = receiveUser.Id,
                 WalletBalance = 0,
-                WalletStatus = WalletStatus.Active
+                WalletStatus = WalletStatus.Active,
             };
             await _unitOfWork.GetRepository<UserEWallet>().InsertAsync(receiveUserEWallet);
             await _unitOfWork.SaveChangesAsync();
@@ -192,7 +192,7 @@ public class UserEWalletService : IUserEWalletService
         {
             UserId = receiveUser.Id,
             Title = "Tiền quyên tặng",
-            Content = $"Bạn đã nhận được khoản quyên tặng: {request.Amount}VNĐ từ {userEWallet.User.UserName}",
+            Content = $"Bạn đã nhận được khoản quyên tặng: +{request.Amount}VNĐ từ {userEWallet.User.UserName}",
             IsRead = false
         });
     }

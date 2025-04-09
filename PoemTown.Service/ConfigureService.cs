@@ -137,6 +137,8 @@ public static class ConfigureService
             config.AddConsumer<SendUserAnnouncementConsumer>();
             config.AddConsumer<SendBulkUserAnnouncementConsumer>();
             config.AddConsumer<UpdateAndSendUserAnnouncementConsumer>();
+            config.AddConsumer<UpdatePaidTransactionConsumer>();
+            config.AddConsumer<UpdateCancelledTransactionConsumer>();
             
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>

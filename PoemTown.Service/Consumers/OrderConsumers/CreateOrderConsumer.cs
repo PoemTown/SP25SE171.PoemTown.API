@@ -109,7 +109,8 @@ public class CreateOrderConsumer : IConsumer<CreateOrderEvent>
             Description = $"Thanh toán {message.Amount}VND cho đơn hàng: {order.OrderCode}",
             OrderId = order.Id,
             Type = (TransactionType) order.Type,
-            DiscountAmount = message.DiscountAmount
+            DiscountAmount = message.DiscountAmount,
+            TransactionCode = order.OrderCode
         };
         
         await _publishEndpoint.Publish(createTransactionEvent);

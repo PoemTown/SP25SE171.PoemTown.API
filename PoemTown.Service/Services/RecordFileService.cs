@@ -704,7 +704,7 @@ namespace PoemTown.Service.Services
             // Upload audio file to AWS S3
             var fileExtension = Path.GetExtension(file.FileName);
             var fileName =
-                $"recordings/{StringHelper.CapitalizeString(userId.ToString())}-{DateTime.UtcNow.Ticks}{fileExtension}";
+                $"recordings/{StringHelper.CapitalizeString(userId.ToString())}-{DateTime.UtcNow.Ticks}";
 
             UploadFileToAwsS3Model s3Model = new UploadFileToAwsS3Model()
             {
@@ -723,7 +723,6 @@ namespace PoemTown.Service.Services
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record not found");
             }
 
-            // Sử dụng IHttpClientFactory để lấy file stream từ URL gốc (S3, Firebase, v.v.)
             var client = _httpClientFactory.CreateClient();
             var response = await client.GetAsync(record.FileUrl, HttpCompletionOption.ResponseHeadersRead);
             if (!response.IsSuccessStatusCode)
@@ -734,6 +733,11 @@ namespace PoemTown.Service.Services
             // Đọc stream từ response
             var stream = await response.Content.ReadAsStreamAsync();
 
+            /*using (var fileStream = File.Create("test_audio.mp3"))
+            {
+                await stream.CopyToAsync(fileStream);
+            }
+*/
             // Lấy MIME type từ header, nếu không có dùng mặc định audio/mpeg
             var contentType = response.Content.Headers.ContentType?.ToString() ?? "audio/mpeg";
 

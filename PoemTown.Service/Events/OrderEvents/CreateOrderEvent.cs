@@ -15,5 +15,4 @@ public class CreateOrderEvent
     public DateTimeOffset PaidDate { get; set; }
     public decimal DiscountAmount { get; set; }
     public Guid UserId { get; set; }
-    public bool? IsAddToWallet { get; set; }
 }

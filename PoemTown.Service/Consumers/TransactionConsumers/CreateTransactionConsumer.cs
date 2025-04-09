@@ -51,7 +51,7 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
             Status = TransactionStatus.Paid,
             PaidDate = DateTimeHelper.SystemTimeNow,
             TransactionCode = message.TransactionCode,
-            IsAddToWallet = false,
+            IsAddToWallet = message.IsAddToWallet,
         };
         
         await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
@@ -60,9 +60,9 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
         // Publish event create announcement
         await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
         {
-            Title = "Hóa đơn mua hàng",
-            Content = $"Hóa đơn: {transaction.Description} đã khởi tạo thành công",
-            UserId = order.User.Id,
+            Title = String.IsNullOrEmpty(message.AnnouncementTitle) ? message.AnnouncementTitle : "Hóa đơn mua hàng",
+            Content = String.IsNullOrEmpty(message.AnnouncementContent) ? message.AnnouncementContent : $"Hóa đơn: {transaction.Description} đã khởi tạo thành công",
+            UserId = transaction.UserEWallet.UserId,
             Type = AnnouncementType.Transaction,
             TransactionId = transaction.Id,
             IsRead = false

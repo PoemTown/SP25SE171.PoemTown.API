@@ -88,43 +88,85 @@ namespace PoemTown.Service.Services
 
 
 
-        public async Task<PaginationResponse<GetChatPartner>> GetChatPartners(Guid? userId, RequestOptionsBase<GetChatPartnerFilter, GetChatPartnerSort> request)
+        public async Task<PaginationResponse<GetChatPartner>> GetChatPartners(
+           Guid? userId,
+           RequestOptionsBase<GetChatPartnerFilter, GetChatPartnerSort> request)
         {
-            var message = _unitOfWork.GetRepository<Message>().AsQueryable();
-            var fromUsers = message
-                .Where(m => m.FromUserId == userId && m.DeletedTime == null)
-                .Select(m => m.ToUser); // Chỉ chọn ToUser
+            var messageRepo = _unitOfWork.GetRepository<Message>();
+            var userRepo = _unitOfWork.GetRepository<User>();
 
-            var toUsers = message
-                .Where(m => m.ToUserId == userId && m.DeletedTime == null)
-                .Select(m => m.FromUser); // Chỉ chọn FromUser
+            // B1: Lấy tất cả tin nhắn liên quan đến user → lên bộ nhớ
+            var messages = await messageRepo.AsQueryable()
+                .Where(m => m.DeletedTime == null && (m.FromUserId == userId || m.ToUserId == userId))
+                .OrderByDescending(m => m.CreatedTime)
+                .Select(m => new
+                {
+                    PartnerId = m.FromUserId == userId ? m.ToUserId : m.FromUserId,
+                    CreatedTime = m.CreatedTime,
+                    MessageId = m.Id
+                })
+                .ToListAsync();
 
-            var partnerUsers = fromUsers.Concat(toUsers).Distinct();
-            //----------------------------------------------------------------------------------------------------------------------------------//
-            var queryPaging = await _unitOfWork.GetRepository<User>()
-                            .GetPagination(partnerUsers, request.PageNumber, request.PageSize);
+            // B2: Group by PartnerId → lấy message mới nhất với mỗi người
+            var latestMessages = messages
+                .GroupBy(m => m.PartnerId)
+                .Select(g => g.First()) // vì đã sort trước rồi
+                .OrderByDescending(m => m.CreatedTime)
+                .ToList();
 
-            IList<GetChatPartner> partners = new List<GetChatPartner>();
-            foreach (var partnerUser in queryPaging.Data)
+            // B3: Join với bảng User theo đúng thứ tự message mới nhất
+            var partnerIds = latestMessages.Select(x => x.PartnerId).ToList();
+
+            var allPartners = await userRepo.AsQueryable()
+                .Where(u => partnerIds.Contains(u.Id))
+                .ToListAsync();
+
+            var joined = latestMessages
+                .Join(allPartners,
+                    msg => msg.PartnerId,
+                    user => user.Id,
+                    (msg, user) => new
+                    {
+                        User = user,
+                        LastMessageTime = msg.CreatedTime
+                    })
+                .OrderByDescending(x => x.LastMessageTime)
+                .ToList();
+
+            // B4: Phân trang thủ công
+            var totalRecords = joined.Count;
+            var skip = (request.PageNumber - 1) * request.PageSize;
+            var paged = joined.Skip(skip).Take(request.PageSize).ToList();
+
+            // B5: Map và thêm tin nhắn cuối cùng
+            IList<GetChatPartner> result = new List<GetChatPartner>();
+            foreach (var item in paged)
             {
-                var chatPartner = _mapper.Map<GetChatPartner>(partnerUser);
-                partners.Add(chatPartner);
-                var lastMessage = await _unitOfWork.GetRepository<Message>()
-                        .AsQueryable()
-                        .Where(m =>
-                            (m.FromUserId == userId && m.ToUserId == partnerUser.Id) ||
-                            (m.FromUserId == partnerUser.Id && m.ToUserId == userId))
-                        .OrderByDescending(m => m.CreatedTime)
-                        .FirstOrDefaultAsync();
+                var chatPartner = _mapper.Map<GetChatPartner>(item.User);
+
+                var lastMessage = await messageRepo.AsQueryable()
+                    .Where(m =>
+                        (m.FromUserId == userId && m.ToUserId == item.User.Id) ||
+                        (m.FromUserId == item.User.Id && m.ToUserId == userId))
+                    .OrderByDescending(m => m.CreatedTime)
+                    .FirstOrDefaultAsync();
 
                 if (lastMessage != null)
                 {
                     chatPartner.LastMessage = _mapper.Map<GetMesssageWithPartner>(lastMessage);
                 }
+
+                result.Add(chatPartner);
             }
-            return new PaginationResponse<GetChatPartner>(partners, queryPaging.PageNumber, queryPaging.PageSize,
-            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+
+            return new PaginationResponse<GetChatPartner>(
+                result,
+                request.PageNumber,
+                request.PageSize,
+                totalRecords,
+                result.Count);
         }
+
 
 
         public async Task<PaginationResponse<GetMesssageWithPartner>> GetPrivateMessagesWithUser(Guid? fromUserId, Guid toUserId, RequestOptionsBase<object, object> request)

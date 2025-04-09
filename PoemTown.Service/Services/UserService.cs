@@ -172,9 +172,16 @@ public class UserService : IUserService
     public async Task<PaginationResponse<GetUsersResponse>> 
         GetUserProfiles(RequestOptionsBase<GetUserFilterOption, GetUserSortOption> request)
     {
+        Guid roleUserId = await _unitOfWork.GetRepository<Role>()
+            .AsQueryable()
+            .Where(p => p.Name == "USER")
+            .Select(p => p.Id)
+            .FirstOrDefaultAsync();
+        
         var userProfileQuery = _unitOfWork.GetRepository<User>().AsQueryable();
-
+        
         userProfileQuery = userProfileQuery.Where(p => p.DeletedTime == null);
+        userProfileQuery = userProfileQuery.Where(p => p.UserRoles.Any(ur => ur.RoleId == roleUserId));
         
         // FIlter
         if (request.FilterOptions != null)

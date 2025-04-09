@@ -330,5 +330,42 @@ namespace PoemTown.API.Controllers
             
             return Ok(basePaginationResponse);
         }
+        
+        /// <summary>
+        /// Lấy danh sách tất cả bộ sưu tập, không yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        /// TargetMark Type:
+        /// 
+        /// - Poem = 1,
+        /// - Collection = 2
+        ///
+        /// SortOptions: Sắp xếp bộ sưu tập theo thứ tự
+        ///
+        /// - 1: CreateTimeAscending (Thời gian cũ đến mới)
+        /// - 2: CreateTimeDescending (Thời gian mới đến cũ)
+        /// </remarks>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/all")]
+        public async Task<ActionResult<BasePaginationResponse<GetCollectionResponse>>>
+            GetAllCollections(RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        {
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }  
+            
+            var result = await _service.GetAllCollections(userId, request);
+            
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetCollectionResponse>>(result);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get all collections successfully";
+            
+            return Ok(basePaginationResponse);
+        }
     }
 }

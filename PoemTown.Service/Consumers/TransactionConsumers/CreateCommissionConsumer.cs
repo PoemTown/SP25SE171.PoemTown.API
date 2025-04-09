@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PoemTown.Repository.Enums.Announcements;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.Events.AnnouncementEvents;
 
 namespace PoemTown.Service.Consumers.TransactionConsumers
@@ -44,7 +45,11 @@ namespace PoemTown.Service.Consumers.TransactionConsumers
                 Description = message.Description,
                 Type = message.Type,
                 UserEWallet = userEWallet,
-                Balance = userEWallet.WalletBalance
+                Balance = userEWallet.WalletBalance,
+                Status = TransactionStatus.Paid,
+                PaidDate = DateTimeOffset.Now,
+                TransactionCode = OrderCodeGenerator.Generate(),
+                IsAddToWallet = true,
             };
 
             await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);

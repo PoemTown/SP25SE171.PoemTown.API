@@ -201,11 +201,12 @@ public class PoemService : IPoemService
         {
             var announcePoem = await _unitOfWork.GetRepository<Poem>()
                 .FindAsync(p => p.Id == poem.Id);
-            
+
             if (announcePoem == null)
             {
                 return;
             }
+
             // Announce user when poem created
             await AnnounceUserWhenPoemCreated(userId, announcePoem);
         }
@@ -308,11 +309,12 @@ public class PoemService : IPoemService
         {
             var announcePoem = await _unitOfWork.GetRepository<Poem>()
                 .FindAsync(p => p.Id == poem.Id);
-            
+
             if (announcePoem == null)
             {
                 return;
             }
+
             // Announce user when poem created
             await AnnounceUserWhenPoemCreated(userId, announcePoem);
         }
@@ -732,11 +734,12 @@ public class PoemService : IPoemService
         {
             var announcePoem = await _unitOfWork.GetRepository<Poem>()
                 .FindAsync(p => p.Id == poem.Id);
-            
+
             if (announcePoem == null)
             {
                 return;
             }
+
             // Announce user when poem created
             await AnnounceUserWhenPoemCreated(userId, announcePoem);
         }
@@ -754,12 +757,39 @@ public class PoemService : IPoemService
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
         }
 
-        // If poem is posted then throw exception
+        /*// If poem is posted then throw exception
         if (poem.Status != PoemStatus.Draft)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not a draft, cannot delete");
+        }*/
+
+        // If poem is in sale, then can not delete
+        var existInSaleSaleVersion = await _unitOfWork.GetRepository<SaleVersion>()
+            .AsQueryable()
+            .AnyAsync(p => p.PoemId == poem.Id && p.Status == SaleVersionStatus.InSale);
+
+        if (existInSaleSaleVersion)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is in sale, cannot delete");
         }
 
+        // If poem is free, then update all RecordFile poemId into null
+        var existFreeSaleVersion = await _unitOfWork.GetRepository<SaleVersion>()
+            .AsQueryable()
+            .AnyAsync(p => p.PoemId == poem.Id && p.Status == SaleVersionStatus.Free);
+        if (existFreeSaleVersion)
+        {
+            var recordFiles = await _unitOfWork.GetRepository<RecordFile>()
+                .AsQueryable()
+                .Where(p => p.PoemId == poem.Id)
+                .ToListAsync();
+
+            foreach (var recordFile in recordFiles)
+            {
+                recordFile.PoemId = null;
+                _unitOfWork.GetRepository<RecordFile>().Update(recordFile);
+            }
+        }
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
     }

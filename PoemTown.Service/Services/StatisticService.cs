@@ -5,6 +5,7 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Accounts;
 using PoemTown.Repository.Enums.Orders;
 using PoemTown.Repository.Enums.Poems;
+using PoemTown.Repository.Enums.TargetMarks;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
@@ -42,14 +43,18 @@ public class StatisticService : IStatisticService
             .SelectMany(c => c.Poems)
             .Where(p => p.DeletedTime == null);
 
+        var totalPoemBookmarks =await _unitOfWork.GetRepository<TargetMark>().AsQueryable()
+            .Where(pt => pt.MarkByUserId == userId && pt.Type == TargetMarkType.Poem).CountAsync();
+        var totalCollectionBookmarks = await _unitOfWork.GetRepository<TargetMark>().AsQueryable()
+            .Where(pt => pt.MarkByUserId == userId && pt.Type == TargetMarkType.Collection).CountAsync();
         // Truy vấn tuần tự để tránh lỗi DbContext bị sử dụng đồng thời
         var totalCollections = await collections.CountAsync();
         var totalPoems = await poemsQuery.CountAsync();
         var totalRecords = await records.CountAsync();
-        var totalCollectionBookmarks =
+        //var totalCollectionBookmarks =
             await collections.SelectMany(p => p.TargetMarks).CountAsync(l => l.DeletedTime == null);
         var totalLikes = await poemsQuery.SelectMany(p => p.Likes).CountAsync(l => l.DeletedTime == null);
-        var totalPoemBookmarks = await poemsQuery.SelectMany(p => p.TargetMarks).CountAsync(l => l.DeletedTime == null);
+        //var totalPoemBookmarks = await poemsQuery.SelectMany(p => p.TargetMarks).CountAsync(l => l.DeletedTime == null);
 
         // Trả về kết quả
         return new StatisticResponse

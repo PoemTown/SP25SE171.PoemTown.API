@@ -40,12 +40,14 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
         }
 
         Guid receiveTransactionId = Guid.NewGuid();
+        Guid userTransactionId = Guid.NewGuid();
         // Create transaction lists
         List<Transaction> transactions =
         [
             // User Transaction
             new Transaction()
             {
+                Id = userTransactionId,
                 Amount = message.Amount,
                 Description = $"Quyên tặng {message.Amount}VND tới người dùng: " + receiveUserEWallet.User.FullName,
                 ReceiveUserEWallet = receiveUserEWallet,
@@ -84,15 +86,27 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
             return;
         }
         
-        // Publish event create announcement
+        // Publish event create announcement for donater
         await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
         {
-            Title = "Hóa đơn tiền quyên tặng",
-            Content = $"Hóa đơn: {receiveUserTransaction.Description} đã khởi tạo thành công",
             UserId = userEWallet.User.Id,
+            Title = "Hóa đơn tiền quyên tặng",
+            Content = $"Hóa đơn quyên tặng '{message.Amount}VND' tới người dùng '{receiveUserEWallet.User.UserName}' đã khởi tạo thành công",
+            Type = AnnouncementType.Transaction,
+            TransactionId = userTransactionId,
+            IsRead = false
+        });
+        
+                
+        // Announcement to receive user
+        await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+        {
+            UserId = receiveUserEWallet.UserId,
+            Title = "Nhận tiền quyên tặng",
+            Content = $"Bạn đã nhận được khoản quyên tặng '{message.Amount}VND' từ {userEWallet.User.UserName} với lời nhắn là '{message.DonateMessage}'",
+            IsRead = false,
             Type = AnnouncementType.Transaction,
             TransactionId = receiveTransactionId,
-            IsRead = false
         });
     }
 }

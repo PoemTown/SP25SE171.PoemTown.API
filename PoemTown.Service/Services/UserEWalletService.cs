@@ -3,6 +3,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Enums.Wallets;
 using PoemTown.Repository.Interfaces;
@@ -183,18 +184,10 @@ public class UserEWalletService : IUserEWalletService
             UserEWalletId = userEWallet.Id,
             ReceiveUserEWalletId = receiveUserEWallet.Id,
             Amount = request.Amount,
+            DonateMessage = request.DonateMessage
         };
-        
+
         await _publishEndpoint.Publish(createDonateTransactionEvent);
-        
-        // Announcement to receive user
-        await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
-        {
-            UserId = receiveUser.Id,
-            Title = "Tiền quyên tặng",
-            Content = $"Bạn đã nhận được khoản quyên tặng: +{request.Amount}VNĐ từ {userEWallet.User.UserName}",
-            IsRead = false
-        });
     }
     
     public async Task<GetUserEWalletResponse> GetUserEWalletAsync(Guid userId)

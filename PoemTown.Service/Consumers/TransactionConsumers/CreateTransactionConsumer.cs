@@ -69,8 +69,8 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
         // Publish event create announcement
         await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
         {
-            Title = String.IsNullOrEmpty(message.AnnouncementTitle) ? message.AnnouncementTitle : "Hóa đơn mua hàng",
-            Content = String.IsNullOrEmpty(message.AnnouncementContent) ? message.AnnouncementContent : $"Hóa đơn: {transaction.Description} đã khởi tạo thành công",
+            Title = String.IsNullOrWhiteSpace(message.AnnouncementTitle) ? message.AnnouncementTitle : "Hóa đơn mua hàng",
+            Content = String.IsNullOrWhiteSpace(message.AnnouncementContent) ? message.AnnouncementContent : $"Hóa đơn: {transaction.Description} đã khởi tạo thành công",
             UserId = transaction.UserEWallet.UserId,
             Type = AnnouncementType.Transaction,
             TransactionId = transaction.Id,

@@ -4,6 +4,7 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.TransactionEvents;
 
@@ -51,6 +52,10 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
                 UserEWallet = userEWallet,
                 Type = TransactionType.Donate,
                 Balance = userEWallet.WalletBalance,
+                IsAddToWallet = false,
+                Status = TransactionStatus.Paid,
+                PaidDate = DateTimeOffset.Now,
+                TransactionCode = OrderCodeGenerator.Generate(),
             },
             
             // Receive User Transaction
@@ -61,7 +66,11 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
                 Description = $"Nhận {message.Amount}VND từ người dùng: " + userEWallet.User.FullName,
                 UserEWallet = receiveUserEWallet,
                 Type = TransactionType.Donate,
-                Balance = receiveUserEWallet.WalletBalance
+                Balance = receiveUserEWallet.WalletBalance,
+                IsAddToWallet = true,
+                Status = TransactionStatus.Paid,
+                PaidDate = DateTimeOffset.Now,
+                TransactionCode = OrderCodeGenerator.Generate(),
             }
         ];
 

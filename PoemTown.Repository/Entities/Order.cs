@@ -28,8 +28,8 @@ namespace PoemTown.Repository.Entities
         public string? PaymentUrl { get; set; }
         public Guid UserId { get; set; }
         public virtual User User { get; set; }
-        public Guid? PaymentGatewayId { get; set; }
-        public virtual PaymentGateway? PaymentGateway { get; set; }
+        //public Guid? PaymentGatewayId { get; set; }
+        //public virtual PaymentGateway? PaymentGateway { get; set; }
         public virtual Transaction? Transaction { get; set; }
         public virtual ICollection<OrderDetail>? OrderDetails { get; set; }
     }

@@ -9,4 +9,5 @@ public class CreateTransactionEvent
     public Guid OrderId { get; set; }
     public TransactionType Type { get; set; }
     public decimal DiscountAmount { get; set; }
+    public string? TransactionCode { get; set; }
 }

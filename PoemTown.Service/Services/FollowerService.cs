@@ -106,13 +106,11 @@ public class FollowerService : IFollowerService
 
         // Delete announcment related to this follower
         var announcement = await _unitOfWork.GetRepository<Announcement>().FindAsync(p => p.FollowerId == follower.Id);
-        if(announcement == null)
+        if(announcement != null)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Announcement not found");
+            // Delete all announcements related to this follower
+            _unitOfWork.GetRepository<Announcement>().DeletePermanent(announcement);
         }
-            
-        // Delete all announcements related to this follower
-        _unitOfWork.GetRepository<Announcement>().DeletePermanent(announcement);
         
         _unitOfWork.GetRepository<Follower>().DeletePermanent(follower);
         await _unitOfWork.SaveChangesAsync();

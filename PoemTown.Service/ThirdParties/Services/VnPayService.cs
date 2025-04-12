@@ -77,7 +77,7 @@ public class VnPayService : IVnPayService, IPaymentMethod
         {
             UserEWalletId = request.UserEWalletId,
             Amount = request.Amount,
-            Description = orderCreationSettings.TransactionDescription,
+            Description = $"Nạp: {request.Amount}VNĐ vào ví điện tử",
             TransactionCode = transactionCode,
             Type = TransactionType.EWalletDeposit,
             Status = TransactionStatus.Pending,

@@ -55,4 +55,32 @@ public class PaymentGatewaysController : BaseController
         await _paymentGatewayService.CreatePaymentGateway(request);
         return Ok(new BaseResponse(StatusCodes.Status201Created, "Payment gateway created successfully"));
     }
+    
+    /// <summary>
+    /// Upload icon cho payment gateway, yêu cầu đăng nhập với quyền ADMIN
+    /// </summary>
+    /// <param name="file"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/upload-icon")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse<string>>> UploadPaymentGatewayIcon(IFormFile file)
+    {
+        string url = await _paymentGatewayService.UploadPaymentGatewayIcon(file);
+        return Ok(new BaseResponse<string>(StatusCodes.Status200OK, "Upload payment gateway icon successfully", url));
+    }
+    
+    /// <summary>
+    /// Cập nhật thông tin payment gateway, yêu cầu đăng nhập với quyền ADMIN
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> UpdatePaymentGateway(UpdatePaymentGatewayRequest request)
+    {
+        await _paymentGatewayService.UpdatePaymentGateway(request);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Update payment gateway successfully"));
+    }
 }

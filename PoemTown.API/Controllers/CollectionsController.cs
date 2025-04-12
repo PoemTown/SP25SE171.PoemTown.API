@@ -367,5 +367,71 @@ namespace PoemTown.API.Controllers
             
             return Ok(basePaginationResponse);
         }
+
+        /// <summary>
+        /// Tạo bộ sưu tập cho nhà thơ nổi tiếng, yêu cầu đăng nhập
+        /// </summary>
+        /// <param name="poetSampleId"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [Route("v1/poet-sample/{poetSampleId}")]
+        [Authorize(Roles = "ADMIN, MOD")]
+        public async Task<ActionResult<BaseResponse>> CreatePoetSampleCollection(Guid poetSampleId,
+            CreateCollectionRequest request)
+        {
+            await _service.CreatePoetSampleCollection(poetSampleId, request);
+            return Ok(new BaseResponse(StatusCodes.Status201Created, "Collection created successfully"));
+        }
+
+        /// <summary>
+        /// Lấy danh sách tất cả bộ sưu tập của một nhà thơ nổi tiếng, không yêu cầu đăng nhập
+        /// </summary>
+        /// <param name="poetSampleId"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/poet-sample/{poetSampleId}")]
+        public async Task<ActionResult<BasePaginationResponse<GetPoetSampleCollectionResponse>>>
+            GetPoetSampleCollection(Guid poetSampleId,
+                RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        {
+            var paginationResponse = await _service.GetPoetSampleCollection(poetSampleId, request);
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoetSampleCollectionResponse>>(paginationResponse);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get Collection successfully";
+            return Ok(basePaginationResponse);
+        }
+        
+        /// <summary>
+        /// Cập nhật bộ sưu tập của một nhà thơ nổi tiếng, yêu cầu đăng nhập
+        /// </summary>
+        /// <param name="poetSampleId"></param>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("v1/poet-sample")]
+        [Authorize(Roles = "ADMIN, MODERATOR")]
+        public async Task<ActionResult<BaseResponse>> UpdatePoetSampleCollection(Guid poetSampleId,
+            UpdateCollectionRequest request)
+        {
+            await _service.UpdatePoetSampleCollection(poetSampleId, request);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Collection updated successfully"));
+        }
+        
+        /// <summary>
+        /// Xóa bộ sưu tập của một nhà thơ nổi tiếng, yêu cầu đăng nhập
+        /// </summary>
+        /// <param name="poetSampleId"></param>
+        /// <param name="collectionId"></param>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("v1/poet-sample/{collectionId}")]
+        [Authorize(Roles = "ADMIN, MODERATOR")]
+        public async Task<ActionResult<BaseResponse>> DeletePoetSampleCollection(Guid poetSampleId, Guid collectionId)
+        {
+            await _service.DeletePoetSampleCollection(poetSampleId, collectionId);
+            return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Collection deleted successfully"));
+        }
     }
 }

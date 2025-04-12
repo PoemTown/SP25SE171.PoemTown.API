@@ -38,7 +38,9 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
             redirecturl = _zaloPaySettings.CallbackUrl,
         });
         var appTransId = $"{orderCreationSettings.ApptransId}";
-        param.Add("appid", _zaloPaySettings.AppId);
+        
+        // Verion 1
+        /*param.Add("appid", _zaloPaySettings.AppId);
         param.Add("appuser", orderCreationSettings.AppUser);
         param.Add("apptime", orderCreationSettings.AppTime.ToString());
         param.Add("amount", orderCreationSettings.Amount.ToString());
@@ -46,13 +48,24 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
         param.Add("embeddata", embeddata);
         param.Add("item", JsonConvert.SerializeObject(orderCreationSettings.Items));
         param.Add("description", orderCreationSettings.Description);
-        param.Add("bankcode", orderCreationSettings.BankCode);
+        param.Add("bankcode", orderCreationSettings.BankCode);*/
+        
+        // Version 2
+        param.Add("app_id", _zaloPaySettings.AppId);
+        param.Add("app_user", orderCreationSettings.AppUser);
+        param.Add("app_time", orderCreationSettings.AppTime.ToString());
+        param.Add("amount", orderCreationSettings.Amount.ToString());
+        param.Add("app_trans_id", appTransId);
+        param.Add("embed_data", embeddata);
+        param.Add("item", JsonConvert.SerializeObject(orderCreationSettings.Items));
+        param.Add("description", orderCreationSettings.Description);
+        param.Add("bank_code", "");
         /*if (orderCreationSettings.UserPhone != null) param.Add("phone", orderCreationSettings.UserPhone);
         if (orderCreationSettings.UserEmail != null) param.Add("email", orderCreationSettings.UserEmail);*/
 
-        var macData = _zaloPaySettings.AppId + "|" + param["apptransid"] + "|" + param["appuser"] + "|" +
-                      param["amount"] + "|" + param["apptime"] + "|"
-                      + param["embeddata"] + "|" + param["item"];
+        var macData = _zaloPaySettings.AppId + "|" + param["app_trans_id"] + "|" + param["app_user"] + "|" +
+                      param["amount"] + "|" + param["app_time"] + "|"
+                      + param["embed_data"] + "|" + param["item"];
         
         var mac = ZaloPayHmacHelper.HmacHelper.Compute(ZaloPayHmacHelper.ZaloPayHMAC.HMACSHA256, _zaloPaySettings.Key1, macData);
         
@@ -60,7 +73,8 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
 
         var result = await HttpHelper.PostFormAsync(_zaloPaySettings.ZalopayCreateOrderUrl, param);
 
-        return new ZaloPayResponseData()
+        // Version 1
+        /*return new ZaloPayResponseData()
         {
             OrderCode = appTransId,
             SubReturnCode = result.GetValueOrDefault("subreturncode", -1),
@@ -71,6 +85,22 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
             QrCode = result.GetValueOrDefault("qrCode", ""),
             ReturnMessage = result.GetValueOrDefault("returnmessage", ""),
             ReturnCode = result.GetValueOrDefault("returncode", -1),
+            Amount = result.GetValueOrDefault("amount", 0),
+            AppId = _zaloPaySettings.AppId,
+        };*/
+        
+        // Version 2
+        return new ZaloPayResponseData()
+        {
+            OrderCode = appTransId,
+            SubReturnCode = result.GetValueOrDefault("sub_return_code", -1),
+            SubReturnMessage = result.GetValueOrDefault("sub_return_message", ""),
+            OrderUrl = result.GetValueOrDefault("order_url", ""),
+            ZpTransToken = result.GetValueOrDefault("zp_trans_token", ""),
+            OrderToken = result.GetValueOrDefault("order_token", ""),
+            QrCode = result.GetValueOrDefault("qr_code", ""),
+            ReturnMessage = result.GetValueOrDefault("return_message", ""),
+            ReturnCode = result.GetValueOrDefault("return_code", -1),
             Amount = result.GetValueOrDefault("amount", 0),
             AppId = _zaloPaySettings.AppId,
         };

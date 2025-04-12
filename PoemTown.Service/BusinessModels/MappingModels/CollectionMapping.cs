@@ -16,6 +16,8 @@ public class CollectionMapping : Profile
         
         CreateMap<CreateCollectionRequest, Collection>();
         CreateMap<UpdateCollectionRequest, Collection>();
+        CreateMap<Collection, GetPoetSampleCollectionResponse>().ReverseMap();
+        
         CreateMap<GetCollectionResponse, Collection>().ReverseMap()
              .ForMember(dest => dest.TotalChapter, opt => opt.MapFrom(p => p.Poems!.Count))
              .ForMember(dest => dest.TotalRecord, opt => opt.MapFrom(p => p.Poems.SelectMany(p => p.RecordFiles.Where(r => r.DeletedTime == null)).Count()));

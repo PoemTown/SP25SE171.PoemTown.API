@@ -4,6 +4,7 @@ using PoemTown.Repository.Enums.Poems;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.SaleVersionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
@@ -25,6 +26,7 @@ public class GetPoemDetailResponse
     public string PoemImage { get; set; }
     public decimal Price { get; set; }
     public bool IsSellUsageRight { get; set; }
+    public bool? IsFamousPoet { get; set; } = false;
     public bool IsMine { get; set; }
     public bool? IsAbleToUploadRecordFile { get; set; } = false;
     public Guid? SourceCopyRightId { get; set; }
@@ -32,9 +34,10 @@ public class GetPoemDetailResponse
     public DateTimeOffset CreatedTime { get; set; }
     public bool? IsFollowed { get; set; } = false;
     public GetCollectionInPoemResponse Collection { get; set; }
-    public GetLikeResponse Like { get; set; }
-    public GetTargetMarkResponse TargetMark { get; set; }
-    public GetBasicUserInformationResponse User { get; set; }
+    public GetLikeResponse? Like { get; set; }
+    public GetTargetMarkResponse? TargetMark { get; set; }
+    public GetBasicUserInformationResponse? User { get; set; }
     public GetSaleVersionResponse? SaleVersion { get; set; }
-    public PaginationResponse<GetRecordFileResponse> RecordFiles { get; set; }
+    public PaginationResponse<GetRecordFileResponse>? RecordFiles { get; set; }
+    public GetPoetSampleResponse? PoetSample { get; set; }
 }

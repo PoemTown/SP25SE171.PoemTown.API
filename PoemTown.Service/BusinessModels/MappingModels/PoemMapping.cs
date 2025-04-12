@@ -21,8 +21,10 @@ public class PoemMapping : Profile
         CreateMap<CreateNewPoemRequest, Poem>();
         CreateMap<UpdatePoemRequest, Poem>();
         CreateMap<Poem, GetPoemInOrderDetailResponse>().ReverseMap();
-
+        CreateMap<CreatePoetSamplePoemRequest, Poem>();
         CreateMap<Poem, GetPoemInReportResponse>().ReverseMap();
+        CreateMap<Poem, GetPoetSamplePoemResponse>().ReverseMap();
+        CreateMap<UpdatePoetSamplePoemRequest, Poem>();
         
         CreateMap<GetPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
@@ -72,5 +74,6 @@ public class PoemMapping : Profile
         CreateMap<GetCollectionInPoemResponse, GetPoemResponse>();
         CreateMap<GetCollectionInPoemResponse, GetPoemDetailResponse>();
         CreateMap<GetCollectionInPoemResponse, GetPoemResponse>();
+        CreateMap<GetCollectionInPoemResponse, GetPoetSamplePoemResponse>();
     }
 }

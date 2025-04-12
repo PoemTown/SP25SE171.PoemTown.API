@@ -26,6 +26,7 @@ namespace PoemTown.Repository.Entities
         public PoemStatus? Status { get; set; } = PoemStatus.Draft;
         public string? PoemImage { get; set; } = null;
         public decimal Price { get; set; }
+        public bool? IsFamousPoet { get; set; } = false;
         public Guid? SourceCopyRightId { get; set; }
         public Guid? CollectionId { get; set; }
         public Guid? PoetSampleId { get; set; }

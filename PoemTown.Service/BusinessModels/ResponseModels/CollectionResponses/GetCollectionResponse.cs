@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
@@ -20,11 +21,12 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses
         public int? TotalRecord { get; set; } = default!;
         public byte[]? RowVersion { get; set; }
         public bool? IsCommunity { get; set; }
+        public bool? IsFamousPoet { get; set; } = false;
         public bool? IsMine { get; set; } = false;
         public DateTimeOffset? CreatedTime { get; set; }
         public DateTimeOffset? LastUpdatedTime { get; set; }
         public GetTargetMarkResponse? TargetMark { get; set; }
         public GetBasicUserInformationResponse? User { get; set; }
-
+        public GetPoetSampleResponse? PoetSample { get; set; }
     }
 }

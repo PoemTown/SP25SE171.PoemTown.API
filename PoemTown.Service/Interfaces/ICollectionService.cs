@@ -34,5 +34,13 @@ namespace PoemTown.Service.Interfaces
 
         Task<PaginationResponse<GetCollectionResponse>>
             GetAllCollections(Guid? userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
+
+        Task CreatePoetSampleCollection(Guid poetSampleId, CreateCollectionRequest request);
+
+        Task<PaginationResponse<GetPoetSampleCollectionResponse>> GetPoetSampleCollection(
+            Guid poetSampleId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
+
+        Task UpdatePoetSampleCollection(Guid poetSampleId, UpdateCollectionRequest request);
+        Task DeletePoetSampleCollection(Guid poetSampleId, Guid collectionId);
     }
 }

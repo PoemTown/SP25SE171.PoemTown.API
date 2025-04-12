@@ -870,4 +870,112 @@ public class PoemsController : BaseController
         return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Delete record file successfully"));
     }
     
+    /// <summary>
+    /// Tạo một bài thơ của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <remarks>
+    /// status:
+    ///
+    /// - Draft = 0,
+    /// - Posted = 1,
+    /// - Suspended = 2,
+    /// - Pending = 3,
+    ///
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
+    /// </remarks>
+    /// <param name="poetSampleId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/poet-sample/{poetSampleId}")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> CreatePoetSamplePoem(Guid poetSampleId, CreatePoetSamplePoemRequest request)
+    {
+        await _poemService.CreatePoetSamplePoem(poetSampleId, request);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Create poet sample poem successfully"));
+    }
+    
+    /// <summary>
+    /// Lấy danh sách bài thơ của nhà thơ nổi tiếng, không yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    ///  status:
+    ///
+    /// - Draft = 0,
+    /// - Posted = 1,
+    /// - Suspended = 2,
+    /// - Pending = 3,
+    ///
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
+    /// </remarks>
+    /// <param name="poetSampleId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/poet-sample/{poetSampleId}")]
+    public async Task<ActionResult<BasePaginationResponse<GetPoetSamplePoemResponse>>>
+        GetPoetSample(Guid poetSampleId, RequestOptionsBase<GetPoetSamplePoemFilterOption, GetPoetSamplePoemSortOption> request)
+    {
+        var paginationResponse = await _poemService.GetPoetSamplePoems(poetSampleId, request);
+        
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoetSamplePoemResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get poet sample poems successfully";
+        
+        return Ok(basePaginationResponse);
+    }
+    
+    /// <summary>
+    /// Cập nhật bài thơ của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <param name="poetSampleId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/poet-sample")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> UpdatePoetSamplePoem(Guid poetSampleId, UpdatePoetSamplePoemRequest request)
+    {
+        await _poemService.UpdatePoetSamplePoem(poetSampleId, request);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Update poet sample successfully"));
+    }
+    
+    /// <summary>
+    /// Xóa bài thơ của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <param name="poetSampleId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/poet-sample/{poemId}")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> DeletePoetSamplePoem(Guid poemId, [FromQuery] Guid poetSampleId)
+    {
+        await _poemService.DeletePoetSamplePoem(poetSampleId, poemId);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Delete poet sample successfully"));
+    }
 }

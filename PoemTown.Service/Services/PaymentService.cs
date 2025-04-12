@@ -43,6 +43,11 @@ public class PaymentService : IPaymentService
             throw new Exception("Transaction not found");
         }
         
+        if(transaction.Status != TransactionStatus.Pending)
+        {
+            throw new Exception("Transaction status is not pending");
+        }
+        
         UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>().FindAsync(p => p.UserId == transaction.UserEWallet!.UserId);
         // Check if user e-wallet is null
         if(userEWallet == null)

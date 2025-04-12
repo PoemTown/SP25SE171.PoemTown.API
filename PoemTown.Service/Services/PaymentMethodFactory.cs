@@ -31,6 +31,7 @@ public class PaymentMethodFactory
         IPaymentMethod paymentMethod = paymentGateway.Name switch
         {
             "Zalopay" => _serviceProvider.GetRequiredService<ZaloPayService>(),
+            "Vnpay" => _serviceProvider.GetRequiredService<VnPayService>(),
             _ => throw new CoreException(StatusCodes.Status400BadRequest, "Payment method not found")
         };
 

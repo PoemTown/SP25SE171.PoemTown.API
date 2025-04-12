@@ -11,10 +11,16 @@ namespace PoemTown.API.Controllers;
 public class UserEWalletsController : BaseController
 {
     private readonly IUserEWalletService _userEWalletService;
+    private readonly IAuthenService _authenService;
+    private readonly IHttpContextAccessor _httpContext;
     
-    public UserEWalletsController(IUserEWalletService userEWalletService)
+    public UserEWalletsController(IUserEWalletService userEWalletService, 
+        IAuthenService authenService,
+        IHttpContextAccessor httpContext)
     {
         _userEWalletService = userEWalletService;
+        _authenService = authenService;
+        _httpContext = httpContext;
     }
     
     /// <summary>
@@ -28,6 +34,10 @@ public class UserEWalletsController : BaseController
     public async Task<ActionResult<BaseResponse<DepositUserEWalletResponse>>> DepositUserEWalletAsync(DepositUserEWalletRequest request)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(x => x.Type == "UserId")!.Value);
+
+        var userContext = await _authenService.GetUserContext(_httpContext);
+        request.UserIpAddress = userContext.IpAddress;
+        
         
         var response = await _userEWalletService.DepositUserEWalletAsync(userId, request);
         return Ok(response);

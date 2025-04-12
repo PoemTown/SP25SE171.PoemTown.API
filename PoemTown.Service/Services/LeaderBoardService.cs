@@ -117,6 +117,7 @@ namespace PoemTown.Service.Services
                         .Where(a => a.PoemLeaderboardId == detail.Id)
                         .ToListAsync();
                     
+                    
                     foreach (var announcement in announcements)
                     {
                         announcement.PoemLeaderboardId = null;

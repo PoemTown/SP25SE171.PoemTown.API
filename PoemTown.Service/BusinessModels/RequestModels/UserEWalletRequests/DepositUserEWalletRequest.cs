@@ -6,4 +6,6 @@ public class DepositUserEWalletRequest
 {
     public decimal Amount { get; set; }
     public Guid PaymentGatewayId { get; set; }
+    [JsonIgnore]
+    public string? UserIpAddress { get; set; }
 }

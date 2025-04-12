@@ -36,6 +36,7 @@ using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Service.ThirdParties.Services;
 using PoemTown.Service.ThirdParties.Settings.AwsS3;
 using PoemTown.Service.ThirdParties.Settings.TheHiveAi;
+using PoemTown.Service.ThirdParties.Settings.VnPay;
 using PoemTown.Service.ThirdParties.Settings.ZaloPay;
 using Qdrant.Client;
 using Quartz;
@@ -45,7 +46,8 @@ namespace PoemTown.Service;
 
 public static class ConfigureService
 {
-    public static void AddConfigureServiceService(this IServiceCollection services, IConfiguration configuration, IWebHostEnvironment env)
+    public static void AddConfigureServiceService(this IServiceCollection services, IConfiguration configuration,
+        IWebHostEnvironment env)
     {
         services.AddAutoMapperConfig(configuration);
         services.AddRabbitMqSettings(configuration);
@@ -63,8 +65,9 @@ public static class ConfigureService
         services.AddTheHiveAiSettings(configuration);
         services.AddSignalRConfig();
         services.AddQDrantConfig(configuration);
+        services.AddVnPayConfig(configuration);
     }
-    
+
     private static void AddDependencyInjection(this IServiceCollection services)
     {
         services.AddScoped<IAuthenService, AuthenService>();
@@ -105,15 +108,17 @@ public static class ConfigureService
         //Third parties
         services.AddScoped<IAwsS3Service, AwsS3Service>();
         services.AddScoped<IZaloPayService, ZaloPayService>();
+        services.AddScoped<IVnPayService, VnPayService>();
+        services.AddScoped<VnPayService>();
         services.AddScoped<ZaloPayService>();
         services.AddScoped<ITheHiveAiService, TheHiveAiService>();
     }
-    
+
     private static void AddAutoMapperConfig(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddAutoMapper(typeof(PaginationMapping));
     }
-    
+
     private static void AddMasstransitRabbitMq(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddMassTransit(config =>
@@ -139,7 +144,7 @@ public static class ConfigureService
             config.AddConsumer<UpdateAndSendUserAnnouncementConsumer>();
             config.AddConsumer<UpdatePaidTransactionConsumer>();
             config.AddConsumer<UpdateCancelledTransactionConsumer>();
-            
+
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
             {
@@ -155,6 +160,7 @@ public static class ConfigureService
         });
         services.AddMassTransitHostedService();
     }
+
     private static void AddRabbitMqSettings(this IServiceCollection services, IConfiguration configuration)
     {
         var rbmqConfig = configuration.GetSection(RabbitMQSettings.ConfigSection);
@@ -171,7 +177,7 @@ public static class ConfigureService
             return rbmqSettings;
         });
     }
-    
+
     private static void AddEmailSettingsConfig(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<EmailSettings>(options =>
@@ -186,7 +192,7 @@ public static class ConfigureService
             };
         });
     }
-    
+
     private static void AddRazorLightEngine(this IServiceCollection services, IWebHostEnvironment env)
     {
         services.AddSingleton<RazorLightEngine>(options =>
@@ -199,7 +205,7 @@ public static class ConfigureService
                 .Build();
         });
     }
-    
+
     private static void AddSmtpClient(this IServiceCollection services)
     {
         services.AddScoped<SmtpClient>(options =>
@@ -212,7 +218,7 @@ public static class ConfigureService
             return smtpClient;
         });
     }
-    
+
     private static void AddAwsS3Configuration(this IServiceCollection services, IConfiguration configuration)
     {
         var s3Config = configuration.GetSection("AwsS3Settings");
@@ -240,7 +246,7 @@ public static class ConfigureService
             return new AmazonS3Client(config.AccessKey, config.SecretKey, amazonConfig);
         });
     }
-    
+
     private static void AddZaloPayConfig(this IServiceCollection services, IConfiguration configuration)
     {
         var zaloPayConfig = configuration.GetSection("ZaloPay");
@@ -272,7 +278,7 @@ public static class ConfigureService
             return paymentRedirectSettings;
         });
     }
-    
+
     private static void AddQuartzConfig(this IServiceCollection services)
     {
         services.AddQuartz(q =>
@@ -302,10 +308,11 @@ public static class ConfigureService
                 .ForJob(achievementJobKey)
                 .WithIdentity("MonthlyAchievementJobTrigger", "Achievement")
                 .WithCronSchedule("0 0 0 1 * ?", cron =>
-                    cron.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")))); // Use your time zone
+                    cron.InTimeZone(
+                        TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")))); // Use your time zone
         });
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
-        
+
         services.AddScoped<PaymentTimeOutJob>();
         services.AddScoped<LeaderBoardCalculationJob>();
         services.AddScoped<MonthlyAchievementJob>();
@@ -320,7 +327,7 @@ public static class ConfigureService
     {
         services.AddOpenAIService(options =>
         {
-            options.ApiKey = configuration.GetSection("OpenAIService:ApiKey").Value 
+            options.ApiKey = configuration.GetSection("OpenAIService:ApiKey").Value
                              ?? throw new ArgumentNullException();
         });
     }
@@ -340,7 +347,7 @@ public static class ConfigureService
         });
     }
 
-    
+
     private static void AddQDrantConfig(this IServiceCollection services, IConfiguration configuration)
     {
         var qdrantConfig = configuration.GetSection("QDrant");
@@ -360,6 +367,22 @@ public static class ConfigureService
             var qdrantSettings = options.GetRequiredService<QDrantSettings>();
             return new QdrantClient(host: qdrantSettings.Host, port: qdrantSettings.Port,
                 apiKey: qdrantSettings.ApiKey);
+        });
+    }
+
+    private static void AddVnPayConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        var vnPayConfig = configuration.GetSection("VnPay");
+        services.AddSingleton<VnPaySettings>(options =>
+        {
+            var vnPaySettings = new VnPaySettings
+            {
+                Vnp_Url = vnPayConfig.GetSection("Vnp_Url").Value ?? "",
+                Vnp_TmnCode = vnPayConfig.GetSection("Vnp_TmnCode").Value ?? "",
+                Vnp_HashSecret = vnPayConfig.GetSection("Vnp_HashSecret").Value ?? "",
+                Vnp_ReturnUrl = vnPayConfig.GetSection("Vnp_ReturnUrl").Value ?? ""
+            };
+            return vnPaySettings;
         });
     }
 }

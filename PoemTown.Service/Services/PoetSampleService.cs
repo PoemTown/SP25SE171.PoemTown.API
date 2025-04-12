@@ -147,4 +147,17 @@ public class PoetSampleService : IPoetSampleService
         return new PaginationResponse<GetPoetSampleResponse>(poetSamples, queryPaging.PageNumber, queryPaging.PageSize,
             queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
+
+    public async Task<GetPoetSampleResponse> GetPoetSample(Guid poetSampleId)
+    {
+        PoetSample? poetSample = await _unitOfWork.GetRepository<PoetSample>().FindAsync(p => p.Id == poetSampleId && p.DeletedTime == null);
+
+        // Check if the poet sample exists
+        if (poetSample == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "PoetSample is not exist");
+        }
+
+        return _mapper.Map<GetPoetSampleResponse>(poetSample);
+    }
 }

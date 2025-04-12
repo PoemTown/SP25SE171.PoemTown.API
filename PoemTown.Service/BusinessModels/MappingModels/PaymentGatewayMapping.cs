@@ -12,7 +12,7 @@ public class PaymentGatewayMapping : Profile
     {
         CreateMap<CreatePaymentGatewayRequest, PaymentGateway>();
         CreateMap<PaymentGateway, GetPaymentGatewayResponse>().ReverseMap();
-        
+        CreateMap<UpdatePaymentGatewayRequest, PaymentGateway>();
         CreateMap<GetPaymentGatewayResponse, GetTransactionDetailResponse>();
     }
 }

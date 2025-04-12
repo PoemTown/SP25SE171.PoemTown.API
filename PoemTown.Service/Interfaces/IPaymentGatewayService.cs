@@ -1,4 +1,5 @@
-﻿using PoemTown.Repository.Base;
+﻿using Microsoft.AspNetCore.Http;
+using PoemTown.Repository.Base;
 using PoemTown.Service.BusinessModels.RequestModels.PaymentGatewayRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.PaymentGatewayResponses;
 using PoemTown.Service.QueryOptions.FilterOptions.PaymentGatewayFilters;
@@ -13,4 +14,6 @@ public interface IPaymentGatewayService
         GetPaymentGateways(RequestOptionsBase<GetPaymentGatewayFilterOptions, GetPaymentGatewaySortOptions> request);
 
     Task CreatePaymentGateway(CreatePaymentGatewayRequest request);
+    Task<string> UploadPaymentGatewayIcon(IFormFile file);
+    Task UpdatePaymentGateway(UpdatePaymentGatewayRequest request);
 }

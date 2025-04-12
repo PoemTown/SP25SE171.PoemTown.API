@@ -58,4 +58,12 @@ public interface IPoemService
     Task AdminUpdatePoemStatus(Guid poemId, PoemStatus status);
     Task<string> DownloadAiImageAndUploadToS3Storage(UploadAiPoemImageRequest request, Guid userId);
     Task RemoveRecordFileFromPoem(Guid userId, Guid recordFileId);
+    Task CreatePoetSamplePoem(Guid poetSampleId, CreatePoetSamplePoemRequest request);
+
+    Task<PaginationResponse<GetPoetSamplePoemResponse>>
+        GetPoetSamplePoems(Guid? poetSampleId,
+            RequestOptionsBase<GetPoetSamplePoemFilterOption, GetPoetSamplePoemSortOption> request);
+
+    Task UpdatePoetSamplePoem(Guid poetSampleId, UpdatePoetSamplePoemRequest request);
+    Task DeletePoetSamplePoem(Guid poetSampleId, Guid poemId);
 }

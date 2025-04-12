@@ -20,8 +20,9 @@ namespace PoemTown.Repository.Entities
         public bool? IsDefault { get; set; } = false;
         public int? TotalChapter { get; set; } = default!;
         public bool IsCommunity { get; set; } = false;
-        public Guid UserId { get; set; } = default;
-        public virtual User User { get; set; } = default!;
+        public bool? IsFamousPoet { get; set; } = false;
+        public Guid? UserId { get; set; } = default;
+        public virtual User? User { get; set; } = default!;
         public Guid? PoetSampleId { get; set; }
         public virtual PoetSample? PoetSample { get; set; }
         public virtual ICollection<Poem>? Poems { get; set; } = null;

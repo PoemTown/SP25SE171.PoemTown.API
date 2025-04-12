@@ -34,11 +34,26 @@ public class PoetSampleService : IPoetSampleService
     public async Task CreateNewPoetSample(CreateNewPoetSampleRequest request)
     {
         PoetSample poetSample = _mapper.Map<PoetSample>(request);
-
+        
+        Guid poetSampleId = Guid.NewGuid();
+        
+        poetSample.Id = poetSampleId;
+        
         // Format the name
         poetSample.Name = StringHelper.FormatStringInput(poetSample.Name);
         
         await _unitOfWork.GetRepository<PoetSample>().InsertAsync(poetSample);
+        
+        // Create default collection
+        Collection collection = new Collection
+        {
+            PoetSampleId = poetSampleId,
+            CollectionName = "Bộ sưu tập mặc định",
+            CollectionDescription = "Bộ sưu tập được khởi tạo mặc định bởi hệ thống",
+            IsDefault = true
+        };
+        
+        await _unitOfWork.GetRepository<Collection>().InsertAsync(collection);
         await _unitOfWork.SaveChangesAsync();
     }
 

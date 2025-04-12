@@ -26,13 +26,13 @@ public class PoetSamplesController : BaseController
     }
     
     /// <summary>
-    /// Tạo mới thông tin nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN
+    /// Tạo mới thông tin nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost]
     [Route("v1")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> CreatePoetSample(CreateNewPoetSampleRequest request)
     {
         await _poetSampleService.CreateNewPoetSample(request);
@@ -40,13 +40,13 @@ public class PoetSamplesController : BaseController
     }
     
     /// <summary>
-    /// Cập nhật thông tin nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN
+    /// Cập nhật thông tin nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPut]
     [Route("v1")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> UpdatePoetSample(UpdatePoetSampleRequest request)
     {
         await _poetSampleService.UpdatePoetSample(request);
@@ -54,13 +54,13 @@ public class PoetSamplesController : BaseController
     }
     
     /// <summary>
-    /// Xóa thông tin nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN
+    /// Xóa thông tin nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
     /// <param name="poetSampleId"></param>
     /// <returns></returns>
     [HttpDelete]
     [Route("v1")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> DeletePoetSample(Guid poetSampleId)
     {
         await _poetSampleService.DeletePoetSample(poetSampleId);
@@ -68,13 +68,13 @@ public class PoetSamplesController : BaseController
     }
     
     /// <summary>
-    /// Đăng tải ảnh đại diện nhà thơ nổi tiếng lên AWS S3, yêu cầu đăng nhập dưới quyền ADMIN
+    /// Đăng tải ảnh đại diện nhà thơ nổi tiếng lên AWS S3, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
     /// <param name="file"></param>
     /// <returns></returns>
     [HttpPost]
     [Route("v1/image")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> UploadPoetSampleAvatar(IFormFile file)
     {
         string imageUrl = await _poetSampleService.UploadPoetSampleAvatar(file);

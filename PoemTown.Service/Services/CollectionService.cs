@@ -26,6 +26,7 @@ using PoemTown.Service.ThirdParties.Models.AwsS3;
 using PoemTown.Service.ThirdParties.Interfaces;
 using PoemTown.Repository.Enums.Accounts;
 using PoemTown.Repository.Enums.Announcements;
+using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
 using PoemTown.Service.Events.AnnouncementEvents;
 
 namespace PoemTown.Service.Services
@@ -132,7 +133,7 @@ namespace PoemTown.Service.Services
             RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-            collectionQuery = collectionQuery.Where(a => a.UserId == userId );
+            collectionQuery = collectionQuery.Where(a => a.UserId == userId && a.IsFamousPoet == false);
             if (request.IsDelete == true)
             {
                 collectionQuery = collectionQuery.Where(p => p.DeletedTime != null);
@@ -206,6 +207,8 @@ namespace PoemTown.Service.Services
             GetAllCollections(Guid? userId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
+
+            collectionQuery = collectionQuery.Where(p => p.IsFamousPoet == false);
             
             if (request.IsDelete == true)
             {
@@ -280,7 +283,7 @@ namespace PoemTown.Service.Services
             RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-            collectionQuery = collectionQuery.Where(a => a.UserId == userId);
+            collectionQuery = collectionQuery.Where(a => a.UserId == userId && a.IsFamousPoet == false);
             if (request.IsDelete == true)
             {
                 collectionQuery = collectionQuery.Where(p => p.DeletedTime != null);
@@ -435,7 +438,7 @@ namespace PoemTown.Service.Services
             collectionDetail.TargetMark = _mapper.Map<GetTargetMarkResponse>(collection.TargetMarks!.FirstOrDefault(tm =>
                     tm.MarkByUserId == userId && tm.CollectionId == collectionDetail.Id &&
                     tm.Type == TargetMarkType.Collection));
-            
+            collectionDetail.PoetSample = _mapper.Map<GetPoetSampleResponse>(collection.PoetSample);
             // Check if the collection is mine
             if (userId == collection.UserId)
             {
@@ -450,6 +453,8 @@ namespace PoemTown.Service.Services
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
 
+            collectionQuery = collectionQuery.Where(p => p.IsFamousPoet == false);
+            
             // Soft delete filter for collections
             collectionQuery = request.IsDelete == true
                 ? collectionQuery.Where(c => c.DeletedTime != null)
@@ -615,7 +620,7 @@ namespace PoemTown.Service.Services
             GetUserCollections(Guid? userId, string userName, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
-            collectionQuery = collectionQuery.Where(a => a.User.UserName == userName);
+            collectionQuery = collectionQuery.Where(a => a.User.UserName == userName && a.IsFamousPoet == false);
             
             if (request.IsDelete == true)
             {
@@ -689,6 +694,140 @@ namespace PoemTown.Service.Services
             return new PaginationResponse<GetUserCollectionResponse>(collections, queryPaging.PageNumber,
                 queryPaging.PageSize,
                 queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+        }
+
+        public async Task CreatePoetSampleCollection(Guid poetSampleId, CreateCollectionRequest request)
+        {
+            PoetSample? poetSample = await _unitOfWork.GetRepository<PoetSample>().FindAsync(p => p.Id == poetSampleId);
+            
+            // Check if the poet sample exists
+            if (poetSample == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poet sample not found");
+            }
+            
+            Collection collection = _mapper.Map<Collection>(request);
+            
+            collection.IsCommunity = false;
+            collection.IsDefault = false;
+            collection.PoetSample = poetSample;
+            collection.IsFamousPoet = true;
+            
+            await _unitOfWork.GetRepository<Collection>().InsertAsync(collection);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<PaginationResponse<GetPoetSampleCollectionResponse>> GetPoetSampleCollection(
+            Guid poetSampleId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
+        {
+            var poetSample = await _unitOfWork.GetRepository<PoetSample>().FindAsync(p => p.Id == poetSampleId);
+            // Check if the poet sample exists
+            if (poetSample == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poet sample not found");
+            }
+            
+            var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
+            
+            collectionQuery = collectionQuery.Where(p => p.PoetSampleId == poetSampleId && p.IsFamousPoet == true);
+            
+            if (request.IsDelete == true)
+            {
+                collectionQuery = collectionQuery.Where(p => p.DeletedTime != null);
+            }
+            else
+            {
+                collectionQuery = collectionQuery.Where(p => p.DeletedTime == null);
+            }
+
+            // Apply filter
+            if (request.FilterOptions != null)
+            {
+                if (!String.IsNullOrWhiteSpace(request.FilterOptions.CollectionName))
+                {
+                    collectionQuery = collectionQuery.Where(p =>
+                        p.CollectionName.ToLower().Trim().Contains(request.FilterOptions.CollectionName.ToLower().Trim()));
+                }
+            }
+
+            // Apply sort
+            switch (request.SortOptions)
+            {
+                case CollectionSortOptions.CreatedTimeAscending:
+                    collectionQuery = collectionQuery.OrderBy(p => p.CreatedTime);
+                    break;
+                case CollectionSortOptions.CreatedTimeDescending:
+                    collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
+                    break;
+                default:
+                    collectionQuery = collectionQuery.OrderByDescending(p => p.CreatedTime);
+                    break;
+            }
+
+            var queryPaging = await _unitOfWork.GetRepository<Collection>()
+                .GetPagination(collectionQuery, request.PageNumber, request.PageSize);
+
+
+            IList<GetPoetSampleCollectionResponse> collections = new List<GetPoetSampleCollectionResponse>();
+            foreach (var collection in queryPaging.Data)
+            {
+                var collectionEntity =
+                    await _unitOfWork.GetRepository<Collection>().FindAsync(p => p.Id == collection.Id);
+                if (collectionEntity == null)
+                {
+                    continue;
+                }
+
+                collections.Add(_mapper.Map<GetPoetSampleCollectionResponse>(collectionEntity));
+                
+                // Assign author to poem by adding into the last element of the list
+                collections.Last().PoetSample = _mapper.Map<GetPoetSampleResponse>(collectionEntity.PoetSample);
+            }
+
+            return new PaginationResponse<GetPoetSampleCollectionResponse>(collections, queryPaging.PageNumber,
+                queryPaging.PageSize,
+                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+        }
+        
+        public async Task UpdatePoetSampleCollection(Guid poetSampleId, UpdateCollectionRequest request)
+        {
+            Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == request.Id);
+            
+            // Check if the collection exists
+            if (collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            }
+            
+            // Check if the poet own this collection
+            if (collection.PoetSampleId != poetSampleId)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poet does not own this collection");
+            }
+            
+            _mapper.Map(request, collection);
+            _unitOfWork.GetRepository<Collection>().Update(collection);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        
+        public async Task DeletePoetSampleCollection(Guid poetSampleId, Guid collectionId)
+        {
+            Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
+            
+            // Check if the collection exists
+            if (collection == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
+            }
+            
+            // Check if the poet own this collection
+            if (collection.PoetSampleId != poetSampleId)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Poet does not own this collection");
+            }
+            
+            _unitOfWork.GetRepository<Collection>().Delete(collection);
+            await _unitOfWork.SaveChangesAsync();
         }
     }
 }

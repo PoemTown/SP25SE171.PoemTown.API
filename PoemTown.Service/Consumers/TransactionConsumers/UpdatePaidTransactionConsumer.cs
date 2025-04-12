@@ -40,7 +40,7 @@ public class UpdatePaidTransactionConsumer : IConsumer<UpdatePaidTransactionEven
         transaction.Checksum = message.Checksum;
         transaction.Status = TransactionStatus.Paid;
         transaction.PaidDate = DateTimeHelper.SystemTimeNow;
-        transaction.Balance = transaction.UserEWallet!.WalletBalance + message.Amount;
+        transaction.Balance = transaction.UserEWallet!.WalletBalance;
         transaction.AppId = message.AppId;
         transaction.IsAddToWallet = true;
 

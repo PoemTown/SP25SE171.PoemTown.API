@@ -8,4 +8,5 @@ public class UserEWalletData
     public Guid UserEWalletId { get; set; }
     public TransactionType TransactionType { get; set; }
     public decimal Amount { get; set; }
+    public string? UserIpAddress { get; set; }
 }

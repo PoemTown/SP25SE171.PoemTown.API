@@ -193,11 +193,10 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
         {
             Message = "Deposit EWallet success",
             PaymentUrl = response.OrderUrl.ToString(),
-            orderCode = orderCreationSettings.ApptransId,
+            OrderCode = orderCreationSettings.ApptransId,
             Token = response.ZpTransToken,
             Code = (int)response.ReturnCode!,
             IsSuccess = true,
-            OrderCode = response.OrderCode,
         };
     }
 }

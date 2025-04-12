@@ -67,6 +67,7 @@ public class UserEWalletService : IUserEWalletService
             UserId = userId,
             TransactionType = TransactionType.EWalletDeposit,
             UserEWalletId = userEWallet.Id,
+            UserIpAddress = request.UserIpAddress
         };
         
         var response = await paymentMethod.DepositUserEWalletPayment(userEWalletData);
@@ -83,7 +84,7 @@ public class UserEWalletService : IUserEWalletService
         }
 
         // Schedule payment timeout job
-        await SchedulePaymentTimeOutJob(response.orderCode);
+        await SchedulePaymentTimeOutJob(response.OrderCode);
         
         // Return deposit data is successful
         return (new DepositUserEWalletResponse()

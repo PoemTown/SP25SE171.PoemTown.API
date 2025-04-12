@@ -41,6 +41,7 @@ public class UpdatePaidTransactionConsumer : IConsumer<UpdatePaidTransactionEven
         transaction.Status = TransactionStatus.Paid;
         transaction.PaidDate = DateTimeHelper.SystemTimeNow;
         transaction.Balance = transaction.UserEWallet!.WalletBalance + message.Amount;
+        transaction.AppId = message.AppId;
         transaction.IsAddToWallet = true;
 
         // Save changes to the database

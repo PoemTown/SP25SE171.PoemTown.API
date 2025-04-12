@@ -51,7 +51,7 @@ public class PaymentsController : BaseController
                     redirectUrl = _paymentRedirectSettings.RedirectSuccessUrl;
                     break;
                 }
-                case -49:
+                default:
                     // Handle payment failure
                     var handleCallbackPaymentCancelledRequest = new HandleCallbackPaymentRequest
                     {
@@ -70,37 +70,37 @@ public class PaymentsController : BaseController
         return Redirect(redirectUrl);
     }
     
-    /*[HttpGet]
+    [HttpGet]
     [Route("v1/vnpay/callback")]
-    public async Task<RedirectResult> VnPayCallbackAsync( request)
+    public async Task<RedirectResult> VnPayCallbackAsync(VnPayCallBackRequest request)
     {
         string redirectUrl = _paymentRedirectSettings.RedirectFailureUrl;
         try
         {
-            switch (request.Status)
+            switch (request.VnpTransactionStatus)
             {
-                case 1:
+                case 00:
                 {
                     var handleCallbackPaymentSuccessRequest = new HandleCallbackPaymentRequest()
                         // Handle payment success
                         {
-                            OrderCode = request.ApptransId,
-                            BankCode = request.BankCode,
-                            AppId = request.AppId.ToString(),
-                            Amount = request.Amount,
-                            DiscountAmount = request.DiscountAmount,
-                            Checksum = request.Checksum,
-                            Status = request.Status
+                            OrderCode = request.VnpTxnRef,
+                            BankCode = request.VnpBankCode,
+                            AppId = request.VnpTmnCode,
+                            Amount = request.VnpAmount / 100,
+                            DiscountAmount = 0,
+                            Checksum = request.VnpSecureHash,
+                            Status = 1
                         };
                     await _paymentService.HandleCallbackPaymentSuccessAsync(handleCallbackPaymentSuccessRequest);
                     redirectUrl = _paymentRedirectSettings.RedirectSuccessUrl;
                     break;
                 }
-                case -49:
+                default:
                     // Handle payment failure
                     var handleCallbackPaymentCancelledRequest = new HandleCallbackPaymentRequest
                     {
-                        OrderCode = request.ApptransId,
+                        OrderCode = request.VnpTxnRef,
                     };
                     await _paymentService.HandleCallbackPaymentCancelledAsync(handleCallbackPaymentCancelledRequest);
                     redirectUrl = _paymentRedirectSettings.RedirectFailureUrl;
@@ -113,5 +113,5 @@ public class PaymentsController : BaseController
         }
 
         return Redirect(redirectUrl);
-    }*/
+    }
 }

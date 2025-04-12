@@ -11,7 +11,10 @@ public class CollectionMapping : Profile
 {
     public CollectionMapping()
     {
-        CreateMap<Collection, GetCollectionInTargetMarkResponse>().ReverseMap();
+        CreateMap<GetCollectionInTargetMarkResponse, Collection>().ReverseMap()
+            .ForMember(dest => dest.TotalChapter, opt => opt.MapFrom(p => p.Poems!.Count))
+            .ForMember(dest => dest.TotalRecord, opt => opt.MapFrom(p => p.Poems.SelectMany(p => p.RecordFiles.Where(r => r.DeletedTime == null)).Count()));;
+        
         CreateMap<Collection, GetCollectionInPoemResponse>().ReverseMap();
         
         CreateMap<CreateCollectionRequest, Collection>();

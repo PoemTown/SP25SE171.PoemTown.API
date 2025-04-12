@@ -99,4 +99,17 @@ public class PoetSamplesController : BaseController
         
         return Ok(basePaginationResponse);
     }
+    
+    /// <summary>
+    /// Lấy thông tin nhà thơ nổi tiếng theo id, không yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="poetSampleId"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/{poetSampleId}")]
+    public async Task<ActionResult<GetPoetSampleResponse>> GetPoetSample(Guid poetSampleId)
+    {
+        var poetSample = await _poetSampleService.GetPoetSample(poetSampleId);
+        return Ok(new BaseResponse<GetPoetSampleResponse>(StatusCodes.Status200OK, "Get poet sample successfully", poetSample));
+    }
 }

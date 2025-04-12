@@ -10,6 +10,7 @@ public class GetCollectionInTargetMarkResponse
     public string CollectionDescription { get; set; }
     public string CollectionImage { get; set; }
     public int TotalChapter { get; set; }
+    public int TotalRecord { get; set; }
     public bool? IsFamousPoet { get; set; } = false;
     public bool? IsCommunity { get; set; }
     public bool? IsMine { get; set; }

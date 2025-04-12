@@ -17,4 +17,6 @@ public interface IPoetSampleService
 
     Task<PaginationResponse<GetPoetSampleResponse>>
         GetPoetSamples(RequestOptionsBase<GetPoetSampleFilterOption, GetPoetSampleSortOption> request);
+
+    Task<GetPoetSampleResponse> GetPoetSample(Guid poetSampleId);
 }

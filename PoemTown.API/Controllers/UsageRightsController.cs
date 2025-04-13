@@ -73,5 +73,30 @@ namespace PoemTown.API.Controllers
 
             return Ok(basePaginationResponse);
         }
+
+        /// <summary>
+        /// Lấy danh sách phiên bản của bài thơ, yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="poemId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/poem-version/{poemId}")]
+        public async Task<ActionResult<BaseResponse<GetPoemVersionResponse>>> GetSaleVersionsOfPoem(Guid poemId,RequestOptionsBase<object, object> request)
+        {
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }
+            var paginationResponse = await _service.VersionByPoemId(userId.Value,poemId, request);
+            var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoemVersionResponse>>(paginationResponse);
+            basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+            basePaginationResponse.Message = "Get version of poem successfully";
+
+            return Ok(basePaginationResponse);
+        }
     }
 }

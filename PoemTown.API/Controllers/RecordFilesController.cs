@@ -271,5 +271,28 @@ namespace PoemTown.API.Controllers
 
         }
 
+        /// <summary>
+        /// Lấy chi tiết của một bản ghi âm, không yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        ///
+        /// </remarks>
+        /// <param name="recordId"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/{recordId}/detail")]
+        public async Task<ActionResult<BaseResponse<GetRecordFileResponse>>>
+            GetRecordDetail(Guid recordId)
+        {
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }
+            var response = await _service.GetRecordDetail(recordId);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get record detail successfully", response));
+        }
+
     }
 }

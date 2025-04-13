@@ -358,7 +358,12 @@ namespace PoemTown.Service.Services
             try
             {
                 Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
-                if(userId != collection.UserId)
+                var poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.CollectionId == collectionId);
+                if(poem != null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Vui lòng chuyển hết thơ trong bộ sưu tập trước khi xóa");
+                }
+                if (userId != collection.UserId)
                 {
                     throw new CoreException(StatusCodes.Status400BadRequest, "You not own this collection");
                 }

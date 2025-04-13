@@ -168,5 +168,47 @@ namespace PoemTown.Service.Services
                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 
+        public async Task<PaginationResponse<GetPoemVersionResponse>> VersionByPoemId(Guid userId,Guid poemId, RequestOptionsBase<object, object> request)
+        {
+            
+            var versions = _unitOfWork.GetRepository<SaleVersion>()
+                                         .AsQueryable()
+                                         .Where(v => v.PoemId == poemId
+                                         && v.DeletedTime == null);
+
+            /*if (request.FilterOptions != null)
+            {
+                if (!string.IsNullOrWhiteSpace(request.FilterOptions.PoemName))
+                {
+                    string poemNameLower = request.FilterOptions.PoemName.ToLower();
+
+                    usageRights = usageRights.Where(p =>
+                        p.SaleVersion.Poem.Title.ToLower().Contains(poemNameLower));
+                }
+
+            }*/
+
+
+            var queryPaging = await _unitOfWork.GetRepository<SaleVersion>()
+                .GetPagination(versions, request.PageNumber, request.PageSize);
+
+            IList<GetPoemVersionResponse> poemVersions = new List<GetPoemVersionResponse>();
+
+            foreach (var version in queryPaging.Data)
+            {
+                var entity = await _unitOfWork.GetRepository<SaleVersion>().FindAsync(v => v.Id == version.Id);
+                if (entity == null)
+                {
+                    throw new CoreException(StatusCodes.Status400BadRequest, "Sale version not found");
+                }
+                poemVersions.Add(_mapper.Map<GetPoemVersionResponse>(entity));
+                poemVersions.Last().UsageRights = _mapper.Map<List<GetUserBoughtUsage>>(
+                    _unitOfWork.GetRepository<UsageRight>().AsQueryable()
+                    .Where(u => u.SaleVersionId == version.Id && u.Type == UserPoemType.PoemBuyer && u.DeletedTime == null)
+                    .ToList());
+            }
+            return new PaginationResponse<GetPoemVersionResponse>(poemVersions, queryPaging.PageNumber, queryPaging.PageSize,
+               queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+        }
     }
 }

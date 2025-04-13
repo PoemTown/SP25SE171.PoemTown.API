@@ -14,10 +14,11 @@ namespace PoemTown.Service.BusinessModels.MappingModels
         public UsageRightMapping()
         {
             CreateMap<UsageRight, GetSoldPoemResponse>()
-       .ForMember(dest => dest.Poem, opt => opt.MapFrom(p => p.SaleVersion.Poem));
-            ;
+                .ForMember(dest => dest.Poem, opt => opt.MapFrom(p => p.SaleVersion.Poem));
 
             CreateMap<UsageRight, GetBoughtPoemResponse>();
+            CreateMap<UsageRight, GetUserBoughtUsage>()
+                .ForMember(dest => dest.Buyer, opt => opt.MapFrom(u => u.User));
 
         }
     }

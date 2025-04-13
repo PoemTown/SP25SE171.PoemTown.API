@@ -477,6 +477,29 @@ namespace PoemTown.Service.Services
                 queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
 
+
+
+
+        public async Task<GetRecordFileResponse>GetRecordDetail(Guid recordId)
+        {
+            //Get record detail that user have
+            RecordFile? record = await _unitOfWork.GetRepository<RecordFile>().FindAsync(r => r.Id == recordId);
+            if(record == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Record file not found");
+            }
+
+            var recordDetail = _mapper.Map<GetRecordFileResponse>(record);
+            recordDetail.Poem = _mapper.Map< GetPoemDetailResponse>(record.Poem);
+            recordDetail.Owner = _mapper.Map<GetBasicUserInformationResponse>(record.User);
+            recordDetail.Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
+                    .Where(u => u.RecordFileId == recordId && u.DeletedTime == null)
+                    .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
+                    .ToList();
+            return recordDetail;
+        }
+
+
         public async Task<PaginationResponse<GetBoughtRecordResponse>>
             GetBoughtRecord(Guid? userId,
                 RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request)
@@ -580,6 +603,10 @@ namespace PoemTown.Service.Services
 
                 records.Add(_mapper.Map<GetRecordFileResponse>(recordEntity));
                 records.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(recordEntity.User);
+                records.Last().Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
+                    .Where(u => u.RecordFileId == record.Id && u.DeletedTime == null)
+                    .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
+                    .ToList();
             }
 
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,
@@ -640,6 +667,10 @@ namespace PoemTown.Service.Services
 
                 records.Add(_mapper.Map<GetRecordFileResponse>(recordEntity));
                 records.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(recordEntity.User);
+                records.Last().Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
+                    .Where(u => u.RecordFileId == record.Id && u.DeletedTime == null)
+                    .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
+                    .ToList();
             }
 
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,

@@ -1,4 +1,5 @@
-﻿using PoemTown.Repository.Enums.SaleVersions;
+﻿using PoemTown.Repository.Base;
+using PoemTown.Repository.Enums.SaleVersions;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using System;
@@ -9,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.UsageResponse
 {
-    public class GetPoemVersionResponse
+    public class GetPoemVersionResponse : BaseEntity
     {
         public Guid Id { get; set; }
         public int CommissionPercentage { get; set; }
@@ -17,7 +18,7 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.UsageResponse
         public int DurationTime { get; set; }
         public SaleVersionStatus Status { get; set; }
         public bool IsInUse { get; set; }
-        public  List<GetBasicUserInformationResponse> Buyers { get; set; }
+        public  List<GetUserBoughtUsage> UsageRights { get; set; }
 
     }
 }

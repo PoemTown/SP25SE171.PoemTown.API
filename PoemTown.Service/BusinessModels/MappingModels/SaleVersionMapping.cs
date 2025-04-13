@@ -15,7 +15,7 @@ public class SaleVersionMapping : Profile
         CreateMap<SaleVersion, GetSaleVersionResponse>().ReverseMap();
         CreateMap<SaleVersion, GetPoemVersionResponse>().ReverseMap();
 
-
+        
         CreateMap<GetSaleVersionResponse, GetPoemDetailResponse>();
         CreateMap<GetSaleVersionResponse, GetPoemInCollectionResponse>();
         CreateMap<GetSaleVersionResponse, GetPoemInTargetMarkResponse>();

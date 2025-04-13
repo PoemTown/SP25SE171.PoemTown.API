@@ -1,6 +1,7 @@
 ﻿using PoemTown.Repository.Enums.Poems;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.SaleVersionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
@@ -29,6 +30,7 @@ public class GetPoemInTargetMarkResponse
 
     public GetCollectionInPoemResponse Collection { get; set; }
     public GetBasicUserInformationResponse User { get; set; }
+    public GetPoetSampleResponse? PoetSample { get; set; }
     public GetTargetMarkResponse TargetMark { get; set; }
     public GetLikeResponse Like { get; set; }
     public GetSaleVersionResponse? SaleVersion { get; set; }

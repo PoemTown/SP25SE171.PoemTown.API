@@ -1,4 +1,5 @@
-﻿using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
+﻿using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
@@ -15,6 +16,7 @@ public class GetCollectionInTargetMarkResponse
     public bool? IsCommunity { get; set; }
     public bool? IsMine { get; set; }
     public GetBasicUserInformationResponse User { get; set; }
+    public GetPoetSampleResponse? PoetSample { get; set; }
     public GetTargetMarkResponse TargetMark { get; set; }
 
 }

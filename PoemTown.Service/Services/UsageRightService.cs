@@ -202,10 +202,10 @@ namespace PoemTown.Service.Services
                     throw new CoreException(StatusCodes.Status400BadRequest, "Sale version not found");
                 }
                 poemVersions.Add(_mapper.Map<GetPoemVersionResponse>(entity));
-                poemVersions.Last().Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
-                    .Where(u => u.SaleVersionId == version.Id && u.DeletedTime == null)
-                    .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
-                    .ToList();
+                poemVersions.Last().UsageRights = _mapper.Map<List<GetUserBoughtUsage>>(
+                    _unitOfWork.GetRepository<UsageRight>().AsQueryable()
+                    .Where(u => u.SaleVersionId == version.Id && u.Type == UserPoemType.PoemBuyer && u.DeletedTime == null)
+                    .ToList());
             }
             return new PaginationResponse<GetPoemVersionResponse>(poemVersions, queryPaging.PageNumber, queryPaging.PageSize,
                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);

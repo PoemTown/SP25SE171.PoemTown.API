@@ -28,5 +28,6 @@ namespace PoemTown.Service.Interfaces
         Task<PaginationResponse<GetRecordFileResponse>> GetMyRecord(Guid? userId, RequestOptionsBase<GetPoemRecordFileDetailFilterOption, GetPoemRecordFileDetailSortOption> request);
         Task<string> UploadRecordFile(Guid userId, IFormFile file);
         Task<IActionResult> GetAudioStreamResultAsync(Guid id);
+        Task<GetRecordFileResponse> GetRecordDetail(Guid recordId);
     }
 }

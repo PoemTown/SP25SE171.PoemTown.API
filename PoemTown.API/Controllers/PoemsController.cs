@@ -938,9 +938,16 @@ public class PoemsController : BaseController
     [HttpGet]
     [Route("v1/poet-sample/{poetSampleId}")]
     public async Task<ActionResult<BasePaginationResponse<GetPoetSamplePoemResponse>>>
-        GetPoetSample(Guid poetSampleId, RequestOptionsBase<GetPoetSamplePoemFilterOption, GetPoetSamplePoemSortOption> request)
+        GetPoetSamplePoems(Guid poetSampleId, RequestOptionsBase<GetPoetSamplePoemFilterOption, GetPoetSamplePoemSortOption> request)
     {
-        var paginationResponse = await _poemService.GetPoetSamplePoems(poetSampleId, request);
+        var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+        Guid? userId = null;
+        if (userClaim != null)
+        {
+            userId = Guid.Parse(userClaim.Value);
+        }        
+        
+        var paginationResponse = await _poemService.GetPoetSamplePoems(userId, poetSampleId, request);
         
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoetSamplePoemResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;

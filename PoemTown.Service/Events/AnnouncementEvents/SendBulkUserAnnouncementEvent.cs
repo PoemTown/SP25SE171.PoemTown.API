@@ -20,4 +20,5 @@ public class SendBulkUserAnnouncementEvent
     public Guid? PoemLeaderboardId { get; set; }
     public Guid? UserLeaderboardId { get; set; }
     public Guid? FollowerId { get; set; }
+    public Guid? WithdrawalFormId { get; set; }
 }

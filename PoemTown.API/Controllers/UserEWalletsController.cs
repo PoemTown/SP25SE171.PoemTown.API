@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
 using PoemTown.Service.BusinessModels.RequestModels.UserEWalletRequests;
+using PoemTown.Service.BusinessModels.RequestModels.WithdrawalFormRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.UserEWalletResponses;
 using PoemTown.Service.Interfaces;
@@ -80,4 +81,20 @@ public class UserEWalletsController : BaseController
         return Ok(response);
     }
     
+    /// <summary>
+    /// Tạo đơn rút tiền từ ví điện tử của người dùng, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="userEWalletId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/withdrawal-form")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> CreateWithdrawalForm(Guid userEWalletId, CreateWithdrawalFormRequest request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(x => x.Type == "UserId")!.Value);
+        
+        await _userEWalletService.CreateWithdrawalForm(userId, userEWalletId, request);
+        return Created(String.Empty, new BaseResponse(StatusCodes.Status201Created, "Create withdrawal form successfully"));
+    }
 }

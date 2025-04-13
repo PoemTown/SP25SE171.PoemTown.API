@@ -14,4 +14,5 @@ public enum AnnouncementType
     UserLeaderboard = 10,
     RecordFile = 11,
     Follower = 12,
+    WithdrawalForm = 13,
 }

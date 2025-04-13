@@ -1,4 +1,5 @@
 ﻿using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 
@@ -18,4 +19,5 @@ public class GetPoetSampleCollectionResponse
     public DateTimeOffset? CreatedTime { get; set; }
     public DateTimeOffset? LastUpdatedTime { get; set; }
     public GetPoetSampleResponse? PoetSample { get; set; }
+    public GetTargetMarkResponse? TargetMark { get; set; }
 }

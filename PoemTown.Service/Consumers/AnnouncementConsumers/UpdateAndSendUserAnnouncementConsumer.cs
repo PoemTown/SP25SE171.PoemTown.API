@@ -74,7 +74,10 @@ public class UpdateAndSendUserAnnouncementConsumer : IConsumer<UpdateAndSendUser
                 TransactionId = announcement.TransactionId,
                 AchievementId = announcement.AchievementId,
                 PoemLeaderboardId = announcement.PoemLeaderboardId,
-                UserLeaderboardId = announcement.UserLeaderboardId
+                UserLeaderboardId = announcement.UserLeaderboardId,
+                RecordFileId = announcement.RecordFileId,
+                FollowerId = announcement.FollowerId,
+                WithdrawalFormId = announcement.WithdrawalFormId
             });
         }
     }

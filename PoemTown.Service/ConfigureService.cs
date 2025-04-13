@@ -100,6 +100,7 @@ public static class ConfigureService
         services.AddScoped<IUsageRightService, UsageRightService>();
         services.AddScoped<IAnnouncementService, AnnouncementService>();
         services.AddScoped<IPoetSampleService, PoetSampleService>();
+        services.AddScoped<IWithdrawalFormService, WithdrawalFormService>();
 
         //Plagiarism detector
         services.AddScoped<IEmbeddingService, EmbeddingService>();

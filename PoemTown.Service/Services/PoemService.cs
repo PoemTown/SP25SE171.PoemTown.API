@@ -2052,7 +2052,7 @@ public class PoemService : IPoemService
     }
 
     public async Task<PaginationResponse<GetPoetSamplePoemResponse>>
-        GetPoetSamplePoems(Guid? poetSampleId,
+        GetPoetSamplePoems(Guid? userId, Guid? poetSampleId,
             RequestOptionsBase<GetPoetSamplePoemFilterOption, GetPoetSamplePoemSortOption> request)
     {
         PoetSample? poetSample = await _unitOfWork.GetRepository<PoetSample>()
@@ -2142,6 +2142,10 @@ public class PoemService : IPoemService
             poems.Add(_mapper.Map<GetPoetSamplePoemResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().PoetSample = _mapper.Map<GetPoetSampleResponse>(poemEntity.PoetSample);
+            
+            poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+            (poemEntity.TargetMarks!.FirstOrDefault(tm =>
+                tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
         }
 
         return new PaginationResponse<GetPoetSamplePoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,

@@ -603,6 +603,10 @@ namespace PoemTown.Service.Services
 
                 records.Add(_mapper.Map<GetRecordFileResponse>(recordEntity));
                 records.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(recordEntity.User);
+                records.Last().Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
+                    .Where(u => u.RecordFileId == record.Id && u.DeletedTime == null)
+                    .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
+                    .ToList();
             }
 
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,
@@ -663,6 +667,10 @@ namespace PoemTown.Service.Services
 
                 records.Add(_mapper.Map<GetRecordFileResponse>(recordEntity));
                 records.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(recordEntity.User);
+                records.Last().Buyers = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
+                    .Where(u => u.RecordFileId == record.Id && u.DeletedTime == null)
+                    .Select(b => _mapper.Map<GetBasicUserInformationResponse>(b.User))
+                    .ToList();
             }
 
             return new PaginationResponse<GetRecordFileResponse>(records, queryPaging.PageNumber, queryPaging.PageSize,

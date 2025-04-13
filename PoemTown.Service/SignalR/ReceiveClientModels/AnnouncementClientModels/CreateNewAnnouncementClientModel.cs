@@ -22,4 +22,5 @@ public class CreateNewAnnouncementClientModel
     public Guid? FollowerId { get; set; }
     public string? FollowerUserName { get; set; }
     public Guid? RecordFileId { get; set; }
+    public Guid? WithdrawalFormId { get; set; }
 }

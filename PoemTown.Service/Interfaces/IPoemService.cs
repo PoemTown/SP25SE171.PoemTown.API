@@ -61,7 +61,7 @@ public interface IPoemService
     Task CreatePoetSamplePoem(Guid poetSampleId, CreatePoetSamplePoemRequest request);
 
     Task<PaginationResponse<GetPoetSamplePoemResponse>>
-        GetPoetSamplePoems(Guid? poetSampleId,
+        GetPoetSamplePoems(Guid? userId, Guid? poetSampleId,
             RequestOptionsBase<GetPoetSamplePoemFilterOption, GetPoetSamplePoemSortOption> request);
 
     Task UpdatePoetSamplePoem(Guid poetSampleId, UpdatePoetSamplePoemRequest request);

@@ -396,10 +396,19 @@ namespace PoemTown.API.Controllers
             GetPoetSampleCollection(Guid poetSampleId,
                 RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
-            var paginationResponse = await _service.GetPoetSampleCollection(poetSampleId, request);
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }        
+            
+            var paginationResponse = await _service.GetPoetSampleCollection(userId, poetSampleId, request);
+            
             var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPoetSampleCollectionResponse>>(paginationResponse);
             basePaginationResponse.StatusCode = StatusCodes.Status200OK;
             basePaginationResponse.Message = "Get Collection successfully";
+            
             return Ok(basePaginationResponse);
         }
         

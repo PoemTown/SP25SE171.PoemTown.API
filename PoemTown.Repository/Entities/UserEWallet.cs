@@ -22,5 +22,6 @@ namespace PoemTown.Repository.Entities
         public virtual User User { get; set; }
         public virtual ICollection<Transaction>? Transactions { get; set; }
         public virtual ICollection<Transaction>? ReceiverTransactions { get; set; }
+        public virtual ICollection<WithdrawalForm>? WithdrawalForms { get; set; }
     }
 }

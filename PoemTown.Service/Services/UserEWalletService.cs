@@ -6,9 +6,11 @@ using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Enums.Wallets;
+using PoemTown.Repository.Enums.WithdrawalForm;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.UserEWalletRequests;
+using PoemTown.Service.BusinessModels.RequestModels.WithdrawalFormRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.UserEWalletResponses;
 using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Events.TransactionEvents;
@@ -207,5 +209,39 @@ public class UserEWalletService : IUserEWalletService
             WalletBalance = userEWallet.WalletBalance,
             WalletStatus = userEWallet.WalletStatus
         };
+    }
+
+    public async Task CreateWithdrawalForm(Guid userId, Guid userEWalletId, CreateWithdrawalFormRequest request)
+    {
+        // Check user e-wallet exist
+        UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>().FindAsync(p => p.Id == userEWalletId);
+        if (userEWallet == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet not found");
+        }
+
+        // Check if e-wallet belongs to user
+        if (userEWallet.UserId != userId)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet does not belong to user");
+        }
+        
+        // Check user e-wallet balance
+        if (userEWallet.WalletBalance < request.Amount)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Insufficient balance in e-wallet");
+        }
+
+        // Create withdrawal form
+        var withdrawalForm = _mapper.Map<WithdrawalForm>(request);
+        withdrawalForm.UserEWallet = userEWallet;
+        withdrawalForm.Status = WithdrawalFormStatus.Pending;
+        
+        await _unitOfWork.GetRepository<WithdrawalForm>().InsertAsync(withdrawalForm);
+        
+        // Update user e-wallet balance
+        userEWallet.WalletBalance -= request.Amount;
+        
+        await _unitOfWork.SaveChangesAsync();
     }
 }

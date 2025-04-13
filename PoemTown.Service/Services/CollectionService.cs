@@ -717,7 +717,7 @@ namespace PoemTown.Service.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<PaginationResponse<GetPoetSampleCollectionResponse>> GetPoetSampleCollection(
+        public async Task<PaginationResponse<GetPoetSampleCollectionResponse>> GetPoetSampleCollection(Guid? userId,
             Guid poetSampleId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request)
         {
             var poetSample = await _unitOfWork.GetRepository<PoetSample>().FindAsync(p => p.Id == poetSampleId);
@@ -782,6 +782,11 @@ namespace PoemTown.Service.Services
                 
                 // Assign author to poem by adding into the last element of the list
                 collections.Last().PoetSample = _mapper.Map<GetPoetSampleResponse>(collectionEntity.PoetSample);
+                
+                collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
+                (collection.TargetMarks!.FirstOrDefault(tm =>
+                    tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id &&
+                    tm.Type == TargetMarkType.Collection));
             }
 
             return new PaginationResponse<GetPoetSampleCollectionResponse>(collections, queryPaging.PageNumber,

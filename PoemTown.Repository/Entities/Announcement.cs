@@ -69,5 +69,9 @@ namespace PoemTown.Repository.Entities
         // Follower
         public Guid? FollowerId { get; set; }
         public virtual Follower? Follower { get; set; }
+        
+        // WithdrawalForm
+        public Guid? WithdrawalFormId { get; set; }
+        public virtual WithdrawalForm? WithdrawalForm { get; set; }
     }
 }

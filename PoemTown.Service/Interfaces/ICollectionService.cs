@@ -37,7 +37,7 @@ namespace PoemTown.Service.Interfaces
 
         Task CreatePoetSampleCollection(Guid poetSampleId, CreateCollectionRequest request);
 
-        Task<PaginationResponse<GetPoetSampleCollectionResponse>> GetPoetSampleCollection(
+        Task<PaginationResponse<GetPoetSampleCollectionResponse>> GetPoetSampleCollection(Guid? userId,
             Guid poetSampleId, RequestOptionsBase<CollectionFilterOption, CollectionSortOptions> request);
 
         Task UpdatePoetSampleCollection(Guid poetSampleId, UpdateCollectionRequest request);

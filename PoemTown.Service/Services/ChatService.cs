@@ -1,14 +1,17 @@
 ﻿using AutoMapper;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.ChatResponse;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.MessageFilters;
 using PoemTown.Service.QueryOptions.FilterOptions.PoemFilters;
@@ -22,6 +25,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Betalgo.Ranul.OpenAI.ObjectModels.SharedModels.IOpenAIModels;
+using static MassTransit.Util.ChartTable;
 
 namespace PoemTown.Service.Services
 {
@@ -31,12 +36,16 @@ namespace PoemTown.Service.Services
         private readonly IHubContext<ChatHub> _hubContext;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly IPublishEndpoint _publishEndpoint;
+
         private static readonly ConcurrentDictionary<string, string> _userConnections = ChatHub.UserConnections;
-        public ChatService(IHubContext<ChatHub> hubContext, IUnitOfWork unitOfWork, IMapper mapper)
+        public ChatService(IHubContext<ChatHub> hubContext, IUnitOfWork unitOfWork, IMapper mapper, IPublishEndpoint publishEndpoint)
         {
             _hubContext = hubContext;
             _unitOfWork = unitOfWork;
-            _mapper = mapper; 
+            _mapper = mapper;
+            _publishEndpoint = publishEndpoint;
+
         }
 
         public async Task SendMessageToAllAsync(string user, string message)
@@ -52,17 +61,37 @@ namespace PoemTown.Service.Services
                 await _hubContext.Clients.Client(connectionId)
                     .SendAsync("ReceiveMessage", fromUser, message);
             }
-             
-            // Lưu vào DB
+
+            // Lưu vào 
             var msg = new Message
             {
                 FromUserId = fromUser,
                 ToUserId = toUser,
+                IsRead = false,
                 MessageText = message ,
             };
-
             await _unitOfWork.GetRepository<Message>().InsertAsync(msg);
             await _unitOfWork.SaveChangesAsync();
+            /*bool isOnline = _userConnections.TryGetValue(toUser.ToString(), out var connectionId);
+
+            if (isOnline)
+            {
+                await _hubContext.Clients.Client(connectionId)
+                    .SendAsync("ReceiveMessage", fromUser, message);
+            }
+            else
+            {
+                // Nếu người nhận offline, tạo thông báo
+                await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+                {
+                    UserId = toUser,
+                    Title = "Tin nhắn mới",
+                    Content = "",
+                    IsRead = false,
+                    Type = AnnouncementType.Chat,
+                });
+
+            }*/
 
             // Lấy lại message với thông tin user
             var fromUserEntity = await _unitOfWork.GetRepository<User>()
@@ -83,7 +112,22 @@ namespace PoemTown.Service.Services
 
             return mappedMessage;
         }
+/*
+        public async Task MarkAsReadAsync(Guid messageId, Guid userId)
+        {
+            var message = await _unitOfWork.GetRepository<Message>()
+                .FindAsync(m => m.Id == messageId && m.ToUserId == userId);
 
+            if (message == null)
+            {
+                throw new CoreException(StatusCodes.Status404NotFound, "Tin nhắn không tồn tại");
+            }
+
+            message.IsRead = true;
+
+            _unitOfWork.GetRepository<Message>().Update(message);
+            await _unitOfWork.SaveChangesAsync();
+        }*/
 
 
 

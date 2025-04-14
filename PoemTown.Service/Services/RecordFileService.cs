@@ -810,12 +810,9 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy bài ngâm thơ");
             }
-            record.TotalView++;
+            record.TotalView += 1;
             _unitOfWork.GetRepository<RecordFile>().Update(record);
             _unitOfWork.SaveChanges();  
         }
-
-
-
     }
 }

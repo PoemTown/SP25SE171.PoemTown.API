@@ -215,11 +215,11 @@ namespace PoemTown.Service.Services
 
         public async Task TimeOutUsageRight()
         {
-            var utcPlus7 = DateTimeHelper.ConvertToUtcPlus7(DateTime.Today);
+            var todayUtcPlus7 = DateTimeHelper.ConvertToUtcPlus7(DateTime.UtcNow).Date;
 
             //Get uasge right that time out
             var usageRights = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
-                    .Where(u => u.CopyRightValidTo < utcPlus7 && u.DeletedTime == null);
+                    .Where(u => u.CopyRightValidTo <= todayUtcPlus7 && u.DeletedTime == null);
             var recordsToUpdate = new List<RecordFile>();
             foreach (var usageRight in usageRights)
             {

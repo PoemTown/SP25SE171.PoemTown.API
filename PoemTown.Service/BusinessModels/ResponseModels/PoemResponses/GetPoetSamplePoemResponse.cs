@@ -25,4 +25,6 @@ public class GetPoetSamplePoemResponse
     public GetCollectionInPoemResponse Collection { get; set; }
     public GetPoetSampleResponse PoetSample { get; set; }
     public GetTargetMarkResponse TargetMark { get; set; }
+    public GetSaleVersionResponse? SaleVersion { get; set; }
+
 }

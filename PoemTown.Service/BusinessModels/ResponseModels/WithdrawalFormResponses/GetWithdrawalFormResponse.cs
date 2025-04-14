@@ -13,4 +13,5 @@ public class GetWithdrawalFormResponse
     public string? ResolveEvidence { get; set; }
     public string AccountName { get; set; } = null!;
     public string AccountNumber { get; set; } = null!;
+    public DateTimeOffset CreatedTime { get; set; }
 }

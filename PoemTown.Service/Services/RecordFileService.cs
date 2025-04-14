@@ -126,7 +126,7 @@ namespace PoemTown.Service.Services
                 
                
             }
-            User user = await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == userId);
+            User? user = await _unitOfWork.GetRepository<User>().FindAsync(u => u.Id == userId);
             
             if(user == null)
             {
@@ -252,7 +252,7 @@ namespace PoemTown.Service.Services
             recordFile.IsPublic = false;
             recordFile.Price = request.Price;
             _unitOfWork.GetRepository<RecordFile>().Update(recordFile);
-            _unitOfWork.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task PurchaseRecordFile(Guid userId, Guid recordId)
@@ -329,7 +329,7 @@ namespace PoemTown.Service.Services
                 RecordFileId = recordId,
                 Type = UserPoemType.RecordBuyer,
                 CopyRightValidFrom = DateTimeHelper.SystemTimeNow.DateTime,
-                CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(2).DateTime
+                CopyRightValidTo = DateTimeHelper.SystemTimeNow.AddYears(100).DateTime
             };
 
             if (recordFile.SaleVersion != null)

@@ -23,8 +23,10 @@ public class PoemMapping : Profile
         CreateMap<Poem, GetPoemInOrderDetailResponse>().ReverseMap();
         CreateMap<CreatePoetSamplePoemRequest, Poem>();
         CreateMap<Poem, GetPoemInReportResponse>().ReverseMap();
-        CreateMap<Poem, GetPoetSamplePoemResponse>().ReverseMap();
         CreateMap<UpdatePoetSamplePoemRequest, Poem>();
+        
+        CreateMap<GetPoetSamplePoemResponse, Poem>().ReverseMap()
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true && sv.Status == SaleVersionStatus.Free)));
         
         CreateMap<GetPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))

@@ -215,12 +215,13 @@ namespace PoemTown.Service.Services
 
         public async Task TimeOutUsageRight()
         {
-            var todayUtcPlus7 = DateTimeHelper.ConvertToUtcPlus7(DateTime.UtcNow).Date;
+            var utc7Now = DateTime.UtcNow.AddHours(7);
+            var utc7Today = utc7Now.Date;
 
             //Get uasge right that time out
             var usageRights = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
-                    .Where(u => u.CopyRightValidTo <= todayUtcPlus7 && u.DeletedTime == null);
-            var recordsToUpdate = new List<RecordFile>();
+                    .Where(u => u.CopyRightValidTo <= utc7Today && u.DeletedTime == null);
+            //var recordsToUpdate = new List<RecordFile>();
             foreach (var usageRight in usageRights)
             {
                 var records =_unitOfWork.GetRepository<RecordFile>().AsQueryable()
@@ -228,14 +229,15 @@ namespace PoemTown.Service.Services
                 foreach(var record in records)
                 {
                     record.IsAbleToRemoveFromPoem = true;
-                    recordsToUpdate.Add(record);
+                    _unitOfWork.GetRepository<RecordFile>().Update(record);
+                    _unitOfWork.SaveChanges();
                 }
             }
-            foreach (var record in recordsToUpdate)
+/*            foreach (var record in recordsToUpdate)
             {
                 _unitOfWork.GetRepository<RecordFile>().Update(record);
                 _unitOfWork.SaveChanges();
-            }
+            }*/
         }
 
 

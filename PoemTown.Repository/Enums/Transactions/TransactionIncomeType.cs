@@ -2,6 +2,7 @@
 
 public enum TransactionIncomeType
 {
-    EWalletDeposit = 1,
+    DepositCommissionFee = 1,
     MasterTemplates = 2,
+    RecordFiles = 3,
 }

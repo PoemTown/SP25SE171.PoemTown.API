@@ -31,7 +31,8 @@ public class StatisticService : IStatisticService
         var collections = _unitOfWork.GetRepository<Collection>()
             .AsQueryable()
             .Where(c => c.UserId == userId && c.DeletedTime == null);
-        var records = _unitOfWork.GetRepository<RecordFile>().AsQueryable().Where(r => r.UserId == userId && r.DeletedTime == null);
+        var records = _unitOfWork.GetRepository<RecordFile>().AsQueryable()
+            .Where(r => r.UserId == userId && r.DeletedTime == null);
         // Nếu không có bộ sưu tập, trả về thống kê mặc định
         if (!await collections.AnyAsync())
         {
@@ -43,7 +44,7 @@ public class StatisticService : IStatisticService
             .SelectMany(c => c.Poems)
             .Where(p => p.DeletedTime == null);
 
-        var totalPoemBookmarks =await _unitOfWork.GetRepository<TargetMark>().AsQueryable()
+        var totalPoemBookmarks = await _unitOfWork.GetRepository<TargetMark>().AsQueryable()
             .Where(pt => pt.MarkByUserId == userId && pt.Type == TargetMarkType.Poem).CountAsync();
         var totalCollectionBookmarks = await _unitOfWork.GetRepository<TargetMark>().AsQueryable()
             .Where(pt => pt.MarkByUserId == userId && pt.Type == TargetMarkType.Collection).CountAsync();
@@ -52,7 +53,7 @@ public class StatisticService : IStatisticService
         var totalPoems = await poemsQuery.CountAsync();
         var totalRecords = await records.CountAsync();
         //var totalCollectionBookmarks =
-            await collections.SelectMany(p => p.TargetMarks).CountAsync(l => l.DeletedTime == null);
+        await collections.SelectMany(p => p.TargetMarks).CountAsync(l => l.DeletedTime == null);
         var totalLikes = await poemsQuery.SelectMany(p => p.Likes).CountAsync(l => l.DeletedTime == null);
         //var totalPoemBookmarks = await poemsQuery.SelectMany(p => p.TargetMarks).CountAsync(l => l.DeletedTime == null);
 
@@ -240,7 +241,7 @@ public class StatisticService : IStatisticService
                     .ToList();
                 break;
             }
-            
+
             // Last 15 days
             case PeriodEnum.By15Days:
             {
@@ -623,8 +624,9 @@ public class StatisticService : IStatisticService
 
         var transactionIncomeType = new[]
         {
-            TransactionType.EWalletDeposit,
-            TransactionType.MasterTemplates
+            TransactionType.DepositCommissionFee,
+            TransactionType.MasterTemplates,
+            TransactionType.RecordFiles,
         };
 
         // Filter by condition: transaction type must be one of transactionIncomeType, CreatedTime is less than or equal to current date (UTC + 7)
@@ -632,11 +634,26 @@ public class StatisticService : IStatisticService
                                                        && transactionIncomeType.Contains(p.Type));
 
         var incomeTypeStatistics = new List<GetIncomeTypeStatisticResponse>();
-        
+
+        // Admin EWallet
+        var adminEWallet = await _unitOfWork.GetRepository<User>()
+            .AsQueryable()
+            .Where(p => p.UserRoles.Any(r => r.Role.Name == "Admin"))
+            .Select(p => p.EWallet)
+            .FirstOrDefaultAsync();
+
         foreach (var type in transactionIncomeType)
         {
-            var filteredQuery = transactionQuery.Where(p => p.Type == type);
-            
+            var filteredQuery = transactionQuery.Where(p => p.Type == type && p.Status == TransactionStatus.Paid);
+
+            switch (type)
+            {
+                case TransactionType.RecordFiles:
+                    filteredQuery = filteredQuery.Where(p =>
+                        p.IsAddToWallet == true && p.UserEWallet == adminEWallet && p.IsAddToWallet == true);
+                    break;
+            }
+
             // Transaction samples (total transactions & total amounts)
             var samples = await GetSampleStatisticResponse(
                 filteredQuery,
@@ -650,7 +667,7 @@ public class StatisticService : IStatisticService
                 sampleValueSelector: p => 1,
                 amountValueSelector: p => p.Amount
             );
-            
+
             // Add to incomeTypeStatistics
             incomeTypeStatistics.Add(new GetIncomeTypeStatisticResponse()
             {
@@ -667,6 +684,100 @@ public class StatisticService : IStatisticService
         return new GetIncomeStatisticResponse()
         {
             IncomeTypeStatistics = incomeTypeStatistics
+        };
+    }
+
+    public async Task<GetProfitStatisticResponse> GetProfitStatistic(GetProfitStatisticFilterOption filter)
+    {
+        var transactionQuery = _unitOfWork.GetRepository<Transaction>()
+            .AsQueryable();
+
+        var transactionIncomeType = new[]
+        {
+            TransactionType.DepositCommissionFee,
+            TransactionType.MasterTemplates,
+            TransactionType.RecordFiles,
+        };
+
+        var withdrawTypes = new[]
+        {
+            TransactionType.Withdraw
+        };
+        
+        // Filter by condition: transaction type must be one of transactionIncomeType, CreatedTime is less than or equal to current date (UTC + 7)
+        transactionQuery = transactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow 
+                                                       && p.Status == TransactionStatus.Paid);
+
+        // Admin EWallet
+        var adminEWallet = await _unitOfWork.GetRepository<User>()
+            .AsQueryable()
+            .Where(p => p.UserRoles.Any(r => r.Role.Name == "Admin"))
+            .Select(p => p.EWallet)
+            .FirstOrDefaultAsync();
+
+        var incomeQuery = transactionQuery.Where(p => transactionIncomeType.Contains(p.Type));
+        
+        // Filter RecordFiles like before
+        incomeQuery = incomeQuery.Where(p =>
+            p.Type != TransactionType.RecordFiles || 
+            (p.Type == TransactionType.RecordFiles && p.IsAddToWallet == true && p.UserEWallet == adminEWallet));
+
+        // Transaction samples (total transactions & total amounts)
+        var incomeSamples = await GetSampleStatisticResponse(
+            incomeQuery,
+            p => p.CreatedTime,
+            new GetStatisticFilterOption()
+            {
+                Period = filter.Period
+            },
+            sampleAggregateFunction: p => p.Count(),
+            amountAggregateFunction: p => p.Sum(),
+            sampleValueSelector: p => 1,
+            amountValueSelector: p => p.Amount
+        );
+
+        // WITHDRAW transactions
+        var withdrawQuery = transactionQuery.Where(p => withdrawTypes.Contains(p.Type));
+
+        var withdrawSamples = await GetSampleStatisticResponse(
+            withdrawQuery,
+            p => p.CreatedTime,
+            new GetStatisticFilterOption { Period = filter.Period },
+            sampleAggregateFunction: p => p.Count(),
+            amountAggregateFunction: p => p.Sum(),
+            sampleValueSelector: p => 1,
+            amountValueSelector: p => p.Amount
+        );
+        
+        IList<GetProfitTypeStatisticResponse> result = new List<GetProfitTypeStatisticResponse>();
+        
+        // Add income samples to the result
+        result.Add(new GetProfitTypeStatisticResponse
+        {
+            ProfitType = TransactionProfitType.Income,
+            Samples = new GetStatisticResponse<int, decimal>
+            {
+                TotalDataSamples = incomeSamples.Sum(s => s.TotalSamples),
+                TotalDataAmount = incomeSamples.Sum(s => s.TotalAmount),
+                Samples = incomeSamples
+            }
+        });
+
+        // Add withdraw samples to the result
+        result.Add(new GetProfitTypeStatisticResponse
+        {
+            ProfitType = TransactionProfitType.Withdraw,
+            Samples = new GetStatisticResponse<int, decimal>
+            {
+                TotalDataSamples = withdrawSamples.Sum(s => s.TotalSamples),
+                TotalDataAmount = withdrawSamples.Sum(s => s.TotalAmount),
+                Samples = withdrawSamples
+            }
+        });
+
+        return new GetProfitStatisticResponse()
+        {
+            ProfitTypeStatisticResponses = result
         };
     }
 }

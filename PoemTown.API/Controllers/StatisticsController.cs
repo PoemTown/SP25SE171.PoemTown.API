@@ -17,6 +17,7 @@ namespace PoemTown.API.Controllers
     {
         private readonly IStatisticService _service;
         private readonly IMapper _mapper;
+
         public StatisticsController(IMapper mapper, IStatisticService service)
         {
             _mapper = mapper;
@@ -41,10 +42,11 @@ namespace PoemTown.API.Controllers
             {
                 userId = Guid.Parse(userClaim.Value);
             }
+
             var result = await _service.GetStatisticsAsync(userId);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get statistic user successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê trên trang dashbaord, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -57,7 +59,7 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetTotalStatistic();
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get total statistic successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê người dùng online, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -81,7 +83,7 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetOnlineUserStatistic(filter);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get online user statistic successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê số lượng bài thơ được tải lên, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -104,7 +106,7 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetUploadPoemStatistic(filter);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get upload poem statistic successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê số lượng bài thơ theo từng loại, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -132,7 +134,7 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetPoemTypeStatistic();
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get poem type statistic successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê số lượng bài thơ bị báo cáo, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -152,7 +154,7 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetReportPoemStatistic();
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get report poem statistic successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê số lượng người dùng bị báo cáo, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -172,7 +174,7 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetReportUserStatistic();
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get report user statistic successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê số lượng bài thơ bị báo cáo là ĐẠO VĂN, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -191,9 +193,10 @@ namespace PoemTown.API.Controllers
             GetReportPlagiarismPoemStatistic()
         {
             var result = await _service.GetReportPlagiarismPoemStatistic();
-            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get report plagiarism poem statistic successfully", result));
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get report plagiarism poem statistic successfully",
+                result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê số lượng giao dịch, tổng số tiền đã giao dịch, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -216,7 +219,7 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetTransactionStatistic(filter);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get transaction statistic successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê số lượng đơn hàng theo từng trạng thái, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -237,7 +240,7 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetOrderStatusStatistic();
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get order type statistic successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê số lượng đơn hàng đã được thánh toán theo từng loại Master Templates, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -249,9 +252,10 @@ namespace PoemTown.API.Controllers
             GetMasterTemplateOrderStatistic()
         {
             var result = await _service.GetMasterTemplateOrderStatistic();
-            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get master template order statistic successfully", result));
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get master template order statistic successfully",
+                result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê số lượng đơn hàng đã được thánh toán theo từng loại, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -273,7 +277,7 @@ namespace PoemTown.API.Controllers
             var result = await _service.GetOrderTypeStatistic();
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get order type statistic successfully", result));
         }
-        
+
         /// <summary>
         /// Lấy thống kê doanh thu, yêu cầu đăng nhập dưới quyền ADMIN
         /// </summary>
@@ -300,6 +304,21 @@ namespace PoemTown.API.Controllers
         {
             var result = await _service.GetIncomeStatistic(filter);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get income statistic successfully", result));
+        }
+
+        /// <summary>
+        /// Lấy thống kê lợi nhuận, yêu cầu đăng nhập dưới quyền ADMIN
+        /// </summary>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        [HttpGet]
+        [Route("v1/profits")]
+        [Authorize(Roles = "ADMIN")]
+        public async Task<ActionResult<BaseResponse<GetProfitStatisticResponse>>>
+            GetProfitStatistic([FromQuery] GetProfitStatisticFilterOption filter)
+        {
+            var result = await _service.GetProfitStatistic(filter);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Get profit statistic successfully", result));
         }
     }
 }

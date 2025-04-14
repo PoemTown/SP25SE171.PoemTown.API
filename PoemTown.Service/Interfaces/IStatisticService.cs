@@ -18,4 +18,5 @@ public interface IStatisticService
     Task<GetMasterTemplateOrderStatisticResponse> GetMasterTemplateOrderStatistic();
     Task<GetOrderTypeStatisticResponse> GetOrderTypeStatistic();
     Task<GetIncomeStatisticResponse> GetIncomeStatistic(GetIncomeStatisticFilterOption filter);
+    Task<GetProfitStatisticResponse> GetProfitStatistic(GetProfitStatisticFilterOption filter);
 }

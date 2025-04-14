@@ -108,11 +108,12 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
 
     public async Task<DepositUserEWalletResponse> DepositUserEWalletPayment(UserEWalletData request)
     {
+        var orderCode = OrderCodeGenerator.Generate();
         // Create order
         var orderCreationSettings = new OrderCreationSettings<UserEWalletData>()
         {
             AppUser = request.UserId.ToString(),
-            ApptransId = OrderCodeGenerator.Generate(),
+            ApptransId = orderCode,
             Amount = (long)request.Amount,
             Description = $"Nạp: {request.Amount}VNĐ vào ví điện tử",
             Items = new List<UserEWalletData>
@@ -193,7 +194,7 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
         {
             Message = "Deposit EWallet success",
             PaymentUrl = response.OrderUrl.ToString(),
-            OrderCode = orderCreationSettings.ApptransId,
+            OrderCode = orderCode,
             Token = response.ZpTransToken,
             Code = (int)response.ReturnCode!,
             IsSuccess = true,

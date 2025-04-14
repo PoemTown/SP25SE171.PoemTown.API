@@ -985,4 +985,19 @@ public class PoemsController : BaseController
         await _poemService.DeletePoetSamplePoem(poetSampleId, poemId);
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Delete poet sample successfully"));
     }
+    
+    /// <summary>
+    /// Cập nhật tỷ lệ hoa hồng bài thơ của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <param name="commissionPercentage"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/poet-sample/{poemId}/sale-version")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> UpdatePoetSamplePoemSaleVersion(Guid poemId, int commissionPercentage)
+    {
+        await _poemService.UpdatePoetSampleSaleVersionCommissionPercentage(poemId, commissionPercentage);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Update poet sample sale version successfully"));
+    }
 }

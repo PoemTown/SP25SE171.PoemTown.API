@@ -8,6 +8,7 @@ using PoemTown.Repository.Interfaces;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 using PoemTown.Service.Interfaces;
@@ -168,6 +169,7 @@ public class TargetMarkService : ITargetMarkService
             poems.Add(_mapper.Map<GetPoemInTargetMarkResponse>(poemEntity));
             // Assign author to poem by adding into the last element of the list
             poems.Last().User = _mapper.Map<GetBasicUserInformationResponse>(poemEntity.Collection!.User);
+            poems.Last().PoetSample = _mapper.Map<GetPoetSampleResponse>(poemEntity.PoetSample);
             poems.Last().Like = _mapper.Map<GetLikeResponse>(poemEntity.Likes!.FirstOrDefault(l => l.UserId == userId && l.PoemId == poemEntity.Id));
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
                 (poemEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
@@ -215,6 +217,7 @@ public class TargetMarkService : ITargetMarkService
             if (collectionEntity.IsCommunity == false) { 
                 collections.Last().User = _mapper.Map<GetBasicUserInformationResponse>(collectionEntity.User);
             }
+            collections.Last().PoetSample = _mapper.Map<GetPoetSampleResponse>(collectionEntity.PoetSample);
             collections.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
                 (collectionEntity.TargetMarks!.FirstOrDefault(tm => tm.MarkByUserId == userId && tm.CollectionId == collectionEntity.Id && tm.Type == TargetMarkType.Collection));
         }

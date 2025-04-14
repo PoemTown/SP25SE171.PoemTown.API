@@ -35,7 +35,9 @@ public class TransactionsController : BaseController
     /// - Poems = 4,
     /// - Withdraw = 5,
     /// - Donate = 6,
-    ///
+    /// - CommissionFee = 7,
+    /// - Refund = 8,
+    /// 
     /// SortOptions:
     ///
     /// - CreatedTimeAscending = 1,
@@ -82,6 +84,8 @@ public class TransactionsController : BaseController
     /// - Poems = 4,
     /// - Withdraw = 5,
     /// - Donate = 6,
+    /// - CommissionFee = 7,
+    /// - Refund = 8,
     /// 
     /// SortOptions:
     ///
@@ -129,6 +133,8 @@ public class TransactionsController : BaseController
     /// - Poems = 4,
     /// - Withdraw = 5,
     /// - Donate = 6,
+    /// - CommissionFee = 7,
+    /// - Refund = 8,
     ///
     /// status:
     ///

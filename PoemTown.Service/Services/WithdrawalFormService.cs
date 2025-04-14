@@ -5,12 +5,14 @@ using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Announcements;
+using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Enums.WithdrawalForm;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.WithdrawalFormRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.WithdrawalFormResponses;
 using PoemTown.Service.Events.AnnouncementEvents;
+using PoemTown.Service.Events.TransactionEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.WithdrawalFormFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -151,55 +153,98 @@ public class WithdrawalFormService : IWithdrawalFormService
             throw new CoreException(StatusCodes.Status400BadRequest, "Withdrawal form is not pending");
         }
 
+        // Check if request status is pending, if so, do nothing
+        if (request.Status == WithdrawalFormStatus.Pending)
+        {
+            return;
+        }
+
         withdrawalForm.ResolveDescription = request.ResolveDescription;
         withdrawalForm.ResolveEvidence = request.ResolveEvidence;
         withdrawalForm.Status = request.Status;
         _unitOfWork.GetRepository<WithdrawalForm>().Update(withdrawalForm);
-        
-        // Refunds to user e-wallet if withdrawal form is rejected
-        if (request.Status == WithdrawalFormStatus.Rejected)
-        {
-            UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>()
-                .FindAsync(p => p.Id == withdrawalForm.UserEWalletId);
 
-            // Check if user e-wallet exists
-            if (userEWallet == null)
+        UserEWallet? userEWallet = await _unitOfWork.GetRepository<UserEWallet>()
+            .FindAsync(p => p.Id == withdrawalForm.UserEWalletId);
+
+        // Check if user e-wallet exists
+        if (userEWallet == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet not found");
+        }
+
+        switch (request.Status)
+        {
+            // Refunds to user e-wallet if withdrawal form is rejected
+            case WithdrawalFormStatus.Rejected:
             {
-                throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet not found");
+                userEWallet.WalletBalance += withdrawalForm.Amount;
+                _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
+
+                // Create transaction
+                var transaction = new Transaction()
+                {
+                    UserEWalletId = userEWallet.Id,
+                    Amount = withdrawalForm.Amount,
+                    Description = "Hoàn tiền rút tiền từ ví điện tử",
+                    TransactionCode = OrderCodeGenerator.Generate(),
+                    Type = TransactionType.Refund,
+                    Status = TransactionStatus.Paid,
+                    IsAddToWallet = true,
+                    Balance = userEWallet.WalletBalance,
+                };
+                await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
+                break;
             }
+            case WithdrawalFormStatus.Accepted:
+            {
+                // Create transaction
+                var transaction = new Transaction()
+                {
+                    UserEWalletId = userEWallet.Id,
+                    Amount = withdrawalForm.Amount,
+                    Description = "Rút tiền từ ví điện tử",
+                    Type = TransactionType.Withdraw,
+                    TransactionCode = OrderCodeGenerator.Generate(),
+                    Status = TransactionStatus.Paid,
+                    IsAddToWallet = false,
+                    Balance = userEWallet.WalletBalance,
+                };
+                await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
+                break;
+            }
+        }
 
-            userEWallet.WalletBalance += withdrawalForm.Amount;
-            _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
-        }
         await _unitOfWork.SaveChangesAsync();
-        
-        // Announce to user
-        if (request.Status == WithdrawalFormStatus.Accepted)
+
+        switch (request.Status)
         {
-            await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
-            {
-                Title = "Đơn rút tiền",
-                Content = "Đơn rút tiền của bạn đã được chấp nhận, vui lòng kiểm tra lại số dư tài khoản của bạn",
-                UserId = withdrawalForm.UserEWallet.UserId,
-                IsRead = false,
-                Type = AnnouncementType.WithdrawalForm,
-                WithdrawalFormId = withdrawalForm.Id
-            });
-        }
-        else if (request.Status == WithdrawalFormStatus.Rejected)
-        {
-            await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
-            {
-                Title = "Đơn rút tiền",
-                Content = "Đơn rút tiền của bạn đã bị từ chối, chúng tôi đã hoàn lại số tiền về ví của bạn",
-                UserId = withdrawalForm.UserEWallet.UserId,
-                IsRead = false,
-                Type = AnnouncementType.WithdrawalForm,
-                WithdrawalFormId = withdrawalForm.Id
-            });
+            // Create transaction and announce to user
+            case WithdrawalFormStatus.Accepted:
+                await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+                {
+                    Title = "Đơn rút tiền",
+                    Content = "Đơn rút tiền của bạn đã được chấp nhận, vui lòng kiểm tra lại số dư tài khoản của bạn",
+                    UserId = withdrawalForm.UserEWallet.UserId,
+                    IsRead = false,
+                    Type = AnnouncementType.WithdrawalForm,
+                    WithdrawalFormId = withdrawalForm.Id
+                });
+                break;
+            case WithdrawalFormStatus.Rejected:
+                await _publishEndpoint.Publish(new SendUserAnnouncementEvent()
+                {
+                    Title = "Đơn rút tiền",
+                    Content = "Đơn rút tiền của bạn đã bị từ chối, chúng tôi đã hoàn lại số tiền về ví của bạn",
+                    UserId = withdrawalForm.UserEWallet.UserId,
+                    IsRead = false,
+                    Type = AnnouncementType.WithdrawalForm,
+                    WithdrawalFormId = withdrawalForm.Id
+                });
+                break;
         }
     }
-    
+
     public async Task<GetWithdrawalFormResponse> GetWithdrawalFormDetail(Guid id)
     {
         WithdrawalForm? withdrawalForm = await _unitOfWork.GetRepository<WithdrawalForm>()
@@ -211,7 +256,7 @@ public class WithdrawalFormService : IWithdrawalFormService
             throw new CoreException(StatusCodes.Status400BadRequest, "Withdrawal form not found");
         }
 
-        return  _mapper.Map<GetWithdrawalFormResponse>(withdrawalForm);
+        return _mapper.Map<GetWithdrawalFormResponse>(withdrawalForm);
     }
 
     public async Task<string> UploadWithdrawalFormEvidence(IFormFile file)

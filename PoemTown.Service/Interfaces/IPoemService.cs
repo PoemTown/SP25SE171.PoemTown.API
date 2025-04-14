@@ -66,4 +66,5 @@ public interface IPoemService
 
     Task UpdatePoetSamplePoem(Guid poetSampleId, UpdatePoetSamplePoemRequest request);
     Task DeletePoetSamplePoem(Guid poetSampleId, Guid poemId);
+    Task UpdatePoetSampleSaleVersionCommissionPercentage(Guid poemId, int commissionPercentage);
 }

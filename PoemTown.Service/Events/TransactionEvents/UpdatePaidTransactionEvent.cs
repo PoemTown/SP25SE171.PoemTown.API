@@ -8,4 +8,5 @@ public class UpdatePaidTransactionEvent
     public decimal? Amount { get; set; }
     public decimal? DiscountAmount { get; set; }
     public string? Checksum { get; set; }
+    public decimal? CommissionAmount { get; set; }
 }

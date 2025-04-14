@@ -9,4 +9,6 @@ public enum TransactionType
     Withdraw = 5,
     Donate = 6,
     CommissionFee = 7,
+    Refund = 8,
+    DepositCommissionFee = 9,
 }

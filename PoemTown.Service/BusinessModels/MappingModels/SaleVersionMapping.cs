@@ -21,5 +21,6 @@ public class SaleVersionMapping : Profile
         CreateMap<GetSaleVersionResponse, GetPoemInTargetMarkResponse>();
         CreateMap<GetSaleVersionResponse, GetPoemResponse>();
         CreateMap<GetSaleVersionResponse, GetPostedPoemResponse>();
+        CreateMap<GetSaleVersionResponse, GetPoetSamplePoemResponse>();
     }
 }

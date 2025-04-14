@@ -99,7 +99,7 @@ public class UserEWalletService : IUserEWalletService
         });
     }
     
-    private async Task SchedulePaymentTimeOutJob(string orderCode, int minutes = 15, int seconds = 30)
+    private async Task SchedulePaymentTimeOutJob(string orderCode, int minutes = 15, int seconds = 15)
     {
         var scheduler = await _schedulerFactory.GetScheduler();
         await scheduler.Start();
@@ -200,7 +200,13 @@ public class UserEWalletService : IUserEWalletService
         // Check user e-wallet exist
         if (userEWallet == null)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet not found");
+            userEWallet = new()
+            {
+                UserId = userId,
+                WalletBalance = 0,
+                WalletStatus = WalletStatus.Active,
+            };
+            await _unitOfWork.GetRepository<UserEWallet>().InsertAsync(userEWallet);
         }
         
         return new GetUserEWalletResponse()

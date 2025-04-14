@@ -61,8 +61,9 @@ public class PaymentService : IPaymentService
             await _unitOfWork.SaveChangesAsync();
         }
         
+        decimal commissionAmount = (decimal)request.Amount! * decimal.Parse("0.05");
         // Wallet balance is increased by the amount of the order
-        userEWallet.WalletBalance += (decimal)request.Amount!;
+        userEWallet.WalletBalance += (decimal)request.Amount! - commissionAmount;
         
         _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
         await _unitOfWork.SaveChangesAsync();
@@ -87,7 +88,8 @@ public class PaymentService : IPaymentService
             AppId = request.AppId,
             Amount = request.Amount,
             DiscountAmount = request.DiscountAmount,
-            Checksum = request.Checksum
+            Checksum = request.Checksum,
+            CommissionAmount = commissionAmount
         });
     }
     

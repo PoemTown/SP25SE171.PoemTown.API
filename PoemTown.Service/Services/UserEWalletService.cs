@@ -99,7 +99,7 @@ public class UserEWalletService : IUserEWalletService
         });
     }
     
-    private async Task SchedulePaymentTimeOutJob(string orderCode, int minutes = 15, int seconds = 30)
+    private async Task SchedulePaymentTimeOutJob(string orderCode, int minutes = 15, int seconds = 15)
     {
         var scheduler = await _schedulerFactory.GetScheduler();
         await scheduler.Start();

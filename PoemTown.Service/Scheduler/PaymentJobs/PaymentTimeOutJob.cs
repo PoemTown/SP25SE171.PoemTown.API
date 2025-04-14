@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Orders;
+using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
 using Quartz;
 
@@ -22,27 +23,27 @@ public class PaymentTimeOutJob : IJob
         _logger.LogInformation("PaymentTimeOutJob is running");
 
         JobDataMap jobDataMap = context.JobDetail.JobDataMap;
-        string orderCode = jobDataMap.GetString("orderCode") ?? "";
+        string transactionCode = jobDataMap.GetString("orderCode") ?? "";
 
-        var order = await _unitOfWork.GetRepository<Order>().FindAsync(p => p.OrderCode == orderCode);
+        var transaction = await _unitOfWork.GetRepository<Transaction>().FindAsync(p => p.TransactionCode == transactionCode);
         
         // Check if order is null
-        if (order == null)
+        if (transaction == null)
         {
-            _logger.LogError($"Order with id {orderCode} not found");
+            _logger.LogError($"Transaction with id {transactionCode} not found");
             return;
         }
 
         // Check if order is not in Pending status
-        if (order.Status != OrderStatus.Pending)
+        if (transaction.Status != TransactionStatus.Pending)
         {
-            _logger.LogError($"Order with id {orderCode} is not in Pending status");
+            _logger.LogError($"Transaction with id {transactionCode} is not in Pending status");
             return;
         }
 
-        order.Status = OrderStatus.Cancelled;
+        transaction.Status = TransactionStatus.Cancelled;
 
-        _unitOfWork.GetRepository<Order>().Update(order);
+        _unitOfWork.GetRepository<Transaction>().Update(transaction);
         await _unitOfWork.SaveChangesAsync();
     }
 }

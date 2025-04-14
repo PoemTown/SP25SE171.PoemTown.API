@@ -638,7 +638,7 @@ public class StatisticService : IStatisticService
         // Admin EWallet
         var adminEWallet = await _unitOfWork.GetRepository<User>()
             .AsQueryable()
-            .Where(p => p.UserRoles.Any(r => r.Role.Name == "Admin"))
+            .Where(p => p.UserRoles.Any(r => r.Role.Name == "ADMIN"))
             .Select(p => p.EWallet)
             .FirstOrDefaultAsync();
 
@@ -711,7 +711,7 @@ public class StatisticService : IStatisticService
         // Admin EWallet
         var adminEWallet = await _unitOfWork.GetRepository<User>()
             .AsQueryable()
-            .Where(p => p.UserRoles.Any(r => r.Role.Name == "Admin"))
+            .Where(p => p.UserRoles.Any(r => r.Role.Name == "ADMIN"))
             .Select(p => p.EWallet)
             .FirstOrDefaultAsync();
 

@@ -220,7 +220,8 @@ namespace PoemTown.API.Controllers
         [Authorize]
         public async Task<ActionResult<BaseResponse>> AddPoemToCollection(Guid collectionId, Guid poemId)
         {
-            await _service.AddPoemToCollection(poemId, collectionId);
+            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            await _service.AddPoemToCollection(userId, poemId, collectionId);
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Add poem to collection successfully"));
         }
         /// <summary>

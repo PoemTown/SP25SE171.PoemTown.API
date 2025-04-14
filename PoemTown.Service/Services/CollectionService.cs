@@ -404,7 +404,7 @@ namespace PoemTown.Service.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task AddPoemToCollection(Guid poemId, Guid collectionId)
+        public async Task AddPoemToCollection(Guid userId, Guid poemId, Guid collectionId)
         {
             Poem? poem = await _unitOfWork.GetRepository<Poem>().FindAsync(a => a.Id == poemId);
             if (poem == null)
@@ -418,6 +418,18 @@ namespace PoemTown.Service.Services
                 throw new CoreException(StatusCodes.Status400BadRequest, "Collection not found");
             }
 
+            // Check if user not own this poem
+            if (poem.UserId != userId)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "You not own this poem");
+            }
+            
+            // Check if user not own this collection
+            if (collection.UserId != userId)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "You not own this collection");
+            }
+            
             if (poem.CollectionId == collectionId)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Poem is already in this collection");

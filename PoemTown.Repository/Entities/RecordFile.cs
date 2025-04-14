@@ -20,7 +20,8 @@ namespace PoemTown.Repository.Entities
         public string? FileUrl { get; set; }
         public bool? IsPublic { get; set; } = true;
         public decimal Price { get; set; }
-        public Guid? PoemId { get; set; } 
+        public Guid? PoemId { get; set; }
+        public int? TotalView { get; set; } = 0;
         public Guid? UserId { get; set; }
         [ForeignKey("PoemId")]
         public bool IsAbleToRemoveFromPoem { get; set; }

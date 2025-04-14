@@ -29,5 +29,6 @@ namespace PoemTown.Service.Interfaces
         Task<string> UploadRecordFile(Guid userId, IFormFile file);
         Task<IActionResult> GetAudioStreamResultAsync(Guid id);
         Task<GetRecordFileResponse> GetRecordDetail(Guid recordId);
+        Task CountRecordView(Guid recordId, int duration);
     }
 }

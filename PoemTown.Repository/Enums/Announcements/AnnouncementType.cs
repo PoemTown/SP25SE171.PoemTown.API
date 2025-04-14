@@ -15,4 +15,5 @@ public enum AnnouncementType
     RecordFile = 11,
     Follower = 12,
     WithdrawalForm = 13,
+    Chat = 14 ,
 }

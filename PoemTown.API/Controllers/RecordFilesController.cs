@@ -294,5 +294,29 @@ namespace PoemTown.API.Controllers
             return Ok(new BaseResponse(StatusCodes.Status200OK, "Get record detail successfully", response));
         }
 
+        /// <summary>
+        /// Lấy chi tiết của một bản ghi âm, không yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        ///
+        /// </remarks>
+        /// <param name="recordId"></param>
+        /// <param name="duration"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("v1/{recordId}/count-view")]
+        public async Task<ActionResult<BaseResponse<GetRecordFileResponse>>>
+            CountRecordView(Guid recordId,[FromQuery] int duration)
+        {
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }
+            await _service.CountRecordView(recordId, duration);
+            return Ok(new BaseResponse(StatusCodes.Status200OK, "Count record view successfully"));
+        }
+
     }
 }

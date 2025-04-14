@@ -88,7 +88,7 @@ public class UpdatePaidTransactionConsumer : IConsumer<UpdatePaidTransactionEven
             Description = $"Phí dịch vụ nạp tiền: '{message.CommissionAmount}VNĐ (5% phí dịch vụ)' từ người dùng: '{transaction.UserEWallet.User.UserName}'",
             TransactionCode = OrderCodeGenerator.Generate(),
             UserEWallet = adminEWallet,
-            Type = TransactionType.CommissionFee,
+            Type = TransactionType.DepositCommissionFee,
             Balance = adminEWallet.WalletBalance,
             Status = TransactionStatus.Paid,
             PaidDate = DateTimeHelper.SystemTimeNow,

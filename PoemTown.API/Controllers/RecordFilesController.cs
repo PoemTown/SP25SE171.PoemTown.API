@@ -60,7 +60,7 @@ namespace PoemTown.API.Controllers
         [HttpPut]
         [Route("v1")]
         [Authorize]
-        public async Task<ActionResult<BaseResponse>> UpdatePoem(UpdateRecordRequest request)
+        public async Task<ActionResult<BaseResponse>> UpdateRecord(UpdateRecordRequest request)
         {
             Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
             await _service.UpdateNewRecord(userId, request);
@@ -80,11 +80,11 @@ namespace PoemTown.API.Controllers
         [HttpDelete]
         [Route("v1/{recordId}")]
         [Authorize]
-        public async Task<ActionResult<BaseResponse>> DeletePoem(Guid recordId)
+        public async Task<ActionResult<BaseResponse>> DeleteRecord(Guid recordId)
         {
             Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
             await _service.DeleteNewRecord(userId, recordId);
-            return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Poem deleted successfully"));
+            return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Record deleted successfully"));
         }
 
 

@@ -23,6 +23,7 @@ namespace PoemTown.Repository.Entities
         public Guid? PoemId { get; set; } 
         public Guid? UserId { get; set; }
         [ForeignKey("PoemId")]
+        public bool IsAbleToRemoveFromPoem { get; set; }
         public virtual Poem? Poem { get; set; }
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }

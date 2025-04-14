@@ -41,6 +41,7 @@ using PoemTown.Service.ThirdParties.Settings.ZaloPay;
 using Qdrant.Client;
 using Quartz;
 using RazorLight;
+using PoemTown.Service.Scheduler.UsageRightJobs;
 
 namespace PoemTown.Service;
 
@@ -224,7 +225,7 @@ public static class ConfigureService
     {
         var s3Config = configuration.GetSection("AwsS3Settings");
         services.AddSingleton<AwsS3Settings>(options =>
-        {
+        { 
             var awsS3Setting = new AwsS3Settings()
             {
                 AccessKey = s3Config.GetSection("AccessKey").Value,
@@ -289,10 +290,14 @@ public static class ConfigureService
             // Define job keys.
             var leaderBoardJobKey = new JobKey("LeaderBoardCalculationJob", "LeaderBoard");
             var achievementJobKey = new JobKey("MonthlyAchievementJob", "Achievement");
+            var usageRightJobKey = new JobKey("TimeOutUsageRightJob", "TimeOut");
+
 
             // Register the jobs.
             q.AddJob<MonthlyAchievementJob>(opts => opts.WithIdentity(achievementJobKey));
             q.AddJob<LeaderBoardCalculationJob>(opts => opts.WithIdentity(leaderBoardJobKey));
+            q.AddJob<TimeOutUsageRightJob>(opts => opts.WithIdentity(usageRightJobKey));
+
 
             // Trigger for LeaderBoardCalculationJob: fire immediately and every 30 seconds.
             q.AddTrigger(opts => opts
@@ -311,12 +316,21 @@ public static class ConfigureService
                 .WithCronSchedule("0 0 0 1 * ?", cron =>
                     cron.InTimeZone(
                         TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time")))); // Use your time zone
+
+            q.AddTrigger(opts => opts
+                    .ForJob(usageRightJobKey)
+                    .WithIdentity("TimeOutUsageRightJob", "TimeOut")
+                    .WithCronSchedule("0 0/5 * * * ?", cron =>
+                        cron.InTimeZone(
+                            TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))));
+
         });
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
 
         services.AddScoped<PaymentTimeOutJob>();
         services.AddScoped<LeaderBoardCalculationJob>();
         services.AddScoped<MonthlyAchievementJob>();
+        services.AddScoped<TimeOutUsageRightJob>();
     }
 
     private static void AddSignalRConfig(this IServiceCollection services)

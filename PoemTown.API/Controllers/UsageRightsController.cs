@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
@@ -33,6 +34,7 @@ namespace PoemTown.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("v1/sold-poem")]
+        [Authorize]
         public async Task<ActionResult<BaseResponse<GetSoldPoemResponse>>> GetSoldPoem(RequestOptionsBase<GetUsageRightPoemFilter, GetUsageRightPoemSort> request)
         {
             var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
@@ -58,6 +60,7 @@ namespace PoemTown.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("v1/bought-poem")]
+        [Authorize]
         public async Task<ActionResult<BaseResponse<GetBoughtPoemResponse>>> GetBoughtPoem(RequestOptionsBase<GetUsageRightPoemFilter, GetUsageRightPoemSort> request)
         {
             var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
@@ -83,6 +86,7 @@ namespace PoemTown.API.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("v1/poem-version/{poemId}")]
+        [Authorize]
         public async Task<ActionResult<BaseResponse<GetPoemVersionResponse>>> GetSaleVersionsOfPoem(Guid poemId,RequestOptionsBase<object, object> request)
         {
             var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
@@ -97,6 +101,28 @@ namespace PoemTown.API.Controllers
             basePaginationResponse.Message = "Get version of poem successfully";
 
             return Ok(basePaginationResponse);
+        }
+
+        /// <summary>
+        /// Gia hạn phiên bản của bài thơ còn được sử dụng, yêu cầu đăng nhập
+        /// </summary>
+        /// <remarks>
+        /// </remarks>
+        /// <param name="usageId"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("v1/renew/{usageId}")]
+        [Authorize]
+        public async Task<ActionResult<BaseResponse>> RenewSaleVersion(Guid usageId)
+        {
+            var userClaim = User.Claims.FirstOrDefault(p => p.Type == "UserId");
+            Guid? userId = null;
+            if (userClaim != null)
+            {
+                userId = Guid.Parse(userClaim.Value);
+            }
+            await _service.RenewLicense(usageId);
+            return Ok(new BaseResponse(StatusCodes.Status202Accepted, "Renew license successfully"));
         }
     }
 }

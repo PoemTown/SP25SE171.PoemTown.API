@@ -13,6 +13,8 @@ namespace PoemTown.Service.Interfaces
 {
     public interface IUsageRightService
     {
+        Task TimeOutUsageRight();
+        Task RenewLicense(Guid usageRightId);
         Task<PaginationResponse<GetSoldPoemResponse>> GetSoldPoem(Guid userId, RequestOptionsBase<GetUsageRightPoemFilter, GetUsageRightPoemSort> request);
         Task<PaginationResponse<GetBoughtPoemResponse>> GetBoughtPoem(Guid userId, RequestOptionsBase<GetUsageRightPoemFilter, GetUsageRightPoemSort> request);
         Task<PaginationResponse<GetPoemVersionResponse>> VersionByPoemId(Guid userId, Guid poemId, RequestOptionsBase<object, object> request);

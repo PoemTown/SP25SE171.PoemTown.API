@@ -18,6 +18,8 @@ namespace PoemTown.Repository.Entities
         public string MessageText { get; set; } = default!;
         public Guid FromUserId { get; set; } = default;
         public Guid ToUserId { get; set; } = default;
+        public bool? IsRead { get; set; } = false;
+
 
         [ForeignKey("FromUserId")]
         public virtual User FromUser { get; set; } = default!;

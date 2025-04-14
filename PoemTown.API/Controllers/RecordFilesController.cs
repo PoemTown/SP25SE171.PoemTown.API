@@ -258,7 +258,6 @@ namespace PoemTown.API.Controllers
 
         [HttpGet]
         [Route("v1/audio-stream/{id}")]
-        [Authorize]
         public async Task<IActionResult> StreamAudio(Guid id)
         {
 

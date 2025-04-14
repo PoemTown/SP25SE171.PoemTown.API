@@ -124,8 +124,7 @@ namespace PoemTown.Service.Services
                                          .AsQueryable()
                                          .Where(ur => ur.UserId == userId
                                           && ur.DeletedTime == null
-                                          && ur.Type == UserPoemType.PoemBuyer
-                                          && ur.CopyRightValidTo > utc7Today);
+                                          && ur.Type == UserPoemType.PoemBuyer);
 
             if (request.FilterOptions != null)
             {
@@ -215,12 +214,10 @@ namespace PoemTown.Service.Services
 
         public async Task TimeOutUsageRight()
         {
-            var utc7Now = DateTime.UtcNow.AddHours(7);
-            var utc7Today = utc7Now.Date;
-
-            //Get uasge right that time out
+            var currentDate = DateTime.Today;
             var usageRights = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
-                    .Where(u => u.CopyRightValidTo <= utc7Today && u.DeletedTime == null);
+                .Where(u => u.CopyRightValidTo.Value.Date <= currentDate && u.DeletedTime == null)
+                .ToList();
             //var recordsToUpdate = new List<RecordFile>();
             foreach (var usageRight in usageRights)
             {

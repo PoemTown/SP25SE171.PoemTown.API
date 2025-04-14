@@ -12,6 +12,7 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.UsageResponse
 {
     public class GetBoughtPoemResponse
     {
+        public Guid? Id { get; set; }
         public Guid? UserId { get; set; }
         public UsageRightStatus Status { get; set; }
         public DateTime? CopyRightValidFrom { get; set; }

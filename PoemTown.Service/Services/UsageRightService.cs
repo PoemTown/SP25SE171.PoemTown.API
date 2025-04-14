@@ -2,11 +2,13 @@
 using Betalgo.Ranul.OpenAI.Interfaces;
 using MassTransit;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
+using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.SaleVersionResponses;
@@ -173,8 +175,8 @@ namespace PoemTown.Service.Services
             
             var versions = _unitOfWork.GetRepository<SaleVersion>()
                                          .AsQueryable()
-                                         .Where(v => v.PoemId == poemId
-                                         && v.DeletedTime == null);
+                                         .Where(v => v.PoemId == poemId && v.DeletedTime == null)
+                                         .OrderByDescending(v => v.CreatedTime);
 
             /*if (request.FilterOptions != null)
             {
@@ -209,6 +211,81 @@ namespace PoemTown.Service.Services
             }
             return new PaginationResponse<GetPoemVersionResponse>(poemVersions, queryPaging.PageNumber, queryPaging.PageSize,
                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+        }
+
+        public async Task TimeOutUsageRight()
+        {
+            var utcPlus7 = DateTimeHelper.ConvertToUtcPlus7(DateTime.Today);
+
+            //Get uasge right that time out
+            var usageRights = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
+                    .Where(u => u.CopyRightValidTo < utcPlus7 && u.DeletedTime == null);
+            var recordsToUpdate = new List<RecordFile>();
+            foreach (var usageRight in usageRights)
+            {
+                var records =_unitOfWork.GetRepository<RecordFile>().AsQueryable()
+                    .Where(r => r.UserId == usageRight.UserId && r.SaleVersionId == usageRight.SaleVersionId && r.DeletedTime == null);
+                foreach(var record in records)
+                {
+                    record.IsAbleToRemoveFromPoem = true;
+                    recordsToUpdate.Add(record);
+                }
+            }
+            foreach (var record in recordsToUpdate)
+            {
+                _unitOfWork.GetRepository<RecordFile>().Update(record);
+                _unitOfWork.SaveChanges();
+            }
+        }
+
+
+        public async Task RenewLicense(Guid usageRightId)
+        {
+            var utcPlus7 = DateTimeHelper.ConvertToUtcPlus7(DateTime.Today);
+
+            var usageRight = await _unitOfWork.GetRepository<UsageRight>()
+                .FindAsync(u => u.Id == usageRightId);
+
+            if (usageRight == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Usage right not found");
+            }
+
+            if (usageRight.CopyRightValidTo > utcPlus7)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "License is still valid");
+            }
+
+            if (usageRight.SaleVersion == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Sale version not exist");
+            }
+
+            if (!usageRight.SaleVersion.IsInUse)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Sale version is not used, cannot renew");
+            }
+
+            // Lấy records liên quan và cập nhật
+            var records = _unitOfWork.GetRepository<RecordFile>().AsQueryable()
+                .Where(r => r.UserId == usageRight.UserId
+                         && r.SaleVersionId == usageRight.SaleVersionId
+                         && r.DeletedTime == null)
+                .ToList();
+
+            foreach (var record in records)
+            {
+                record.IsAbleToRemoveFromPoem = false;
+                _unitOfWork.GetRepository<RecordFile>().Update(record);
+            }
+
+            // Cập nhật UsageRight
+            usageRight.CopyRightValidFrom = utcPlus7.DateTime;
+            usageRight.CopyRightValidTo = utcPlus7.AddDays(usageRight.SaleVersion.DurationTime).DateTime;
+            _unitOfWork.GetRepository<UsageRight>().Update(usageRight);
+
+            await _unitOfWork.SaveChangesAsync();
+
         }
     }
 }

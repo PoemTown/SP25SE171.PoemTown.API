@@ -10,6 +10,8 @@ public class GetRecordFileResponse : BaseEntity
     public string FileName { get; set; }
     public string FileUrl { get; set; }
     public bool IsPublic { get; set; }
+    public int? TotalView { get; set; }
+
     public decimal Price { get; set; }
     public bool IsAbleToRemoveFromPoem { get; set; }
     public List<GetBasicUserInformationResponse>? Buyers { get; set; }

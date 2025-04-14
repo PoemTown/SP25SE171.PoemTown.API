@@ -799,6 +799,21 @@ namespace PoemTown.Service.Services
             };
         }
 
+        public async Task CountRecordView(Guid recordId, int duration)
+        {
+            if(duration < 60)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Chưa nghe quá 1 phút nên không tăng lượt nghe");
+            }
+            RecordFile record =await _unitOfWork.GetRepository<RecordFile>().FindAsync(r => r.Id == recordId);
+            if (record == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy bài ngâm thơ");
+            }
+            record.TotalView++;
+            _unitOfWork.GetRepository<RecordFile>().Update(record);
+            _unitOfWork.SaveChanges();  
+        }
 
 
 

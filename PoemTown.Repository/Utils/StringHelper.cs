@@ -1,4 +1,6 @@
-﻿namespace PoemTown.Repository.Utils;
+﻿using System.Text.RegularExpressions;
+
+namespace PoemTown.Repository.Utils;
 
 public static class StringHelper
 {
@@ -77,5 +79,15 @@ public static class StringHelper
         return new string(Enumerable.Range(0, length)
             .Select(_ => chars[random.Next(chars.Length)])
             .ToArray());
+    }
+    
+    public static string CleanUpString(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        // Normalize line breaks and whitespace
+        var normalized = Regex.Replace(input, @"\s+", " "); // Replace all whitespace (\s) including \n, \t with a single space
+        return normalized.Trim(); // Remove leading/trailing spaces
     }
 }

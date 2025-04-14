@@ -1762,7 +1762,7 @@ public class PoemService : IPoemService
 
         // If the score is greater than 0.9 then return the score of highest
         double averageScore = response.Results
-            .Where(p => p.Score > 0.9)
+            .Where(p => p.Score > 0.8)
             .Select(p => p.Score)
             .DefaultIfEmpty(0.0)
             .Max();

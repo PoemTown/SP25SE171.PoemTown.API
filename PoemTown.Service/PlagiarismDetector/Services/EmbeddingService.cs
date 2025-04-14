@@ -52,6 +52,9 @@ public class EmbeddingService : IEmbeddingService
 
     public async Task<double[]> GenerateEmbeddingFromOpenAI(string text)
     {
+        // Normalize and clean up the input string
+        text = StringHelper.CleanUpString(text);
+        
         var request = new EmbeddingCreateRequest
         {
             Input = text,

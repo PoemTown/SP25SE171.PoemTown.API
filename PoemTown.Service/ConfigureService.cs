@@ -43,6 +43,9 @@ using Quartz;
 using RazorLight;
 using PoemTown.Service.Scheduler.UsageRightJobs;
 using PoemTown.Service.ThirdParties.Settings.Stripe;
+using Stripe;
+using AccountService = PoemTown.Service.Services.AccountService;
+using TokenService = PoemTown.Service.Services.TokenService;
 
 namespace PoemTown.Service;
 
@@ -420,5 +423,6 @@ public static class ConfigureService
             };
             return stripeSettings;
         });
+        services.AddSingleton(new StripeClient(configuration["Stripe:ApiKey"]));
     }
 }

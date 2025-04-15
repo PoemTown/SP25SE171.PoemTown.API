@@ -428,7 +428,7 @@ public class PoemService : IPoemService
             .GetPagination(recordFilesQuery, request.PageNumber, request.PageSize);
 
         IList<GetRecordFileResponse> recordFiles = new List<GetRecordFileResponse>();
-        foreach (var recordFile in recordFiles)
+        foreach (var recordFile in queryPaging.Data)
         {
             var recordFileEntity = await _unitOfWork.GetRepository<RecordFile>()
                 .FindAsync(p => p.Id == recordFile.Id);
@@ -443,6 +443,7 @@ public class PoemService : IPoemService
 
             // Assign author to record file by adding into the last element of the list
             recordFiles.Last().Owner = _mapper.Map<GetBasicUserInformationResponse>(recordFileEntity.User);
+
 
             if (recordFileEntity.Poem != null)
             {

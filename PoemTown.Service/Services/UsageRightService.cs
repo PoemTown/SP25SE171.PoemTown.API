@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.UsageRights;
 using PoemTown.Repository.Enums.UserPoems;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
@@ -221,6 +222,8 @@ namespace PoemTown.Service.Services
             var recordsToUpdate = new List<RecordFile>();
             foreach (var usageRight in usageRights)
             {
+                usageRight.Status = UsageRightStatus.Expired;
+                _unitOfWork.GetRepository<UsageRight>().Update(usageRight);
                 var records =_unitOfWork.GetRepository<RecordFile>().AsQueryable()
                     .Where(r => r.UserId == usageRight.UserId && r.SaleVersionId == usageRight.SaleVersionId && r.DeletedTime == null).ToList();
                 foreach(var record in records)
@@ -231,7 +234,6 @@ namespace PoemTown.Service.Services
                     _unitOfWork.SaveChanges();*/
                 }
             }
-
             foreach (var record in recordsToUpdate)
             {
                 _unitOfWork.GetRepository<RecordFile>().Update(record);
@@ -284,6 +286,7 @@ namespace PoemTown.Service.Services
             // Cập nhật UsageRight
             usageRight.CopyRightValidFrom = utcPlus7.DateTime;
             usageRight.CopyRightValidTo = utcPlus7.AddDays(usageRight.SaleVersion.DurationTime).DateTime;
+            usageRight.Status = UsageRightStatus.StillValid;
             _unitOfWork.GetRepository<UsageRight>().Update(usageRight);
 
             await _unitOfWork.SaveChangesAsync();

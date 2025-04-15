@@ -134,7 +134,8 @@ public class PaymentsController : BaseController
             var stripeEvent = EventUtility.ConstructEvent(
                 json,
                 Request.Headers["Stripe-Signature"],
-                secret
+                secret,
+                throwOnApiVersionMismatch: false
             );
 
             var session = stripeEvent.Data.Object as Session;

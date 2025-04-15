@@ -87,7 +87,7 @@ public class StripeService : IStripeService, IPaymentMethod
                 Type = "redirect",
                 Redirect = new PaymentLinkAfterCompletionRedirectOptions
                 {
-                    Url = _stripeSettings.SuccessUrl,
+                    Url = _stripeSettings.WebhookEndpoint,
                 }
             },
             Metadata = new Dictionary<string, string>

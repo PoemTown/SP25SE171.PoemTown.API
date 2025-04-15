@@ -137,24 +137,22 @@ public class PaymentsController : BaseController
                 secret
             );
 
-            if (stripeEvent.Type == "checkout.session.completed")
+            var session = stripeEvent.Data.Object as Session;
+            if (session?.Metadata != null && session.Metadata.TryGetValue("order_code", out var orderCode))
             {
-                var session = stripeEvent.Data.Object as Session;
-                if (session?.Metadata != null && session.Metadata.TryGetValue("order_code", out var orderCode))
+                var handleCallbackPaymentSuccessRequest = new HandleCallbackPaymentRequest
                 {
-                    var handleCallbackPaymentSuccessRequest = new HandleCallbackPaymentRequest
-                    {
-                        OrderCode = orderCode, // You should use your own order reference here
-                        BankCode = session?.PaymentMethodTypes?.FirstOrDefault(),
-                        AppId = "Stripe",
-                        Amount = (session?.AmountTotal ?? 0) / 100,
-                        DiscountAmount = 0,
-                        Checksum = session?.ClientReferenceId, // or metadata if you use it
-                        Status = 1 // success
-                    };
-                    await _paymentService.HandleCallbackPaymentSuccessAsync(handleCallbackPaymentSuccessRequest);
-                }
+                    OrderCode = orderCode, // You should use your own order reference here
+                    BankCode = session?.PaymentMethodTypes?.FirstOrDefault(),
+                    AppId = "Stripe",
+                    Amount = (session?.AmountTotal ?? 0) / 100,
+                    DiscountAmount = 0,
+                    Checksum = session?.ClientReferenceId, // or metadata if you use it
+                    Status = 1 // success
+                };
+                await _paymentService.HandleCallbackPaymentSuccessAsync(handleCallbackPaymentSuccessRequest);
             }
+
             return Ok();
         }
         catch (Exception ex)

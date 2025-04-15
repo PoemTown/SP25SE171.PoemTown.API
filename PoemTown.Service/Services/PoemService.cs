@@ -2049,6 +2049,44 @@ public class PoemService : IPoemService
         poem.PoetSample = poetSample;
         poem.IsFamousPoet = true;
 
+        if (request.Status == PoemStatus.Posted)
+        {
+            // Get user as admin
+            var userAdmin = await _unitOfWork.GetRepository<User>().FindAsync(p => p.UserRoles.Any(ur => ur.Role.Name == "ADMIN"));
+            if (userAdmin == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Can not find user as admin to create poem");
+            }
+            
+            SaleVersion saleVersion = new SaleVersion
+            {
+                PoemId = poem.Id,
+                CommissionPercentage = 10,
+                DurationTime = 100,
+                IsInUse = true,
+                Status = SaleVersionStatus.Free,
+                Price = 0,
+            };
+            // Create free sale version for poem with CommissionPercentage = 10
+            await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);
+
+            // Create usage right for ADMIN as copy right holder
+            var now = DateTimeHelper.SystemTimeNow.DateTime;
+            await _unitOfWork.GetRepository<UsageRight>().InsertAsync(new UsageRight()
+            {
+                UserId = userAdmin.Id,
+                Type = UserPoemType.CopyRightHolder,
+                Status = UsageRightStatus.StillValid,
+                CopyRightValidFrom = now,
+                CopyRightValidTo = now.AddYears(100),
+                SaleVersion = saleVersion,
+            });
+
+            // Adjust created time of poem when it is posted
+            poem.CreatedTime = DateTimeHelper.SystemTimeNow;
+            poem.User = userAdmin;
+        }
+
         await _unitOfWork.GetRepository<Poem>().InsertAsync(poem);
         await _unitOfWork.SaveChangesAsync();
     }
@@ -2181,6 +2219,45 @@ public class PoemService : IPoemService
         }
 
         _mapper.Map(request, poem);
+        
+        if (request.Status == PoemStatus.Posted)
+        {
+            // Get user as admin
+            var userAdmin = await _unitOfWork.GetRepository<User>().FindAsync(p => p.UserRoles.Any(ur => ur.Role.Name == "ADMIN"));
+            if (userAdmin == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Can not find user as admin to create poem");
+            }
+            
+            SaleVersion saleVersion = new SaleVersion
+            {
+                PoemId = poem.Id,
+                CommissionPercentage = 10,
+                DurationTime = 100,
+                IsInUse = true,
+                Status = SaleVersionStatus.Free,
+                Price = 0,
+            };
+            // Create free sale version for poem with CommissionPercentage = 10
+            await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);
+
+            // Create usage right for ADMIN as copy right holder
+            var now = DateTimeHelper.SystemTimeNow.DateTime;
+            await _unitOfWork.GetRepository<UsageRight>().InsertAsync(new UsageRight()
+            {
+                UserId = userAdmin.Id,
+                Type = UserPoemType.CopyRightHolder,
+                Status = UsageRightStatus.StillValid,
+                CopyRightValidFrom = now,
+                CopyRightValidTo = now.AddYears(100),
+                SaleVersion = saleVersion,
+            });
+
+            // Adjust created time of poem when it is posted
+            poem.CreatedTime = DateTimeHelper.SystemTimeNow;
+            poem.User = userAdmin;
+        }
+        
         _unitOfWork.GetRepository<Poem>().Update(poem);
         await _unitOfWork.SaveChangesAsync();
 
@@ -2228,8 +2305,41 @@ public class PoemService : IPoemService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public Task UpdatePoetSampleSaleVersionCommissionPercentage(Guid poemId, int commissionPercentage)
+    public async Task UpdatePoetSampleSaleVersionCommissionPercentage(Guid poemId, int commissionPercentage)
     {
-        throw new NotImplementedException();
+        Poem? poem = await _unitOfWork.GetRepository<Poem>()
+            .FindAsync(p => p.Id == poemId);
+        
+        // If poem not found then throw exception
+        if (poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+
+        // Check if the poem is from famous poet
+        if (poem.IsFamousPoet == false)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is not famous poet's poem");
+        }
+        
+        SaleVersion? freeSaleVersionOfPoetSamplePoem = await _unitOfWork.GetRepository<SaleVersion>()
+            .FindAsync(p => p.PoemId == poemId && p.Status == SaleVersionStatus.Free);
+        
+        // If free sale version not found then throw exception
+        if (freeSaleVersionOfPoetSamplePoem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Free sale version for this poem not found");
+        }
+        
+        // Check if the commission percentage is valid
+        if (commissionPercentage < 0 || commissionPercentage > 100)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Commission percentage is invalid");
+        }
+        
+        // Update commission percentage
+        freeSaleVersionOfPoetSamplePoem.CommissionPercentage = commissionPercentage;
+        _unitOfWork.GetRepository<SaleVersion>().Update(freeSaleVersionOfPoetSamplePoem);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

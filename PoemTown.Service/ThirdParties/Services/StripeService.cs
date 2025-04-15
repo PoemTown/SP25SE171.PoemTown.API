@@ -1,4 +1,5 @@
-﻿using PoemTown.Repository.Entities;
+﻿using System.Globalization;
+using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
@@ -16,16 +17,18 @@ public class StripeService : IStripeService, IPaymentMethod
 {
     private readonly StripeSettings _stripeSettings;
     private readonly IUnitOfWork _unitOfWork;
-    public StripeService(StripeSettings stripeSettings, IUnitOfWork unitOfWork)
+    private readonly StripeClient _stripeClient;
+    public StripeService(StripeSettings stripeSettings, IUnitOfWork unitOfWork, StripeClient stripeClient)
     {
         _stripeSettings = stripeSettings;
         _unitOfWork = unitOfWork;
         StripeConfiguration.ApiKey = stripeSettings.ApiKey;
+        _stripeClient = stripeClient;
     }
     
     public async Task<string> CreatePaymentLink(decimal amount, string orderCode)
     {
-        var options = new SessionCreateOptions()
+        /*var options = new SessionCreateOptions()
         {
             PaymentMethodTypes = new List<string> { "card" },
             Mode = "payment",
@@ -51,11 +54,51 @@ public class StripeService : IStripeService, IPaymentMethod
             },
             SuccessUrl = _stripeSettings.SuccessUrl,
             CancelUrl = _stripeSettings.CancelUrl,
+        };*/
+
+        
+        // Create the payment intent options
+        var priceOptions = new PriceCreateOptions
+        {
+            UnitAmount = (long)(amount), // Convert to cents
+            Currency = "vnd",
+            ProductData = new PriceProductDataOptions()
+            {
+                Name = "Nạp tiền vào ví điện tử",
+            },
         };
 
-        var service = new SessionService();
+        var priceService = new PriceService(_stripeClient);
+        var price = await priceService.CreateAsync(priceOptions);
+
+        // Now, create the Payment Link
+        var paymentLinkOptions = new PaymentLinkCreateOptions
+        {
+            LineItems = new List<PaymentLinkLineItemOptions>
+            {
+                new PaymentLinkLineItemOptions
+                {
+                    Price = price.Id, // Use the ID of the Price created
+                    Quantity = 1,
+                }
+            },
+            AfterCompletion = new PaymentLinkAfterCompletionOptions
+            {
+                Type = "redirect",
+                Redirect = new PaymentLinkAfterCompletionRedirectOptions
+                {
+                    Url = _stripeSettings.SuccessUrl,
+                }
+            }
+        };
+
+        var paymentLinkService = new PaymentLinkService(_stripeClient);
+        var paymentLink = await paymentLinkService.CreateAsync(paymentLinkOptions);
+
+        return paymentLink.Url; // This is the URL of the payment link
+        /*var service = new SessionService();
         var session = await service.CreateAsync(options);
-        return session.Url;
+        return session.Url;*/
     }
     public async Task<DepositUserEWalletResponse> DepositUserEWalletPayment(UserEWalletData request)
     {

@@ -254,11 +254,11 @@ namespace PoemTown.Service.Services
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Usage right not found");
             }
-
+/*
             if (usageRight.CopyRightValidTo > utcPlus7)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "License is still valid");
-            }
+            }*/
 
             if (usageRight.SaleVersion == null)
             {

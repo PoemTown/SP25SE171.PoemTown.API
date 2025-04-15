@@ -127,6 +127,7 @@ public class PaymentsController : BaseController
     {
         var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
 
+        return BadRequest();
         try
         {
             var secret = _stripeSettings.WebhookSecret;

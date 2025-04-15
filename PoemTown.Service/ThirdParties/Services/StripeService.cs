@@ -89,7 +89,11 @@ public class StripeService : IStripeService, IPaymentMethod
                 {
                     Url = _stripeSettings.SuccessUrl,
                 }
-            }
+            },
+            Metadata = new Dictionary<string, string>
+            {
+                { "order_code", orderCode }
+            },
         };
 
         var paymentLinkService = new PaymentLinkService(_stripeClient);

@@ -218,23 +218,26 @@ namespace PoemTown.Service.Services
             var usageRights = _unitOfWork.GetRepository<UsageRight>().AsQueryable()
                 .Where(u => u.CopyRightValidTo.Value.Date <= currentDate && u.DeletedTime == null)
                 .ToList();
-            //var recordsToUpdate = new List<RecordFile>();
+            var recordsToUpdate = new List<RecordFile>();
             foreach (var usageRight in usageRights)
             {
                 var records =_unitOfWork.GetRepository<RecordFile>().AsQueryable()
-                    .Where(r => r.UserId == usageRight.UserId && r.SaleVersionId == usageRight.SaleVersionId && r.DeletedTime == null);
+                    .Where(r => r.UserId == usageRight.UserId && r.SaleVersionId == usageRight.SaleVersionId && r.DeletedTime == null).ToList();
                 foreach(var record in records)
                 {
                     record.IsAbleToRemoveFromPoem = true;
-                    _unitOfWork.GetRepository<RecordFile>().Update(record);
-                    _unitOfWork.SaveChanges();
+                    recordsToUpdate.Add(record);
+                   /* _unitOfWork.GetRepository<RecordFile>().Update(record);
+                    _unitOfWork.SaveChanges();*/
                 }
             }
-/*            foreach (var record in recordsToUpdate)
+
+            foreach (var record in recordsToUpdate)
             {
                 _unitOfWork.GetRepository<RecordFile>().Update(record);
-                _unitOfWork.SaveChanges();
-            }*/
+            }
+            await _unitOfWork.SaveChangesAsync();
+
         }
 
 

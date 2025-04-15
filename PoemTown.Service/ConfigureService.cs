@@ -321,8 +321,8 @@ public static class ConfigureService
                     .ForJob(usageRightJobKey)
                     .WithIdentity("TimeOutUsageRightJob", "TimeOut")
                     .WithCronSchedule("0 0/5 * * * ?", cron =>
-                        cron.InTimeZone(
-                            TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))));
+                     cron.InTimeZone(
+                         TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))));
 
         });
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);

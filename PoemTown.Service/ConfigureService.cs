@@ -42,6 +42,7 @@ using Qdrant.Client;
 using Quartz;
 using RazorLight;
 using PoemTown.Service.Scheduler.UsageRightJobs;
+using PoemTown.Service.ThirdParties.Settings.Stripe;
 
 namespace PoemTown.Service;
 
@@ -67,6 +68,7 @@ public static class ConfigureService
         services.AddSignalRConfig();
         services.AddQDrantConfig(configuration);
         services.AddVnPayConfig(configuration);
+        services.AddStripeConfig(configuration);
     }
 
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -113,6 +115,8 @@ public static class ConfigureService
         services.AddScoped<IVnPayService, VnPayService>();
         services.AddScoped<VnPayService>();
         services.AddScoped<ZaloPayService>();
+        services.AddScoped<IStripeService, StripeService>();
+        services.AddScoped<StripeService>();
         services.AddScoped<ITheHiveAiService, TheHiveAiService>();
     }
 
@@ -398,6 +402,23 @@ public static class ConfigureService
                 Vnp_ReturnUrl = vnPayConfig.GetSection("Vnp_ReturnUrl").Value ?? ""
             };
             return vnPaySettings;
+        });
+    }
+    
+    private static void AddStripeConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        var stripeConfig = configuration.GetSection("Stripe");
+        services.AddSingleton<StripeSettings>(options =>
+        {
+            var stripeSettings = new StripeSettings
+            {
+                ApiKey = stripeConfig.GetSection("ApiKey").Value ?? "",
+                WebhookSecret = stripeConfig.GetSection("WebhookSecret").Value ?? "",
+                WebhookEndpoint = stripeConfig.GetSection("WebhookEndpoint").Value ?? "",
+                SuccessUrl = stripeConfig.GetSection("SuccessUrl").Value ?? "",
+                CancelUrl = stripeConfig.GetSection("CancelUrl").Value ?? ""
+            };
+            return stripeSettings;
         });
     }
 }

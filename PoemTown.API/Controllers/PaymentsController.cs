@@ -5,8 +5,11 @@ using PoemTown.Service.BusinessModels.ConfigurationModels.Payment;
 using PoemTown.Service.BusinessModels.RequestModels.PaymentRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.Interfaces;
+using PoemTown.Service.ThirdParties.Settings.Stripe;
 using PoemTown.Service.ThirdParties.Settings.ZaloPay;
 using PoemTown.Service.ThirdParties.Utils.Zalopay;
+using Stripe;
+using Stripe.Checkout;
 
 namespace PoemTown.API.Controllers;
 
@@ -15,14 +18,17 @@ public class PaymentsController : BaseController
     private readonly IPaymentService _paymentService;
     private readonly PaymentRedirectSettings _paymentRedirectSettings;
     private readonly ZaloPaySettings _zaloPaySettings;
+    private readonly StripeSettings _stripeSettings;
 
     public PaymentsController(ZaloPaySettings zaloPaySettings,
         IPaymentService paymentService,
-        PaymentRedirectSettings paymentRedirectSettings)
+        PaymentRedirectSettings paymentRedirectSettings,
+        StripeSettings _stripeSettings)
     {
         _zaloPaySettings = zaloPaySettings;
         _paymentService = paymentService;
         _paymentRedirectSettings = paymentRedirectSettings;
+        _stripeSettings = _stripeSettings;
     }
 
     [HttpGet]
@@ -69,7 +75,7 @@ public class PaymentsController : BaseController
 
         return Redirect(redirectUrl);
     }
-    
+
     [HttpGet]
     [Route("v1/vnpay/callback")]
     public async Task<RedirectResult> VnPayCallbackAsync(VnPayCallBackRequest request)
@@ -113,5 +119,47 @@ public class PaymentsController : BaseController
         }
 
         return Redirect(redirectUrl);
+    }
+
+    [HttpPost]
+    [Route("v1/stripe/callback")]
+    public async Task<IActionResult> StripeCallbackAsync()
+    {
+        var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+
+        try
+        {
+            var secret = _stripeSettings.WebhookSecret;
+
+            var stripeEvent = EventUtility.ConstructEvent(
+                json,
+                Request.Headers["Stripe-Signature"],
+                secret
+            );
+
+            if (stripeEvent.Type == "checkout.session.completed")
+            {
+                var session = stripeEvent.Data.Object as Session;
+                if (session?.Metadata != null && session.Metadata.TryGetValue("order_code", out var orderCode))
+                {
+                    var handleCallbackPaymentSuccessRequest = new HandleCallbackPaymentRequest
+                    {
+                        OrderCode = orderCode, // You should use your own order reference here
+                        BankCode = session?.PaymentMethodTypes?.FirstOrDefault(),
+                        AppId = "Stripe",
+                        Amount = (session?.AmountTotal ?? 0) / 100,
+                        DiscountAmount = 0,
+                        Checksum = session?.ClientReferenceId, // or metadata if you use it
+                        Status = 1 // success
+                    };
+                    await _paymentService.HandleCallbackPaymentSuccessAsync(handleCallbackPaymentSuccessRequest);
+                }
+            }
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest();
+        }
     }
 }

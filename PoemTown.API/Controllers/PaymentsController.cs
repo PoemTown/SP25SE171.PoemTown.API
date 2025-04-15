@@ -23,12 +23,12 @@ public class PaymentsController : BaseController
     public PaymentsController(ZaloPaySettings zaloPaySettings,
         IPaymentService paymentService,
         PaymentRedirectSettings paymentRedirectSettings,
-        StripeSettings _stripeSettings)
+        StripeSettings stripeSettings)
     {
         _zaloPaySettings = zaloPaySettings;
         _paymentService = paymentService;
         _paymentRedirectSettings = paymentRedirectSettings;
-        _stripeSettings = _stripeSettings;
+        _stripeSettings = stripeSettings;
     }
 
     [HttpGet]

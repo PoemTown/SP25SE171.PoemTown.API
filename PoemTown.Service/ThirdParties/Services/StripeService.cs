@@ -28,7 +28,7 @@ public class StripeService : IStripeService, IPaymentMethod
     
     public async Task<string> CreatePaymentLink(decimal amount, string orderCode)
     {
-        /*var options = new SessionCreateOptions()
+        var options = new SessionCreateOptions()
         {
             PaymentMethodTypes = new List<string> { "card" },
             Mode = "payment",
@@ -54,10 +54,15 @@ public class StripeService : IStripeService, IPaymentMethod
             },
             SuccessUrl = _stripeSettings.SuccessUrl,
             CancelUrl = _stripeSettings.CancelUrl,
-        };*/
+            
+        };
 
+        var service = new SessionService();
+        var session = await service.CreateAsync(options);
+        return session.Url;
         
-        // Create the payment intent options
+        
+        /*// Create the payment intent options
         var priceOptions = new PriceCreateOptions
         {
             UnitAmount = (long)(amount), // Convert to cents
@@ -99,10 +104,7 @@ public class StripeService : IStripeService, IPaymentMethod
         var paymentLinkService = new PaymentLinkService(_stripeClient);
         var paymentLink = await paymentLinkService.CreateAsync(paymentLinkOptions);
 
-        return paymentLink.Url; // This is the URL of the payment link
-        /*var service = new SessionService();
-        var session = await service.CreateAsync(options);
-        return session.Url;*/
+        return paymentLink.Url; // This is the URL of the payment link*/
     }
     public async Task<DepositUserEWalletResponse> DepositUserEWalletPayment(UserEWalletData request)
     {

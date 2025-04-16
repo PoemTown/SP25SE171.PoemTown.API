@@ -122,7 +122,7 @@ public class PaymentsController : BaseController
     }
 
     [HttpPost]
-    [Route("v1/stripe/callback")]
+    [Route("v1/stripe/webhook")]
     public async Task<IActionResult> StripeCallbackAsync()
     {
         var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();

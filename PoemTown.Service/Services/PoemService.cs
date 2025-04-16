@@ -2061,7 +2061,7 @@ public class PoemService : IPoemService
             SaleVersion saleVersion = new SaleVersion
             {
                 PoemId = poem.Id,
-                CommissionPercentage = 10,
+                CommissionPercentage = 0,
                 DurationTime = 100,
                 IsInUse = true,
                 Status = SaleVersionStatus.Free,
@@ -2307,7 +2307,7 @@ public class PoemService : IPoemService
 
     public async Task UpdatePoetSampleSaleVersionCommissionPercentage(Guid poemId, int commissionPercentage)
     {
-        Poem? poem = await _unitOfWork.GetRepository<Poem>()
+        /*Poem? poem = await _unitOfWork.GetRepository<Poem>()
             .FindAsync(p => p.Id == poemId);
         
         // If poem not found then throw exception
@@ -2340,6 +2340,7 @@ public class PoemService : IPoemService
         // Update commission percentage
         freeSaleVersionOfPoetSamplePoem.CommissionPercentage = commissionPercentage;
         _unitOfWork.GetRepository<SaleVersion>().Update(freeSaleVersionOfPoetSamplePoem);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();*/
+        return;
     }
 }

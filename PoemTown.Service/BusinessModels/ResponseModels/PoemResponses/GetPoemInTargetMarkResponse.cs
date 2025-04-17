@@ -24,6 +24,7 @@ public class GetPoemInTargetMarkResponse
     public decimal Price { get; set; }
     public bool? IsAbleToUploadRecordFile { get; set; } = false;
     public bool? IsFamousPoet { get; set; } = false;
+    public bool? IsMine { get; set; } = false;
     public bool IsSellUsageRight { get; set; }
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }

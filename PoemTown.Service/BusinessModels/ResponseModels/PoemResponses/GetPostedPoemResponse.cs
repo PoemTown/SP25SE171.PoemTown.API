@@ -25,6 +25,7 @@ public class GetPostedPoemResponse
     public bool? IsAbleToUploadRecordFile { get; set; } = false;
     public bool? IsFamousPoet { get; set; } = false;
     public bool IsSellUsageRight { get; set; }
+    public bool? IsMine { get; set; } = false;
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }

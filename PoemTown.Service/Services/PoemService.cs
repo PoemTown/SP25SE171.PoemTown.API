@@ -608,6 +608,11 @@ public class PoemService : IPoemService
                                    && p.Status == UsageRightStatus.StillValid);
 
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
+            
+            if (poemEntity.UserId == userId)
+            {
+                poems.Last().IsMine = true;
+            }
         }
 
         return new PaginationResponse<GetPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
@@ -1035,6 +1040,10 @@ public class PoemService : IPoemService
                                    && p.Status == UsageRightStatus.StillValid);
 
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
+            if (poemEntity.UserId == userId)
+            {
+                poems.Last().IsMine = true;
+            }
         }
 
         return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
@@ -1314,6 +1323,10 @@ public class PoemService : IPoemService
                                    && p.Status == UsageRightStatus.StillValid);
 
             poems.Last().IsAbleToUploadRecordFile = isAbleToUploadRecordFile;
+            if (poemEntity.UserId == userId)
+            {
+                poems.Last().IsMine = true;
+            }
         }
 
         return new PaginationResponse<GetPostedPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,
@@ -1984,6 +1997,11 @@ public class PoemService : IPoemService
             poems.Last().TargetMark = _mapper.Map<GetTargetMarkResponse>
             (poemEntity.TargetMarks!.FirstOrDefault(tm =>
                 tm.MarkByUserId == user.Id && tm.PoemId == poemEntity.Id && tm.Type == TargetMarkType.Poem));
+            
+            if (poemEntity.UserId == userId)
+            {
+                poems.Last().IsMine = true;
+            }
         }
 
         return new PaginationResponse<GetUserPoemResponse>(poems, queryPaging.PageNumber, queryPaging.PageSize,

@@ -626,7 +626,7 @@ public class StatisticService : IStatisticService
         {
             TransactionType.DepositCommissionFee,
             TransactionType.MasterTemplates,
-            TransactionType.RecordFiles,
+            //TransactionType.RecordFiles,
         };
 
         // Filter by condition: transaction type must be one of transactionIncomeType, CreatedTime is less than or equal to current date (UTC + 7)
@@ -696,7 +696,7 @@ public class StatisticService : IStatisticService
         {
             TransactionType.DepositCommissionFee,
             TransactionType.MasterTemplates,
-            TransactionType.RecordFiles,
+            //TransactionType.RecordFiles,
         };
 
         var withdrawTypes = new[]

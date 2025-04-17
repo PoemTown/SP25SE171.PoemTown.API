@@ -2426,6 +2426,7 @@ public class PoemService : IPoemService
     {
         var poemTypes = await _unitOfWork.GetRepository<PoemType>()
             .AsQueryable()
+            .Where(p => p.DeletedTime == null)
             .ToListAsync();
 
         IList<GetPoemSampleResponse> poemSamples = new List<GetPoemSampleResponse>();

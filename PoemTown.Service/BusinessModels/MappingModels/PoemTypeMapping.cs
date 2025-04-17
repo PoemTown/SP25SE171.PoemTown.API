@@ -13,6 +13,7 @@ public class PoemTypeMapping : Profile
     public PoemTypeMapping()
     {
         CreateMap<PoemType, GetPoemTypeResponse>().ReverseMap();
+        CreateMap<CreatePoemTypeRequest, PoemType>();
         CreateMap<UpdatePoemTypeRequest, PoemType>();
 
         CreateMap<GetPoemTypeResponse, GetPoemDetailResponse>();

@@ -470,7 +470,7 @@ namespace PoemTown.Service.Services
         {
             var collectionQuery = _unitOfWork.GetRepository<Collection>().AsQueryable();
 
-            collectionQuery = collectionQuery.Where(p => p.IsFamousPoet == false);
+            collectionQuery = collectionQuery.Where(p => p.IsFamousPoet == false && p.IsDefault == false);
             
             // Soft delete filter for collections
             collectionQuery = request.IsDelete == true

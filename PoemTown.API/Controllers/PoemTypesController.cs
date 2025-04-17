@@ -82,4 +82,18 @@ public class PoemTypesController : BaseController
         await _poemTypeService.DeletePoemType(poemTypeId);
         return Accepted(new BaseResponse(StatusCodes.Status202Accepted, "Poem type deleted successfully"));
     }
+    
+    /// <summary>
+    /// Xóa vĩnh viễn thể loại thơ, yêu cầu có quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <param name="poemTypeId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/permanent/{poemTypeId}")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> DeletePoemTypePermanent(Guid poemTypeId)
+    {
+        await _poemTypeService.DeletePoemTypePermanent(poemTypeId);
+        return Accepted(new BaseResponse(StatusCodes.Status202Accepted, "Poem type deleted permanently successfully"));
+    }
 }

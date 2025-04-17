@@ -25,6 +25,7 @@ public class PoemTypeService : IPoemTypeService
     {
         var poemTypes = await _unitOfWork.GetRepository<PoemType>()
             .AsQueryable()
+            .Where(p => p.DeletedTime == null)
             .ToListAsync();
         return _mapper.Map<IEnumerable<GetPoemTypeResponse>>(poemTypes);
     }
@@ -87,6 +88,36 @@ public class PoemTypeService : IPoemTypeService
         }
         
         _unitOfWork.GetRepository<PoemType>().Delete(poemType);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task DeletePoemTypePermanent(Guid poemTypeId)
+    {
+        var poemType = await _unitOfWork.GetRepository<PoemType>()
+            .FindAsync(x => x.Id == poemTypeId, true);
+        
+        // Check if the poem type exists
+        if (poemType == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem type not found");
+        }
+        
+        // Check if the poem type is in use
+        var isInUse = await _unitOfWork.GetRepository<Poem>()
+            .AsQueryable()
+            .AnyAsync(x => x.PoemTypeId == poemTypeId);
+        
+        if (isInUse)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem type is in use and cannot be deleted");
+        }
+        
+        // Check if the poem type is soft deleted
+        if (poemType.DeletedTime == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem type is not yet soft deleted");
+        }
+        _unitOfWork.GetRepository<PoemType>().DeletePermanent(poemType);
         await _unitOfWork.SaveChangesAsync();
     }
 }

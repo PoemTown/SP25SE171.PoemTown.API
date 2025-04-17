@@ -10,4 +10,5 @@ public interface IPoemTypeService
     Task<GetPoemTypeResponse> GetPoemTypeById(Guid poemTypeId);
     Task CreatePoemType(CreatePoemTypeRequest request);
     Task DeletePoemType(Guid poemTypeId);
+    Task DeletePoemTypePermanent(Guid poemTypeId);
 }

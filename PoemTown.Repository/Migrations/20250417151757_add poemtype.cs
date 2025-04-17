@@ -23,11 +23,10 @@ namespace PoemTown.Repository.Migrations
                 name: "PoemTypeId",
                 table: "Poems",
                 type: "uniqueidentifier",
-                nullable: false,
-                defaultValue: new Guid("00000000-0000-0000-0000-000000000000"));
+                nullable: true);
 
             migrationBuilder.AddColumn<Guid>(
-                name: "TypeId",
+                name: "PoemTypeId",
                 table: "PoemHistories",
                 type: "uniqueidentifier",
                 nullable: true);
@@ -57,56 +56,56 @@ namespace PoemTown.Repository.Migrations
                 keyColumn: "Id",
                 keyValue: new Guid("094de1df-60b1-4a58-878c-dc6909f5262e"),
                 columns: new[] { "CreatedTime", "LastUpdatedTime" },
-                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3296), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3296), new TimeSpan(0, 7, 0, 0, 0)) });
+                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5513), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5513), new TimeSpan(0, 7, 0, 0, 0)) });
 
             migrationBuilder.UpdateData(
                 table: "LeaderBoards",
                 keyColumn: "Id",
                 keyValue: new Guid("094de1df-60b1-4a58-878c-dc6909f5293e"),
                 columns: new[] { "CreatedTime", "LastUpdatedTime" },
-                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3317), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3317), new TimeSpan(0, 7, 0, 0, 0)) });
+                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5546), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5546), new TimeSpan(0, 7, 0, 0, 0)) });
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: new Guid("89fca251-f021-425b-de62-08dcdfcdb851"),
                 columns: new[] { "CreatedTime", "LastUpdatedTime" },
-                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3195), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3197), new TimeSpan(0, 7, 0, 0, 0)) });
+                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5399), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5401), new TimeSpan(0, 7, 0, 0, 0)) });
 
             migrationBuilder.UpdateData(
                 table: "Roles",
                 keyColumn: "Id",
                 keyValue: new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"),
                 columns: new[] { "CreatedTime", "LastUpdatedTime" },
-                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3187), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3188), new TimeSpan(0, 7, 0, 0, 0)) });
+                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5391), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5392), new TimeSpan(0, 7, 0, 0, 0)) });
 
             migrationBuilder.UpdateData(
                 table: "UserRoles",
                 keyColumns: new[] { "RoleId", "UserId" },
                 keyValues: new object[] { new Guid("b74c0a77-a451-4f16-de61-08dcdfcdb851"), new Guid("094de1df-60b1-4a58-878c-dc6909f7350b") },
                 columns: new[] { "CreatedTime", "LastUpdatedTime" },
-                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3233), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3233), new TimeSpan(0, 7, 0, 0, 0)) });
+                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5442), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5442), new TimeSpan(0, 7, 0, 0, 0)) });
 
             migrationBuilder.UpdateData(
                 table: "UserRoles",
                 keyColumns: new[] { "RoleId", "UserId" },
                 keyValues: new object[] { new Guid("89fca251-f021-425b-de62-08dcdfcdb851"), new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359") },
                 columns: new[] { "CreatedTime", "LastUpdatedTime" },
-                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3239), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3239), new TimeSpan(0, 7, 0, 0, 0)) });
+                values: new object[] { new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5448), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5448), new TimeSpan(0, 7, 0, 0, 0)) });
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: new Guid("094de1df-60b1-4a58-878c-dc6909f7350b"),
                 columns: new[] { "ConcurrencyStamp", "CreatedTime", "LastUpdatedTime" },
-                values: new object[] { "5de53b5b-a13e-4deb-abe4-4a3ee6b8b184", new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3053), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3053), new TimeSpan(0, 7, 0, 0, 0)) });
+                values: new object[] { "108352fd-27e9-464c-9687-1ab200a183a3", new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5129), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5129), new TimeSpan(0, 7, 0, 0, 0)) });
 
             migrationBuilder.UpdateData(
                 table: "Users",
                 keyColumn: "Id",
                 keyValue: new Guid("a3ee2988-67b2-4017-b63b-a0dae4708359"),
                 columns: new[] { "ConcurrencyStamp", "CreatedTime", "LastUpdatedTime" },
-                values: new object[] { "2450a29a-a2ad-4f0d-92ef-200de81a620b", new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3114), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 21, 18, 2, 260, DateTimeKind.Unspecified).AddTicks(3114), new TimeSpan(0, 7, 0, 0, 0)) });
+                values: new object[] { "32e0c0a5-d275-4768-a21a-50a6004fd722", new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5203), new TimeSpan(0, 7, 0, 0, 0)), new DateTimeOffset(new DateTime(2025, 4, 17, 22, 17, 55, 887, DateTimeKind.Unspecified).AddTicks(5203), new TimeSpan(0, 7, 0, 0, 0)) });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Poems_PoemTypeId",
@@ -114,14 +113,14 @@ namespace PoemTown.Repository.Migrations
                 column: "PoemTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PoemHistories_TypeId",
+                name: "IX_PoemHistories_PoemTypeId",
                 table: "PoemHistories",
-                column: "TypeId");
+                column: "PoemTypeId");
 
             migrationBuilder.AddForeignKey(
-                name: "FK_PoemHistories_PoemTypes_TypeId",
+                name: "FK_PoemHistories_PoemTypes_PoemTypeId",
                 table: "PoemHistories",
-                column: "TypeId",
+                column: "PoemTypeId",
                 principalTable: "PoemTypes",
                 principalColumn: "Id");
 
@@ -130,15 +129,14 @@ namespace PoemTown.Repository.Migrations
                 table: "Poems",
                 column: "PoemTypeId",
                 principalTable: "PoemTypes",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "Id");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_PoemHistories_PoemTypes_TypeId",
+                name: "FK_PoemHistories_PoemTypes_PoemTypeId",
                 table: "PoemHistories");
 
             migrationBuilder.DropForeignKey(
@@ -153,7 +151,7 @@ namespace PoemTown.Repository.Migrations
                 table: "Poems");
 
             migrationBuilder.DropIndex(
-                name: "IX_PoemHistories_TypeId",
+                name: "IX_PoemHistories_PoemTypeId",
                 table: "PoemHistories");
 
             migrationBuilder.DropColumn(
@@ -161,7 +159,7 @@ namespace PoemTown.Repository.Migrations
                 table: "Poems");
 
             migrationBuilder.DropColumn(
-                name: "TypeId",
+                name: "PoemTypeId",
                 table: "PoemHistories");
 
             migrationBuilder.AddColumn<int>(

@@ -31,13 +31,13 @@ namespace PoemTown.Repository.Entities
         public Guid? CollectionId { get; set; }
         public Guid? PoetSampleId { get; set; }
         public Guid? UserId { get; set; }
-        public Guid PoemTypeId { get; set; }
+        public Guid? PoemTypeId { get; set; }
         public bool? IsSellUsageRight { get; set; } = false;
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }
         public virtual PoetSample? PoetSample { get; set; }
         public virtual Collection? Collection { get; set; }
-        public virtual required PoemType Type { get; set; }
+        public virtual PoemType? Type { get; set; }
         //public virtual OrderDetail? OrderDetail { get; set; }
         public virtual ICollection<PoemLeaderBoard> PoemLeaderBoards { get; set; }
         public virtual ICollection<Like>? Likes { get; set; }

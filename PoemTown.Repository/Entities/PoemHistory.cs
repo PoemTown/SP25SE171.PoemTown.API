@@ -29,8 +29,8 @@ namespace PoemTown.Repository.Entities
         public bool? IsPublic { get; set; }
         public Guid PoemId { get; set; }
         
-        public Guid PoemTypeId { get; set; }
-        public virtual required PoemType Type { get; set; }
+        public Guid? PoemTypeId { get; set; }
+        public virtual PoemType? Type { get; set; }
         public virtual Poem Poem { get; set; } = default!;
     }
 }

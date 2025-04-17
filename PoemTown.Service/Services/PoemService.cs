@@ -2421,14 +2421,13 @@ public class PoemService : IPoemService
                                 && p.DeletedTime != null
                                 && p.PoemTypeId == poemType.Id);
             
-            // If poet sample not found then continue to next
-            if (poemSampleEntity == null)
-            {
-                continue;
-            }
-
             var poemSample = _mapper.Map<GetPoemSampleResponse>(poemType);
-            poemSample.Poem = _mapper.Map<GetPoemResponse>(poemSampleEntity);
+            
+            // If poet sample not found then continue to next
+            if (poemSampleEntity != null)
+            {
+                poemSample.Poem = _mapper.Map<GetPoemResponse>(poemSampleEntity);
+            }
             
             // Get famous poet sample poems for each type
             poemSamples.Add(poemSample); 

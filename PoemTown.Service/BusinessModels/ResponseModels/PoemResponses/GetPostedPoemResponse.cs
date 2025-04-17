@@ -29,7 +29,7 @@ public class GetPostedPoemResponse
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
     public GetCollectionInPoemResponse Collection { get; set; }
-    public GetBasicUserInformationResponse User { get; set; }
+    public GetBasicUserInformationResponse? User { get; set; }
     public GetLikeResponse Like { get; set; }
     public GetTargetMarkResponse TargetMark { get; set; }
     public GetSaleVersionResponse? SaleVersion { get; set; }

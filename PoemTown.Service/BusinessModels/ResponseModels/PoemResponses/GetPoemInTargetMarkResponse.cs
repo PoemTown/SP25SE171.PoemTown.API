@@ -30,7 +30,7 @@ public class GetPoemInTargetMarkResponse
     public DateTimeOffset CreatedTime { get; set; }
 
     public GetCollectionInPoemResponse Collection { get; set; }
-    public GetBasicUserInformationResponse User { get; set; }
+    public GetBasicUserInformationResponse? User { get; set; }
     public GetPoetSampleResponse? PoetSample { get; set; }
     public GetTargetMarkResponse TargetMark { get; set; }
     public GetLikeResponse Like { get; set; }

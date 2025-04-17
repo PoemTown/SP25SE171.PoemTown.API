@@ -11,5 +11,5 @@ public class GetPoetSamplePoemFilterOption
     public string? Title { get; set; }
 
     [FromQuery(Name = "type")]
-    public PoemType? Type { get; set; }
+    public Guid? PoemTypeId { get; set; }
 }

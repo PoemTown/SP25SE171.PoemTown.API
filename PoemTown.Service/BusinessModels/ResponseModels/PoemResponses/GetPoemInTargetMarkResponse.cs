@@ -1,6 +1,7 @@
 ﻿using PoemTown.Repository.Enums.Poems;
 using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.LikeResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.PoemTypeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.SaleVersionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.TargetMarkResponses;
@@ -13,7 +14,7 @@ public class GetPoemInTargetMarkResponse
     public Guid Id { get; set; }
     public string Title { get; set; }
     public string Content { get; set; }
-    public PoemType Type { get; set; }
+    public GetPoemTypeResponse Type { get; set; }
     public string Description { get; set; }
     public int LikeCount { get; set; }
     public int CommentCount { get; set; }

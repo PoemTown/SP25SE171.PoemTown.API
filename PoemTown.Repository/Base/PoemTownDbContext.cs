@@ -47,6 +47,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<PlagiarismPoemReport> PlagiarismPoemReports => Set<PlagiarismPoemReport>();
     public virtual DbSet<PoetSample> PoetSamples => Set<PoetSample>();
     public virtual DbSet<WithdrawalForm> WithdrawalForms => Set<WithdrawalForm>();
+    public virtual DbSet<PoemType> PoemTypes => Set<PoemType>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
     */

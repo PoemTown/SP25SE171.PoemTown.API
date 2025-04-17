@@ -20,7 +20,7 @@ namespace PoemTown.Service.QueryOptions.FilterOptions.PoemFilters
         public string? Title { get; set; }
 
         [FromQuery(Name = "type")]
-        public PoemType? Type { get; set; }
+        public Guid? PoemTypeId { get; set; }
 
         [FromQuery(Name = "status")]
         public PoemStatus? Status { get; set; }

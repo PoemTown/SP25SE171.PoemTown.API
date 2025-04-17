@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
+using PoemTown.Repository.Entities;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Email;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Payment;
 using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
@@ -107,6 +108,7 @@ public static class ConfigureService
         services.AddScoped<IAnnouncementService, AnnouncementService>();
         services.AddScoped<IPoetSampleService, PoetSampleService>();
         services.AddScoped<IWithdrawalFormService, WithdrawalFormService>();
+        services.AddScoped<IPoemTypeService, PoemTypeService>();
 
         //Plagiarism detector
         services.AddScoped<IEmbeddingService, EmbeddingService>();

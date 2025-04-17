@@ -76,6 +76,14 @@ public class PoemService : IPoemService
 
     public async Task CreateNewPoem(Guid userId, CreateNewPoemRequest request)
     {
+        // Check if poem type exist, if not then throw exception
+        PoemType? poemType = await _unitOfWork.GetRepository<PoemType>()
+            .FindAsync(p => p.Id == request.PoemTypeId);
+        if (poemType == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem type not found");
+        }
+        
         // Mapping request to entity
         Poem poem = _mapper.Map<CreateNewPoemRequest, Poem>(request);
 
@@ -217,6 +225,14 @@ public class PoemService : IPoemService
 
     public async Task CreatePoemInCommunity(Guid userId, CreateNewPoemRequest request)
     {
+        // Check if poem type exist, if not then throw exception
+        PoemType? poemType = await _unitOfWork.GetRepository<PoemType>()
+            .FindAsync(p => p.Id == request.PoemTypeId);
+        if (poemType == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem type not found");
+        }
+        
         // Mapping request to entity
         Poem poem = _mapper.Map<CreateNewPoemRequest, Poem>(request);
 
@@ -496,9 +512,9 @@ public class PoemService : IPoemService
                     p.ChapterName!.ToLower().Trim().Contains(request.FilterOptions.ChapterName.ToLower().Trim()));
             }
 
-            if (request.FilterOptions.Type != null)
+            if (request.FilterOptions.PoemTypeId != null)
             {
-                poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
+                poemQuery = poemQuery.Where(p => p.Type.Id == request.FilterOptions.PoemTypeId);
             }
 
             if (request.FilterOptions.Status != null)
@@ -658,6 +674,15 @@ public class PoemService : IPoemService
     {
         // (Nếu có) Trong trường hợp chỉnh sửa status của poem thành POSTED thì không cần lưu bản history (Chưa hoàn thiện)
 
+        // Check if poem type exist, if not then throw exception
+        PoemType? poemType = await _unitOfWork.GetRepository<PoemType>()
+            .FindAsync(p => p.Id == request.PoemTypeId);
+
+        if (poemType == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem type not found");
+        }
+        
         // Find poem by id
         Poem? poem = await _unitOfWork.GetRepository<Poem>()
             .FindAsync(p => p.Id == request.Id);
@@ -916,9 +941,9 @@ public class PoemService : IPoemService
                     p.ChapterName!.ToLower().Trim().Contains(request.FilterOptions.ChapterName.ToLower().Trim()));
             }
 
-            if (request.FilterOptions.Type != null)
+            if (request.FilterOptions.PoemTypeId != null)
             {
-                poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
+                poemQuery = poemQuery.Where(p => p.Type.Id == request.FilterOptions.PoemTypeId);
             }
 
             /*if (request.FilterOptions.CollectionId != null)
@@ -1057,9 +1082,9 @@ public class PoemService : IPoemService
                     p.ChapterName!.ToLower().Trim().Contains(request.FilterOptions.ChapterName.ToLower().Trim()));
             }
 
-            if (request.FilterOptions.Type != null)
+            if (request.FilterOptions.PoemTypeId != null)
             {
-                poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
+                poemQuery = poemQuery.Where(p => p.Type.Id == request.FilterOptions.PoemTypeId);
             }
 
             if (request.FilterOptions.Status != null)
@@ -1194,9 +1219,9 @@ public class PoemService : IPoemService
                     p.ChapterName!.ToLower().Trim().Contains(request.FilterOptions.ChapterName.ToLower().Trim()));
             }
 
-            if (request.FilterOptions.Type != null)
+            if (request.FilterOptions.PoemTypeId != null)
             {
-                poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
+                poemQuery = poemQuery.Where(p => p.Type.Id == request.FilterOptions.PoemTypeId);
             }
 
             /*
@@ -1588,12 +1613,21 @@ public class PoemService : IPoemService
 
     public async Task<string> PoemAiChatCompletion(PoemAiChatCompletionRequest request)
     {
+        var poemType = await _unitOfWork.GetRepository<PoemType>()
+            .FindAsync(p => p.Id == request.PoemTypeId);
+        // If poem type not found then throw exception
+        if (poemType == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem type not found");
+        }
+        
         var chatCompletionCreateRequest = new ChatCompletionCreateRequest()
         {
             Messages = new List<ChatMessage>()
             {
                 new ChatMessage("system", "Bạn là con trí tuệ nhân tạo thơ, giỏi viết những bài thơ tiếng Việt đẹp."),
-                new ChatMessage("user", $"Thể thơ: {EnumHelper.GetDescription(request.Type)}"),
+                new ChatMessage("user", $"Thể thơ: {poemType.Name}"),
+                new ChatMessage("user", $"Thể thơ {poemType.Name} là: {poemType.Description}"),
                 new ChatMessage("user", $"Nội dung thơ: {request.PoemContent}"),
                 new ChatMessage("user", $"Câu hỏi: {request.ChatContent}"),
             },
@@ -1852,9 +1886,9 @@ public class PoemService : IPoemService
                     p.ChapterName!.ToLower().Trim().Contains(request.FilterOptions.ChapterName.ToLower().Trim()));
             }
 
-            if (request.FilterOptions.Type != null)
+            if (request.FilterOptions.PoemTypeId != null)
             {
-                poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
+                poemQuery = poemQuery.Where(p => p.Type.Id == request.FilterOptions.PoemTypeId);
             }
 
             if (request.FilterOptions.AudioStatus != null)
@@ -2001,6 +2035,15 @@ public class PoemService : IPoemService
 
     public async Task CreatePoetSamplePoem(Guid poetSampleId, CreatePoetSamplePoemRequest request)
     {
+        PoemType? poemType = await _unitOfWork.GetRepository<PoemType>()
+            .FindAsync(p => p.Id == request.PoemTypeId);
+        
+        // Check if poem type is null
+        if (poemType == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem type not found");
+        }
+        
         PoetSample? poetSample = await _unitOfWork.GetRepository<PoetSample>().FindAsync(p => p.Id == poetSampleId);
 
         // If poet sample not found then throw exception
@@ -2132,9 +2175,9 @@ public class PoemService : IPoemService
             }
 
 
-            if (request.FilterOptions.Type != null)
+            if (request.FilterOptions.PoemTypeId != null)
             {
-                poemQuery = poemQuery.Where(p => p.Type == request.FilterOptions.Type);
+                poemQuery = poemQuery.Where(p => p.Type.Id == request.FilterOptions.PoemTypeId);
             }
 
         }
@@ -2194,6 +2237,23 @@ public class PoemService : IPoemService
     
     public async Task UpdatePoetSamplePoem(Guid poetSampleId, UpdatePoetSamplePoemRequest request)
     {
+        // Check if poet sample is null
+        PoetSample? poetSample = await _unitOfWork.GetRepository<PoetSample>()
+            .FindAsync(p => p.Id == poetSampleId);
+        if (poetSample == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poet sample not found");
+        }
+        
+        PoemType? poemType = await _unitOfWork.GetRepository<PoemType>()
+            .FindAsync(p => p.Id == request.PoemTypeId);
+        
+        // Check if poem type is null
+        if(poemType == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem type not found");
+        }
+        
         // Find poem by id
         Poem? poem = await _unitOfWork.GetRepository<Poem>()
             .FindAsync(p => p.Id == request.Id);
@@ -2342,5 +2402,23 @@ public class PoemService : IPoemService
         _unitOfWork.GetRepository<SaleVersion>().Update(freeSaleVersionOfPoetSamplePoem);
         await _unitOfWork.SaveChangesAsync();*/
         return;
+    }
+
+    public async Task<IEnumerable<GetPoetSamplePoemResponse>> GetPoemSampleFromPoetSample()
+    {
+        var poemTypes = await _unitOfWork.GetRepository<PoemType>()
+            .AsQueryable()
+            .ToListAsync();
+
+        // Get famous poet sample poems for each type
+        var poemSamples = await _unitOfWork.GetRepository<Poem>()
+            .AsQueryable()
+            .Where(p => p.IsFamousPoet == true
+                        && p.Status == PoemStatus.Posted
+                        && p.DeletedTime != null
+                        && p.PoemTypeId == poemTypes.Select(pt => pt.Id).FirstOrDefault())
+            .ToListAsync();
+        
+        return _mapper.Map<IEnumerable<GetPoetSamplePoemResponse>>(poemSamples);
     }
 }

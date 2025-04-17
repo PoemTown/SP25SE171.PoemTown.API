@@ -355,7 +355,7 @@ public class StatisticService : IStatisticService
             .GroupBy(p => p.Type)
             .Select(res => new GetPoemTypeSampleResponse
             {
-                Type = res.Key,
+                Type = res.Key.Name ?? "",
                 TotalPoems = res.Count()
             })
             .ToListAsync();

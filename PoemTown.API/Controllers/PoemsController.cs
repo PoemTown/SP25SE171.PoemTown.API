@@ -1007,7 +1007,7 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpGet]
     [Route("v1/poem-samples")]
-    public async Task<ActionResult<BaseResponse<GetPoetSamplePoemResponse>>> GetPoemSamples()
+    public async Task<ActionResult<BaseResponse<GetPoemSampleResponse>>> GetPoemSamples()
     {
         var response = await _poemService.GetPoemSampleFromPoetSample();
         

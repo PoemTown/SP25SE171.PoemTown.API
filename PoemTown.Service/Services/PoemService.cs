@@ -2404,21 +2404,32 @@ public class PoemService : IPoemService
         return;
     }
 
-    public async Task<IEnumerable<GetPoetSamplePoemResponse>> GetPoemSampleFromPoetSample()
+    public async Task<IList<GetPoetSamplePoemResponse>> GetPoemSampleFromPoetSample()
     {
         var poemTypes = await _unitOfWork.GetRepository<PoemType>()
             .AsQueryable()
             .ToListAsync();
 
-        // Get famous poet sample poems for each type
-        var poemSamples = await _unitOfWork.GetRepository<Poem>()
-            .AsQueryable()
-            .Where(p => p.IsFamousPoet == true
-                        && p.Status == PoemStatus.Posted
-                        && p.DeletedTime != null
-                        && p.PoemTypeId == poemTypes.Select(pt => pt.Id).FirstOrDefault())
-            .ToListAsync();
+        IList<Poem> poemSamples = new List<Poem>();
         
-        return _mapper.Map<IEnumerable<GetPoetSamplePoemResponse>>(poemSamples);
+        // Loop through each poem type and get famous the first poet sample
+        foreach (var poemType in poemTypes)
+        {
+            var poetSample = await _unitOfWork.GetRepository<Poem>()
+                .FindAsync(p => p.IsFamousPoet == true
+                                && p.Status == PoemStatus.Posted
+                                && p.DeletedTime != null
+                                && p.PoemTypeId == poemType.Id);
+            
+            // If poet sample not found then continue to next
+            if (poetSample == null)
+            {
+                continue;
+            }
+            // Get famous poet sample poems for each type
+            poemSamples.Add(poetSample); 
+        }
+        
+        return _mapper.Map<IList<GetPoetSamplePoemResponse>>(poemSamples);
     }
 }

@@ -2426,7 +2426,7 @@ public class PoemService : IPoemService
             // If poet sample not found then continue to next
             if (poemSampleEntity != null)
             {
-                poemSample.Poem = _mapper.Map<GetPoemResponse>(poemSampleEntity);
+                poemSample.Poem = _mapper.Map<GetPoetSamplePoemResponse>(poemSampleEntity);
             }
             
             // Get famous poet sample poems for each type

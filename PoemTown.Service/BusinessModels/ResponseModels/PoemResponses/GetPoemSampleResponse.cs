@@ -6,5 +6,5 @@ public class GetPoemSampleResponse
     public string? Name { get; set; }
     public string? Description { get; set; }
     public string? Color { get; set; }
-    public GetPoemResponse? Poem { get; set; }
+    public GetPoetSamplePoemResponse? Poem { get; set; }
 }

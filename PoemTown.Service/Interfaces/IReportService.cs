@@ -1,4 +1,5 @@
 ﻿using PoemTown.Repository.Base;
+using PoemTown.Repository.Enums.Reports;
 using PoemTown.Service.BusinessModels.RequestModels.ReportRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.ReportResponses;
 using PoemTown.Service.QueryOptions.FilterOptions.ReportFilters;
@@ -19,4 +20,11 @@ public interface IReportService
 
     Task ResolveReport(ResolveReportRequest request);
     Task CreateReportUser(Guid userId, CreateReportUserRequest request);
+
+    Task CreateReportMessage(CreateReportMessageRequest request);
+    Task UpdateReportMessage(UpdateReportMessageRequest request);
+    Task DeleteReportMessage(Guid id);
+    Task DeleteReportMessagePermanent(Guid id);
+    Task<IList<GetReportMessageResponse>> GetReportMessages(ReportType? type);
+    Task<GetReportMessageResponse> GetReportMessage(Guid reportMessageId);
 }

@@ -12,5 +12,8 @@ public class ReportMapping : Profile
         CreateMap<Report, GetMyReportResponse>().ReverseMap();
 
         CreateMap<ReportMessage, GetReportMessageResponse>().ReverseMap();
+
+        CreateMap<GetReportMessageResponse, GetMyReportResponse>();
+        CreateMap<GetReportMessageResponse, GetReportResponse>();
     }
 }

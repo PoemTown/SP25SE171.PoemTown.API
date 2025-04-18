@@ -11,4 +11,5 @@ public class GetMyReportResponse
     public ReportStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
     public GetPoemInReportResponse Poem { get; set; }
+    public GetReportMessageResponse? ReportMessage { get; set; }
 }

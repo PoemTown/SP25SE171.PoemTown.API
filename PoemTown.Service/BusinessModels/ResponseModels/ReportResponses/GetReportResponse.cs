@@ -16,4 +16,5 @@ public class GetReportResponse
     public DateTimeOffset CreatedTime { get; set; }
     public GetPoemInReportResponse Poem { get; set; }
     public IList<GetPoemInReportResponse>? PlagiarismFromPoems { get; set; }
+    public GetReportMessageResponse? ReportMessage { get; set; }
 }

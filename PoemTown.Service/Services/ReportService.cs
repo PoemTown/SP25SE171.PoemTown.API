@@ -66,9 +66,10 @@ public class ReportService : IReportService
         var report = new Report
         {
             PoemId = request.PoemId,
-            ReportReason = reportMessage.Description ?? request.ReportReason ?? string.Empty,
+            ReportReason = request.ReportReason ?? string.Empty,
             Type = ReportType.Poem,
             ReportUserId = userId,
+            ReportMessage = reportMessage
         };
 
         await _unitOfWork.GetRepository<Report>().InsertAsync(report);
@@ -308,9 +309,10 @@ public class ReportService : IReportService
         var report = new Report
         {
             ReportedUserId = request.UserId,
-            ReportReason = reportMessage.Description ?? request.ReportReason ?? string.Empty,
+            ReportReason = request.ReportReason ?? string.Empty,
             Type = ReportType.User,
             ReportUserId = userId,
+            ReportMessage = reportMessage
         };
 
         await _unitOfWork.GetRepository<Report>().InsertAsync(report);

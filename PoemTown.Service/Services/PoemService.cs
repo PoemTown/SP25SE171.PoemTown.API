@@ -2072,6 +2072,7 @@ public class PoemService : IPoemService
 
         Poem poem = _mapper.Map<CreatePoetSamplePoemRequest, Poem>(request);
 
+        poem.Id = Guid.NewGuid();
         Collection? collection = null;
 
         // Check if user has any collection, if not then create default collection, first assign that poem to default collection
@@ -2131,7 +2132,7 @@ public class PoemService : IPoemService
             // Create free sale version for poem with CommissionPercentage = 10
             await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);
 
-            // Create usage right for ADMIN as copy right holder
+            /*// Create usage right for ADMIN as copy right holder
             var now = DateTimeHelper.SystemTimeNow.DateTime;
             await _unitOfWork.GetRepository<UsageRight>().InsertAsync(new UsageRight()
             {
@@ -2141,7 +2142,7 @@ public class PoemService : IPoemService
                 CopyRightValidFrom = now,
                 CopyRightValidTo = now.AddYears(100),
                 SaleVersion = saleVersion,
-            });
+            });*/
 
             // Adjust created time of poem when it is posted
             poem.CreatedTime = DateTimeHelper.SystemTimeNow;

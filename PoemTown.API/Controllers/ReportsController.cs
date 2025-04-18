@@ -169,7 +169,7 @@ public class ReportsController : BaseController
     /// <returns></returns>
     [HttpPost]
     [Route("v1/message")]
-    [Authorize("ADMIN, MODERATOR")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> CreateReportMessage([FromBody] CreateReportMessageRequest request)
     {
         await _reportService.CreateReportMessage(request);
@@ -190,7 +190,7 @@ public class ReportsController : BaseController
     /// <returns></returns>
     [HttpPut]
     [Route("v1/message")]
-    [Authorize("ADMIN, MODERATOR")]
+    [Authorize(Roles= "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> UpdateReportMessage([FromBody] UpdateReportMessageRequest request)
     {
         await _reportService.UpdateReportMessage(request);
@@ -204,7 +204,7 @@ public class ReportsController : BaseController
     /// <returns></returns>
     [HttpDelete]
     [Route("v1/message/{reportMessageId}")]
-    [Authorize("ADMIN, MODERATOR")]
+    [Authorize(Roles= "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> DeleteReportMessage(Guid reportMessageId)
     {
         await _reportService.DeleteReportMessage(reportMessageId);
@@ -218,7 +218,7 @@ public class ReportsController : BaseController
     /// <returns></returns>
     [HttpDelete]
     [Route("v1/message/{reportMessageId}/permanent")]
-    [Authorize("ADMIN, MODERATOR")]
+    [Authorize(Roles= "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> DeleteReportMessagePermanent(Guid reportMessageId)
     {
         await _reportService.DeleteReportMessagePermanent(reportMessageId);

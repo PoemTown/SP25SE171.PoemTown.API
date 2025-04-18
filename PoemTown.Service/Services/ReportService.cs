@@ -36,6 +36,15 @@ public class ReportService : IReportService
 
     public async Task CreateReportPoem(Guid userId, CreateReportPoemRequest request)
     {
+        var reportMessage = await _unitOfWork.GetRepository<ReportMessage>()
+            .FindAsync(r => r.Id == request.ReportMessageId);
+        
+        // Check if the report message exists
+        if (reportMessage == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message not found");
+        }
+        
         // Check if the poem exists
         var poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == request.PoemId);
         if (poem == null)
@@ -57,7 +66,7 @@ public class ReportService : IReportService
         var report = new Report
         {
             PoemId = request.PoemId,
-            ReportReason = request.ReportReason,
+            ReportReason = reportMessage.Description ?? request.ReportReason ?? string.Empty,
             Type = ReportType.Poem,
             ReportUserId = userId,
         };
@@ -268,6 +277,15 @@ public class ReportService : IReportService
 
     public async Task CreateReportUser(Guid userId, CreateReportUserRequest request)
     {
+        var reportMessage = await _unitOfWork.GetRepository<ReportMessage>()
+            .FindAsync(r => r.Id == request.ReportMessageId);
+        
+        // Check if the report message exists
+        if (reportMessage == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message not found");
+        }
+        
         // Check if the user exists
         var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == request.UserId);
         if (user == null)
@@ -290,7 +308,7 @@ public class ReportService : IReportService
         var report = new Report
         {
             ReportedUserId = request.UserId,
-            ReportReason = request.ReportReason,
+            ReportReason = reportMessage.Description ?? request.ReportReason ?? string.Empty,
             Type = ReportType.User,
             ReportUserId = userId,
         };

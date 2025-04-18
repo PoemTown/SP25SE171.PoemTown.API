@@ -2438,7 +2438,7 @@ public class PoemService : IPoemService
             var poemSampleEntity = await _unitOfWork.GetRepository<Poem>()
                 .FindAsync(p => p.IsFamousPoet == true
                                 && p.Status == PoemStatus.Posted
-                                && p.DeletedTime != null
+                                && p.DeletedTime == null
                                 && p.PoemTypeId == poemType.Id);
             
             var poemSample = _mapper.Map<GetPoemSampleResponse>(poemType);

@@ -77,7 +77,7 @@ public class TitleSamplesController : BaseController
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPut]
-    [Route("v1/{titleSampleId}")]
+    [Route("v1")]
     [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> UpdateTitleSample(Guid titleSampleId,
         [FromBody] UpdateTitleSampleRequest request)

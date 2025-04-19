@@ -1640,7 +1640,7 @@ public class PoemService : IPoemService
             {
                 new ChatMessage("system", "Bạn là con trí tuệ nhân tạo thơ, giỏi viết những bài thơ tiếng Việt đẹp."),
                 new ChatMessage("user", $"Thể thơ: {poemType.Name}"),
-                new ChatMessage("user", $"Thể thơ {poemType.Name} là: {poemType.Description}"),
+                //new ChatMessage("user", $"Thể thơ {poemType.Name} là: {poemType.Description}"),
                 new ChatMessage("user", $"Nội dung thơ: {request.PoemContent}"),
                 new ChatMessage("user", $"Câu hỏi: {request.ChatContent}"),
             },

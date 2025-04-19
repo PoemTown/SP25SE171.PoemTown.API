@@ -137,15 +137,17 @@ public class TitleSampleService : ITitleSampleService
             .Where(p => titleSampleIds.Contains(p.Id) && p.DeletedTime == null)
             .ToListAsync();
         
-        // Check if the TitleSamples exist
-        if (titleSamples.Count != titleSampleIds.Count)
-        {
-            throw new CoreException(StatusCodes.Status400BadRequest, "One or more TitleSamples not found");
-        }
-        
         // Insert the PoetSampleTitleSamples
         foreach (var titleSample in titleSamples)
         {
+            // Check if the TitleSample is already associated with the PoetSample
+            var existingPoetSampleTitleSample = await _unitOfWork.GetRepository<PoetSampleTitleSample>()
+                .FindAsync(p => p.PoetSampleId == poetSample.Id && p.TitleSampleId == titleSample.Id);
+            if (existingPoetSampleTitleSample != null)
+            {
+                continue;
+            }
+            
             PoetSampleTitleSample poetSampleTitleSample = new PoetSampleTitleSample()
             {
                 PoetSampleId = poetSample.Id,

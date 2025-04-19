@@ -11,4 +11,5 @@ public interface ITitleSampleService
     Task DeleteTitleSamplePermanently(Guid id);
     Task<GetTitleSampleResponse> GetTitleSampleById(Guid id);
     Task<IEnumerable<GetTitleSampleResponse>> GetAllTitleSamples();
+    Task AddTitleSamplesIntoPoetSample(Guid poetSampleId, List<Guid> titleSampleIds);
 }

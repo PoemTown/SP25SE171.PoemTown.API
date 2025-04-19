@@ -125,4 +125,23 @@ public class TitleSamplesController : BaseController
             StatusCode = StatusCodes.Status200OK
         });
     }
+
+    /// <summary>
+    /// Thêm danh hiệu mẫu vào nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <param name="poetSampleId"></param>
+    /// <param name="titleSampleIds"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/{poetSampleId}")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> AddTitleSamplesIntoPoetSample(Guid poetSampleId, [FromQuery] List<Guid> titleSampleIds)
+    {
+        await _titleSampleService.AddTitleSamplesIntoPoetSample(poetSampleId, titleSampleIds);
+        return Ok(new BaseResponse<GetTitleSampleResponse>
+        {
+            Message = "Add Title Samples into Poet Sample successfully",
+            StatusCode = StatusCodes.Status200OK
+        });
+    }
 }

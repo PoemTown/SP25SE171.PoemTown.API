@@ -121,4 +121,39 @@ public class TitleSampleService : ITitleSampleService
         
         return _mapper.Map<IEnumerable<GetTitleSampleResponse>>(titleSamples);
     }
+    
+    public async Task AddTitleSamplesIntoPoetSample(Guid poetSampleId, List<Guid> titleSampleIds)
+    {
+        var poetSample = await _unitOfWork.GetRepository<PoetSample>().FindAsync(p => p.Id == poetSampleId);
+        
+        // Check if the PoetSample exists
+        if (poetSample == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "PoetSample not found");
+        }
+        
+        var titleSamples = await _unitOfWork.GetRepository<TitleSample>()
+            .AsQueryable()
+            .Where(p => titleSampleIds.Contains(p.Id) && p.DeletedTime == null)
+            .ToListAsync();
+        
+        // Check if the TitleSamples exist
+        if (titleSamples.Count != titleSampleIds.Count)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "One or more TitleSamples not found");
+        }
+        
+        // Insert the PoetSampleTitleSamples
+        foreach (var titleSample in titleSamples)
+        {
+            PoetSampleTitleSample poetSampleTitleSample = new PoetSampleTitleSample()
+            {
+                PoetSampleId = poetSample.Id,
+                TitleSampleId = titleSample.Id
+            };
+            await _unitOfWork.GetRepository<PoetSampleTitleSample>().InsertAsync(poetSampleTitleSample);
+        }
+        
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

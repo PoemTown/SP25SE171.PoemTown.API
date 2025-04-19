@@ -109,6 +109,7 @@ public static class ConfigureService
         services.AddScoped<IPoetSampleService, PoetSampleService>();
         services.AddScoped<IWithdrawalFormService, WithdrawalFormService>();
         services.AddScoped<IPoemTypeService, PoemTypeService>();
+        services.AddScoped<ITitleSampleService, TitleSampleService>();
 
         //Plagiarism detector
         services.AddScoped<IEmbeddingService, EmbeddingService>();

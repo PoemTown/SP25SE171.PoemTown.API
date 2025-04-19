@@ -13,4 +13,6 @@ public class PoetSample : BaseEntity
     
     public virtual ICollection<Collection>? Collections { get; set; }
     public virtual ICollection<Poem>? Poems { get; set; }
+    
+    public virtual ICollection<PoetSampleTitleSample>? PoetSampleTitleSamples { get; set; }
 }

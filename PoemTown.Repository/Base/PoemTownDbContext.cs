@@ -49,6 +49,8 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<WithdrawalForm> WithdrawalForms => Set<WithdrawalForm>();
     public virtual DbSet<PoemType> PoemTypes => Set<PoemType>();
     public virtual DbSet<ReportMessage> ReportMessages => Set<ReportMessage>();
+    public virtual DbSet<TitleSample> TitleSamples => Set<TitleSample>();
+    public virtual DbSet<PoetSampleTitleSample> PoetSampleTitleSamples => Set<PoetSampleTitleSample>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
     */

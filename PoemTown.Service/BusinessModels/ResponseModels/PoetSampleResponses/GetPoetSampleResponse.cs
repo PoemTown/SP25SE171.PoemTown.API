@@ -1,4 +1,6 @@
-﻿namespace PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
+﻿using PoemTown.Service.BusinessModels.ResponseModels.TitleSampleResponses;
+
+namespace PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
 
 public class GetPoetSampleResponse
 {
@@ -8,4 +10,5 @@ public class GetPoetSampleResponse
     public DateOnly DateOfBirth { get; set; }
     public string Gender { get; set; }
     public string? Avatar { get; set; }
+    public IList<GetTitleSampleResponse>? TitleSamples { get; set; }
 }

@@ -11,6 +11,7 @@ namespace PoemTown.API.Controllers;
 public class TitleSamplesController : BaseController
 {
     private readonly ITitleSampleService _titleSampleService;
+
     public TitleSamplesController(ITitleSampleService titleSampleService)
     {
         _titleSampleService = titleSampleService;
@@ -31,8 +32,8 @@ public class TitleSamplesController : BaseController
             Message = "Get Title Samples successfully",
             StatusCode = StatusCodes.Status200OK
         });
-    } 
-    
+    }
+
     /// <summary>
     /// Lấy danh hiệu mẫu của nhà thơ nổi tiếng theo id, Không yêu cầu đăng nhập
     /// </summary>
@@ -50,7 +51,7 @@ public class TitleSamplesController : BaseController
             StatusCode = StatusCodes.Status200OK
         });
     }
-    
+
     /// <summary>
     /// Tạo mới danh hiệu mẫu của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
@@ -68,7 +69,7 @@ public class TitleSamplesController : BaseController
             StatusCode = StatusCodes.Status201Created
         });
     }
-    
+
     /// <summary>
     /// Cập nhật danh hiệu mẫu của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
@@ -77,7 +78,9 @@ public class TitleSamplesController : BaseController
     /// <returns></returns>
     [HttpPut]
     [Route("v1/{titleSampleId}")]
-    public async Task<ActionResult<BaseResponse>> UpdateTitleSample(Guid titleSampleId, [FromBody] UpdateTitleSampleRequest request)
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> UpdateTitleSample(Guid titleSampleId,
+        [FromBody] UpdateTitleSampleRequest request)
     {
         await _titleSampleService.UpdateTitleSample(request);
         return Accepted(new BaseResponse<GetTitleSampleResponse>
@@ -86,7 +89,7 @@ public class TitleSamplesController : BaseController
             StatusCode = StatusCodes.Status202Accepted
         });
     }
-    
+
     /// <summary>
     /// Xóa danh hiệu mẫu của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
@@ -94,6 +97,7 @@ public class TitleSamplesController : BaseController
     /// <returns></returns>
     [HttpDelete]
     [Route("v1/{titleSampleId}")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> DeleteTitleSample(Guid titleSampleId)
     {
         await _titleSampleService.DeleteTitleSample(titleSampleId);
@@ -103,7 +107,7 @@ public class TitleSamplesController : BaseController
             StatusCode = StatusCodes.Status200OK
         });
     }
-    
+
     /// <summary>
     /// Xóa vĩnh viễn danh hiệu mẫu của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
@@ -111,6 +115,7 @@ public class TitleSamplesController : BaseController
     /// <returns></returns>
     [HttpDelete]
     [Route("v1/{titleSampleId}/permanent")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> PermanentDeleteTitleSample(Guid titleSampleId)
     {
         await _titleSampleService.DeleteTitleSamplePermanently(titleSampleId);

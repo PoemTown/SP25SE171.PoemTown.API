@@ -153,7 +153,7 @@ public class TitleSamplesController : BaseController
     [HttpDelete]
     [Route("v1/{poetSampleId}/title-samples")]
     [Authorize(Roles = "ADMIN, MODERATOR")]
-    public async Task<ActionResult<BaseResponse>> RemovePoetSampleTitleSample(Guid poetSampleId, [FromBody] IList<Guid> titleSampleIds)
+    public async Task<ActionResult<BaseResponse>> RemovePoetSampleTitleSample(Guid poetSampleId, [FromQuery] IList<Guid> titleSampleIds)
     {
         await _titleSampleService.RemovePoetSampleTitleSample(poetSampleId, titleSampleIds);
         return Accepted(new BaseResponse(StatusCodes.Status202Accepted, "Remove title sample from poet sample successfully"));

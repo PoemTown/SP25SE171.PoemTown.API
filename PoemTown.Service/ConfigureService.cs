@@ -31,6 +31,7 @@ using PoemTown.Service.Scheduler.LeaderBoardJobs;
 using PoemTown.Service.PlagiarismDetector.Interfaces;
 using PoemTown.Service.PlagiarismDetector.Services;
 using PoemTown.Service.PlagiarismDetector.Settings;
+using PoemTown.Service.Scheduler.DailyMessageJobs;
 using PoemTown.Service.Scheduler.PaymentJobs;
 using PoemTown.Service.Services;
 using PoemTown.Service.ThirdParties.Interfaces;
@@ -110,6 +111,8 @@ public static class ConfigureService
         services.AddScoped<IWithdrawalFormService, WithdrawalFormService>();
         services.AddScoped<IPoemTypeService, PoemTypeService>();
         services.AddScoped<ITitleSampleService, TitleSampleService>();
+        services.AddScoped<ISystemContactService, SystemContactService>();
+        services.AddScoped<IDailyMessageService, DailyMessageService>();
 
         //Plagiarism detector
         services.AddScoped<IEmbeddingService, EmbeddingService>();
@@ -301,14 +304,15 @@ public static class ConfigureService
             var leaderBoardJobKey = new JobKey("LeaderBoardCalculationJob", "LeaderBoard");
             var achievementJobKey = new JobKey("MonthlyAchievementJob", "Achievement");
             var usageRightJobKey = new JobKey("TimeOutUsageRightJob", "TimeOut");
-
+            var updateInUseDailyMessageJobKey = new JobKey("UpdateInUseDailyMessageJob", "DailyMessage");
 
             // Register the jobs.
             q.AddJob<MonthlyAchievementJob>(opts => opts.WithIdentity(achievementJobKey));
             q.AddJob<LeaderBoardCalculationJob>(opts => opts.WithIdentity(leaderBoardJobKey));
             q.AddJob<TimeOutUsageRightJob>(opts => opts.WithIdentity(usageRightJobKey));
+            q.AddJob<UpdateInUseDailyMessageJob>(opts => opts.WithIdentity(updateInUseDailyMessageJobKey));
 
-
+            
             // Trigger for LeaderBoardCalculationJob: fire immediately and every 30 seconds.
             q.AddTrigger(opts => opts
                 .ForJob(leaderBoardJobKey)
@@ -333,6 +337,14 @@ public static class ConfigureService
                     .WithCronSchedule("0 0/5 * * * ?", cron =>
                      cron.InTimeZone(
                          TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))));
+            
+            q.AddTrigger(opts => opts
+                .ForJob(updateInUseDailyMessageJobKey)
+                .WithIdentity("UpdateInUseDailyMessageTrigger", "DailyMessage")
+                .WithCronSchedule("0/10 * * * * ?", x =>
+                {
+                    x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+                }));
 
         });
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
@@ -341,6 +353,7 @@ public static class ConfigureService
         services.AddScoped<LeaderBoardCalculationJob>();
         services.AddScoped<MonthlyAchievementJob>();
         services.AddScoped<TimeOutUsageRightJob>();
+        services.AddScoped<UpdateInUseDailyMessageJob>();
     }
 
     private static void AddSignalRConfig(this IServiceCollection services)

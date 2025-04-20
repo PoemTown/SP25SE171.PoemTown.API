@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
@@ -38,7 +39,7 @@ public class PoetSampleService : IPoetSampleService
 
         Guid poetSampleId = Guid.NewGuid();
         poetSample.Id = poetSampleId;
-        
+
         // Add title sample
         if (request.TitleSampleIds != null)
         {
@@ -104,9 +105,9 @@ public class PoetSampleService : IPoetSampleService
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "PoetSample is not exist");
         }
-        
+
         existPoetSample = _mapper.Map(request, existPoetSample);
-        
+
         // Add title sample
         if (request.TitleSampleIds != null)
         {
@@ -199,9 +200,9 @@ public class PoetSampleService : IPoetSampleService
             {
                 continue;
             }
-            
+
             poetSamples.Add(_mapper.Map<GetPoetSampleResponse>(poetSampleEntity));
-            
+
             // Map title samples
 
             if (poetSampleEntity.PoetSampleTitleSamples != null)
@@ -228,14 +229,31 @@ public class PoetSampleService : IPoetSampleService
         }
 
         var poetSampleMapping = _mapper.Map<GetPoetSampleResponse>(poetSample);
-        
+
         // Map title samples
         if (poetSample.PoetSampleTitleSamples != null)
         {
             poetSampleMapping.TitleSamples = _mapper.Map<IList<GetTitleSampleResponse>>(
                 poetSample.PoetSampleTitleSamples.Select(p => p.TitleSample));
         }
-        
+
         return poetSampleMapping;
+    }
+
+    public async Task RemovePoetSampleTitleSample(Guid poetSampleId, IList<Guid> titleSampleIds)
+    {
+        var poetSampleTitleSamples = await _unitOfWork.GetRepository<PoetSampleTitleSample>()
+            .AsQueryable()
+            .Where(p => titleSampleIds.Contains(p.TitleSampleId) && p.PoetSampleId == poetSampleId)
+            .ToListAsync();
+        
+        // Check if the poet sample title sample exists
+        if(poetSampleTitleSamples == null || poetSampleTitleSamples.Count == 0)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "PoetSampleTitleSample is not exist");
+        }
+
+        _unitOfWork.GetRepository<PoetSampleTitleSample>().DeletePermanentRange(poetSampleTitleSamples);
+        await _unitOfWork.SaveChangesAsync();
     }
 }

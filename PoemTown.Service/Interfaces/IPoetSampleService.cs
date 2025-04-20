@@ -19,4 +19,5 @@ public interface IPoetSampleService
         GetPoetSamples(RequestOptionsBase<GetPoetSampleFilterOption, GetPoetSampleSortOption> request);
 
     Task<GetPoetSampleResponse> GetPoetSample(Guid poetSampleId);
+    Task RemovePoetSampleTitleSample(Guid poetSampleId, IList<Guid> titleSampleIds);
 }

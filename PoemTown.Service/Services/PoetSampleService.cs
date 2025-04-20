@@ -108,14 +108,14 @@ public class PoetSampleService : IPoetSampleService
 
         existPoetSample = _mapper.Map(request, existPoetSample);
 
-        // Add title sample
+        /*// Add title sample
         if (request.TitleSampleIds != null)
         {
             foreach (var titleSampleId in request.TitleSampleIds)
             {
                 await AddPoetSampleTitleSample(existPoetSample.Id, titleSampleId);
             }
-        }
+        }*/
 
         // Format the name
         existPoetSample.Name = StringHelper.FormatStringInput(request.Name);

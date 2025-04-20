@@ -143,4 +143,19 @@ public class TitleSamplesController : BaseController
             StatusCode = StatusCodes.Status200OK
         });
     }
+    
+    /// <summary>
+    /// Xóa danh hiệu mẫu của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <param name="poetSampleId"></param>
+    /// <param name="titleSampleIds"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/{poetSampleId}/title-samples")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> RemovePoetSampleTitleSample(Guid poetSampleId, [FromBody] IList<Guid> titleSampleIds)
+    {
+        await _titleSampleService.RemovePoetSampleTitleSample(poetSampleId, titleSampleIds);
+        return Accepted(new BaseResponse(StatusCodes.Status202Accepted, "Remove title sample from poet sample successfully"));
+    }
 }

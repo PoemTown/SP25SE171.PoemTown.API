@@ -12,4 +12,5 @@ public interface ITitleSampleService
     Task<GetTitleSampleResponse> GetTitleSampleById(Guid id);
     Task<IEnumerable<GetTitleSampleResponse>> GetAllTitleSamples();
     Task AddTitleSamplesIntoPoetSample(Guid poetSampleId, List<Guid> titleSampleIds);
+    Task RemovePoetSampleTitleSample(Guid poetSampleId, IList<Guid> titleSampleIds);
 }

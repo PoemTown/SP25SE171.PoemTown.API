@@ -113,7 +113,7 @@ public class PoetSamplesController : BaseController
         return Ok(new BaseResponse<GetPoetSampleResponse>(StatusCodes.Status200OK, "Get poet sample successfully", poetSample));
     }
     
-    /// <summary>
+    /*/// <summary>
     /// Xóa danh hiệu mẫu của nhà thơ nổi tiếng, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
     /// <param name="poetSampleId"></param>
@@ -126,5 +126,5 @@ public class PoetSamplesController : BaseController
     {
         await _poetSampleService.RemovePoetSampleTitleSample(poetSampleId, titleSampleIds);
         return Accepted(new BaseResponse(StatusCodes.Status202Accepted, "Remove title sample from poet sample successfully"));
-    }
+    }*/
 }

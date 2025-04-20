@@ -158,4 +158,21 @@ public class TitleSampleService : ITitleSampleService
         
         await _unitOfWork.SaveChangesAsync();
     }
+    
+    public async Task RemovePoetSampleTitleSample(Guid poetSampleId, IList<Guid> titleSampleIds)
+    {
+        var poetSampleTitleSamples = await _unitOfWork.GetRepository<PoetSampleTitleSample>()
+            .AsQueryable()
+            .Where(p => titleSampleIds.Contains(p.TitleSampleId) && p.PoetSampleId == poetSampleId)
+            .ToListAsync();
+        
+        // Check if the poet sample title sample exists
+        if(poetSampleTitleSamples == null || poetSampleTitleSamples.Count == 0)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "PoetSampleTitleSample is not exist");
+        }
+
+        _unitOfWork.GetRepository<PoetSampleTitleSample>().DeletePermanentRange(poetSampleTitleSamples);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

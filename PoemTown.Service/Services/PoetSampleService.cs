@@ -240,7 +240,7 @@ public class PoetSampleService : IPoetSampleService
         return poetSampleMapping;
     }
 
-    public async Task RemovePoetSampleTitleSample(Guid poetSampleId, IList<Guid> titleSampleIds)
+    /*public async Task RemovePoetSampleTitleSample(Guid poetSampleId, IList<Guid> titleSampleIds)
     {
         var poetSampleTitleSamples = await _unitOfWork.GetRepository<PoetSampleTitleSample>()
             .AsQueryable()
@@ -255,5 +255,5 @@ public class PoetSampleService : IPoetSampleService
 
         _unitOfWork.GetRepository<PoetSampleTitleSample>().DeletePermanentRange(poetSampleTitleSamples);
         await _unitOfWork.SaveChangesAsync();
-    }
+    }*/
 }

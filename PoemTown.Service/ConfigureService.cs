@@ -341,7 +341,7 @@ public static class ConfigureService
             q.AddTrigger(opts => opts
                 .ForJob(updateInUseDailyMessageJobKey)
                 .WithIdentity("UpdateInUseDailyMessageTrigger", "DailyMessage")
-                .WithCronSchedule("0/10 * * * * ?", x =>
+                .WithCronSchedule("0 0 0 * * ?", x =>
                 {
                     x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
                 }));

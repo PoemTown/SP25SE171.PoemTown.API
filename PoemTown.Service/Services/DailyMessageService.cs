@@ -26,7 +26,7 @@ public class DailyMessageService : IDailyMessageService
     
     public async Task CreateNewDailyMessage(CreateNewDailyMessageRequest request)
     {
-        DailyMessage dailyMessage = _mapper.Map<DailyMessage>(request.Message);
+        DailyMessage dailyMessage = _mapper.Map<DailyMessage>(request);
         dailyMessage.Id = Guid.NewGuid();
         
         await UpdateInUseDailyMessage(dailyMessage);

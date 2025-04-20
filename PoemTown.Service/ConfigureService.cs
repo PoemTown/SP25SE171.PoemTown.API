@@ -113,6 +113,7 @@ public static class ConfigureService
         services.AddScoped<ITitleSampleService, TitleSampleService>();
         services.AddScoped<ISystemContactService, SystemContactService>();
         services.AddScoped<IDailyMessageService, DailyMessageService>();
+        services.AddScoped<IContentPageService, ContentPageService>();
 
         //Plagiarism detector
         services.AddScoped<IEmbeddingService, EmbeddingService>();

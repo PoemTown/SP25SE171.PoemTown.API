@@ -53,6 +53,7 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<PoetSampleTitleSample> PoetSampleTitleSamples => Set<PoetSampleTitleSample>();
     public virtual DbSet<DailyMessage> DailyMessages => Set<DailyMessage>();
     public virtual DbSet<SystemContact> SystemContacts => Set<SystemContact>();
+    public virtual DbSet<ContentPage> ContentPages => Set<ContentPage>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
     */

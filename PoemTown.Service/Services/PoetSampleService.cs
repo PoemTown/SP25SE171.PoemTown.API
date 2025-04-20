@@ -36,6 +36,9 @@ public class PoetSampleService : IPoetSampleService
     {
         PoetSample poetSample = _mapper.Map<PoetSample>(request);
 
+        Guid poetSampleId = Guid.NewGuid();
+        poetSample.Id = poetSampleId;
+        
         // Add title sample
         if (request.TitleSampleIds != null)
         {
@@ -44,9 +47,6 @@ public class PoetSampleService : IPoetSampleService
                 await AddPoetSampleTitleSample(poetSample.Id, titleSampleId);
             }
         }
-
-        Guid poetSampleId = Guid.NewGuid();
-        poetSample.Id = poetSampleId;
 
         // Format the name
         poetSample.Name = StringHelper.FormatStringInput(poetSample.Name);

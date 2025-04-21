@@ -160,6 +160,7 @@ public static class ConfigureService
             config.AddConsumer<UpdateAndSendUserAnnouncementConsumer>();
             config.AddConsumer<UpdatePaidTransactionConsumer>();
             config.AddConsumer<UpdateCancelledTransactionConsumer>();
+            config.AddConsumer<StorePoemIntoQDrantConsumer>();
 
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>

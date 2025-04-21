@@ -44,8 +44,18 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
         var message = context.Message;
         var response = await _qDrantService.SearchSimilarPoemEmbeddingPoint(message.UserId, message.PoemContent);
 
-        // Check if the poem is plagiarism
-        double averageScore = response.Results.Select(p => p.Score).Average();
+        double averageScore = response.Results
+            .Where(p => p.Score > 0.8)
+            .Select(p => p.Score)
+            .DefaultIfEmpty(0.0)
+            .Max();
+
+        // If the score is not greater than 0.9 then return the average score
+        if (averageScore == 0.0)
+        {
+            averageScore = response.Results.Select(p => p.Score).Average();
+        }
+
         bool isPoemPlagiarism = _poemService.IsPoemPlagiarism(averageScore);
         
         _logger.LogInformation($"Poem ID: {message.PoemId}, Average Score: {averageScore}, Is Plagiarism: {isPoemPlagiarism}");

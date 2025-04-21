@@ -56,23 +56,32 @@ namespace PoemTown.Service.Services
         public async Task<GetMesssageWithPartner>SendPrivateMessageAsync(Guid fromUser, Guid toUser, string message)
         {
             // Gửi SignalR nếu user online
-            if (_userConnections.TryGetValue(toUser.ToString(), out var connectionId))
+           /* if (_userConnections.TryGetValue(toUser.ToString(), out var connectionId))
             {
                 await _hubContext.Clients.Client(connectionId)
                     .SendAsync("ReceiveMessage", fromUser, message);
-            }
+            }*/
+            bool isOnline = _userConnections.TryGetValue(toUser.ToString(), out var connectionId);
 
             // Lưu vào 
             var msg = new Message
             {
                 FromUserId = fromUser,
                 ToUserId = toUser,
-                IsRead = false,
+                IsRead = isOnline,
                 MessageText = message ,
             };
             await _unitOfWork.GetRepository<Message>().InsertAsync(msg);
             await _unitOfWork.SaveChangesAsync();
-            /*bool isOnline = _userConnections.TryGetValue(toUser.ToString(), out var connectionId);
+
+            // Lấy lại message với thông tin user
+            var fromUserEntity = await _unitOfWork.GetRepository<User>()
+                .AsQueryable()
+                .FirstOrDefaultAsync(u => u.Id == fromUser);
+
+            var toUserEntity = await _unitOfWork.GetRepository<User>()
+                .AsQueryable()
+                .FirstOrDefaultAsync(u => u.Id == toUser);
 
             if (isOnline)
             {
@@ -86,21 +95,13 @@ namespace PoemTown.Service.Services
                 {
                     UserId = toUser,
                     Title = "Tin nhắn mới",
-                    Content = "",
+                    Content = $"Tin nhắn từ {fromUserEntity.DisplayName}: \"{message}\"",
                     IsRead = false,
                     Type = AnnouncementType.Chat,
                 });
+            }
 
-            }*/
-
-            // Lấy lại message với thông tin user
-            var fromUserEntity = await _unitOfWork.GetRepository<User>()
-                .AsQueryable()
-                .FirstOrDefaultAsync(u => u.Id == fromUser);
-
-            var toUserEntity = await _unitOfWork.GetRepository<User>()
-                .AsQueryable()
-                .FirstOrDefaultAsync(u => u.Id == toUser);
+            
 
             var mappedMessage = _mapper.Map<GetMesssageWithPartner>(msg);
 
@@ -112,25 +113,22 @@ namespace PoemTown.Service.Services
 
             return mappedMessage;
         }
-/*
-        public async Task MarkAsReadAsync(Guid messageId, Guid userId)
+
+        public async Task MarkAsReadAsync(Guid fromUserId, Guid toUserId)
         {
-            var message = await _unitOfWork.GetRepository<Message>()
-                .FindAsync(m => m.Id == messageId && m.ToUserId == userId);
-
-            if (message == null)
+            var unreadMessages = await _unitOfWork.GetRepository<Message>()
+                .AsQueryable()
+                .Where(m => m.FromUserId == fromUserId && m.ToUserId == toUserId && m.IsRead == false)
+                .ToListAsync();
+            if (unreadMessages == null || unreadMessages.Count == 0)
+                return;
+            foreach (var msg in unreadMessages)
             {
-                throw new CoreException(StatusCodes.Status404NotFound, "Tin nhắn không tồn tại");
+                msg.IsRead = true;
+                _unitOfWork.GetRepository<Message>().Update(msg);
             }
-
-            message.IsRead = true;
-
-            _unitOfWork.GetRepository<Message>().Update(message);
             await _unitOfWork.SaveChangesAsync();
-        }*/
-
-
-
+        }
 
         public async Task<PaginationResponse<GetChatPartner>> GetChatPartners(
      Guid? userId,

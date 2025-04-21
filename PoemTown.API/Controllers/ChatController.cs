@@ -85,5 +85,21 @@ namespace PoemTown.API.Controllers
             basePaginationResponse.Message = "Get Chat Partners successfully";
             return Ok(basePaginationResponse);
         }
+
+        /// <summary>
+        /// Lấy danh sách tất cả nội dung tin nhắn với người mình đã từng nhắn, yêu cầu đăng nhập
+        /// </summary>
+        /// <param name="fromUserId"></param>
+        /// <param name="toUserId"></param>
+        /// <returns></returns>
+        [HttpPut]
+        [Route("v1/mark")]
+        [Authorize]
+        public async Task<ActionResult<BaseResponse>>MarkAsReadAsync(Guid fromUserId, Guid toUserId)
+        {
+            Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+            await _chatService.MarkAsReadAsync(fromUserId, toUserId);
+            return Ok(new BaseResponse(StatusCodes.Status201Created, "Mark message as read successfully"));
+        }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Poems;
 using PoemTown.Repository.Enums.Reports;
@@ -20,17 +22,20 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
     private readonly IPoemService _poemService;
     private readonly IPublishEndpoint _publishEndpoint;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<CheckPoemPlagiarismConsumer> _logger;
     
     public CheckPoemPlagiarismConsumer(
         IQDrantService qDrantService,
         IPoemService poemService,
         IPublishEndpoint publishEndpoint,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ILogger<CheckPoemPlagiarismConsumer> logger)
     {
         _qDrantService = qDrantService;
         _poemService = poemService;
         _publishEndpoint = publishEndpoint;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
     
     
@@ -43,16 +48,17 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
         double averageScore = response.Results.Select(p => p.Score).Average();
         bool isPoemPlagiarism = _poemService.IsPoemPlagiarism(averageScore);
         
-        
+        _logger.LogInformation($"Poem ID: {message.PoemId}, Average Score: {averageScore}, Is Plagiarism: {isPoemPlagiarism}");
         // If the poem is plagiarism, Create a plagiarism report and send it to the admin, finally suspend the poem
         if (isPoemPlagiarism)
         {
             var poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == message.PoemId);
             
+            _logger.LogInformation($"Poem ID: {message.PoemId}, Status: {poem?.Status}");
             // If the poem is not found, return
             if (poem == null)
             {
-                return;
+                throw new Exception("Poem not found");
             }
             
             // Get the list of poems that the current poem is plagiarism from

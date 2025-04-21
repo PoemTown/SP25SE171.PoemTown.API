@@ -2147,10 +2147,23 @@ public class PoemService : IPoemService
             // Adjust created time of poem when it is posted
             poem.CreatedTime = DateTimeHelper.SystemTimeNow;
             poem.User = userAdmin;
+            
         }
 
         await _unitOfWork.GetRepository<Poem>().InsertAsync(poem);
         await _unitOfWork.SaveChangesAsync();
+
+        // Store poem into QDrant
+        if (poem.Status == PoemStatus.Posted)
+        {
+            await _publishEndpoint.Publish(new StorePoemIntoQDrantEvent()
+            {
+                IsFamousPoem = true,
+                PoemId = poem.Id,
+                PoemText = poem.Content ?? "",
+                PoetId = poetSampleId
+            });
+        }
     }
 
     public async Task<PaginationResponse<GetPoetSamplePoemResponse>>
@@ -2360,6 +2373,17 @@ public class PoemService : IPoemService
                 UserId = userId,
             });
         }*/
+        // Store poem into QDrant
+        if (poem.Status == PoemStatus.Posted)
+        {
+            await _publishEndpoint.Publish(new StorePoemIntoQDrantEvent()
+            {
+                IsFamousPoem = true,
+                PoemId = poem.Id,
+                PoemText = poem.Content ?? "",
+                PoetId = poetSampleId
+            });
+        }
     }
 
     public async Task DeletePoetSamplePoem(Guid poetSampleId, Guid poemId)

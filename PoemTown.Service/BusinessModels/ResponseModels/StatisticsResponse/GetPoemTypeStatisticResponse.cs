@@ -10,6 +10,6 @@ public class GetPoemTypeStatisticResponse
 
 public class GetPoemTypeSampleResponse
 {
-    public PoemType? Type { get; set; }
+    public string? Type { get; set; }
     public int TotalPoems { get; set; }
 }

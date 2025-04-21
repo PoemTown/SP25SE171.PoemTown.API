@@ -132,7 +132,8 @@ namespace PoemTown.Service.Services
             {
                 AccessToken = token.AccessToken,
                 RefreshToken = token.RefreshToken,
-                Role = await _userManager.GetRolesAsync(user)
+                Role = await _userManager.GetRolesAsync(user),
+                Avatar = user.Avatar
             };
 
             

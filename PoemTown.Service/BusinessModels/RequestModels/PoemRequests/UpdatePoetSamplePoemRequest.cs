@@ -11,5 +11,5 @@ public class UpdatePoetSamplePoemRequest
     public PoemStatus? Status { get; set; }
     public Guid? CollectionId { get; set; }
     public string? PoemImage { get; set; }
-    public PoemType? Type { get; set; }
+    public required Guid PoemTypeId { get; set; }
 }

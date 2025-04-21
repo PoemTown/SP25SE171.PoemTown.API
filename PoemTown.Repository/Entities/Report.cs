@@ -29,6 +29,8 @@ namespace PoemTown.Repository.Entities
 
         public Guid? PoemId { get; set; }
         //public Guid? PlagiarismFromPoemId { get; set; }
+        public Guid? ReportMessageId { get; set; }
+        public virtual ReportMessage? ReportMessage { get; set; }
 
 
         [ForeignKey("ReportUserId")] 

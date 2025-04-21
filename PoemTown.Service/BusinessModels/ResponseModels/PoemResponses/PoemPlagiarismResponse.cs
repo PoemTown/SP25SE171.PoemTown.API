@@ -1,4 +1,5 @@
 ﻿using PoemTown.Repository.Enums.Poems;
+using PoemTown.Service.BusinessModels.ResponseModels.PoemTypeResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
@@ -16,7 +17,7 @@ public class PoemPlagiarismFromResponse
     public Guid Id { get; set; }
     public string Title { get; set; }
     public string Content { get; set; }
-    public PoemType Type { get; set; }
+    public GetPoemTypeResponse Type { get; set; }
     public string Description { get; set; }
     public string? PoemImage { get; set; }
     public double Score { get; set; }

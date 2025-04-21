@@ -39,7 +39,7 @@ public class QDrantService : IQDrantService
         _webHostEnvironment = webHostEnvironment;
     }
 
-    public async Task StorePoemEmbeddingAsync(Guid poemId, Guid poetId, string poemText)
+    public async Task StorePoemEmbeddingAsync(Guid poemId, Guid poetId, string poemText, bool? isFamousPoem = false)
     {
         var client = _httpClientFactory.CreateClient();
  
@@ -60,6 +60,7 @@ public class QDrantService : IQDrantService
                     {
                         poetId = poetId.ToString(),
                         poemContent = poemText,
+                        isFamousPoem = isFamousPoem,
                     },
                 }
             }

@@ -1000,4 +1000,17 @@ public class PoemsController : BaseController
         await _poemService.UpdatePoetSampleSaleVersionCommissionPercentage(poemId, commissionPercentage);
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Update poet sample sale version successfully"));
     }
+    
+    /// <summary>
+    /// Lấy danh sách bài thơ mẫu của nhà thơ nổi tiếng (trong trang kiến thức), không yêu cầu đăng nhập
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/poem-samples")]
+    public async Task<ActionResult<BaseResponse<GetPoemSampleResponse>>> GetPoemSamples()
+    {
+        var response = await _poemService.GetPoemSampleFromPoetSample();
+        
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Get poet sample successfully", response));
+    }
 }

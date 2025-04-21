@@ -11,6 +11,6 @@ public class CreatePoetSamplePoemRequest
     public string? Description { get; set; } = "";
     public PoemStatus? Status { get; set; } = PoemStatus.Draft;
     public string? PoemImage { get; set; } = null;
-    public PoemType? Type { get; set; }
+    public required Guid? PoemTypeId { get; set; }
     public Guid? CollectionId { get; set; }
 }

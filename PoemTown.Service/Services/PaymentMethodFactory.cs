@@ -32,6 +32,7 @@ public class PaymentMethodFactory
         {
             "Zalopay" => _serviceProvider.GetRequiredService<ZaloPayService>(),
             "Vnpay" => _serviceProvider.GetRequiredService<VnPayService>(),
+            //"Stripe" => _serviceProvider.GetRequiredService<StripeService>(),
             _ => throw new CoreException(StatusCodes.Status400BadRequest, "Payment method not found")
         };
 

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PoemTown.API.Base;
+using PoemTown.Repository.Enums.Reports;
 using PoemTown.Service.BusinessModels.RequestModels.ReportRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.Base;
 using PoemTown.Service.BusinessModels.ResponseModels.PaginationResponses;
@@ -152,5 +153,115 @@ public class ReportsController : BaseController
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
         await _reportService.CreateReportUser(userId, request);
         return Ok(new BaseResponse(StatusCodes.Status201Created, "Report created successfully"));
+    }
+    
+    /// <summary>
+    /// Report message, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <remarks>
+    /// type:
+    ///
+    /// - Poem = 1,
+    /// - User = 2,
+    /// - Plagiarism = 3
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/message")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> CreateReportMessage([FromBody] CreateReportMessageRequest request)
+    {
+        await _reportService.CreateReportMessage(request);
+        return Created(string.Empty, new BaseResponse(StatusCodes.Status201Created, "Report created successfully"));
+    }
+    
+    /// <summary>
+    /// Cập nhật report message, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <remarks>
+    /// type:
+    ///
+    /// - Poem = 1,
+    /// - User = 2,
+    /// - Plagiarism = 3
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPut]
+    [Route("v1/message")]
+    [Authorize(Roles= "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> UpdateReportMessage([FromBody] UpdateReportMessageRequest request)
+    {
+        await _reportService.UpdateReportMessage(request);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Report resolved successfully"));
+    }
+    
+    /// <summary>
+    /// Xóa report message, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <param name="reportMessageId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/message/{reportMessageId}")]
+    [Authorize(Roles= "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> DeleteReportMessage(Guid reportMessageId)
+    {
+        await _reportService.DeleteReportMessage(reportMessageId);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Report deleted successfully"));
+    }
+    
+    /// <summary>
+    /// Xóa report message vĩnh viễn, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <param name="reportMessageId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/message/{reportMessageId}/permanent")]
+    [Authorize(Roles= "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> DeleteReportMessagePermanent(Guid reportMessageId)
+    {
+        await _reportService.DeleteReportMessagePermanent(reportMessageId);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Report deleted successfully"));
+    }
+    
+    /// <summary>
+    /// Lấy thông tin một report message theo id, không yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// type:
+    ///
+    /// - Poem = 1,
+    /// - User = 2,
+    /// - Plagiarism = 3
+    /// </remarks>
+    /// <param name="reportMessageId"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/message/{reportMessageId}")]
+    public async Task<ActionResult<BaseResponse<GetReportMessageResponse>>> GetReportMessage(Guid reportMessageId)
+    {
+        var response = await _reportService.GetReportMessage(reportMessageId);
+        return Ok(new BaseResponse<GetReportMessageResponse>(StatusCodes.Status200OK, "Report retrieved successfully", response));
+    }
+    
+    /// <summary>
+    /// Lấy danh sách các report message, không yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// type:
+    ///
+    /// - Poem = 1,
+    /// - User = 2,
+    /// - Plagiarism = 3
+    /// </remarks>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/messages")]
+    public async Task<ActionResult<BaseResponse<IList<GetReportMessageResponse>>>> GetReportMessages([FromQuery] ReportType? type)
+    {
+        var response = await _reportService.GetReportMessages(type);
+        return Ok(new BaseResponse<IList<GetReportMessageResponse>>(StatusCodes.Status200OK, "Reports retrieved successfully", response));
     }
 }

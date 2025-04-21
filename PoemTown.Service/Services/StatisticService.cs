@@ -355,7 +355,7 @@ public class StatisticService : IStatisticService
             .GroupBy(p => p.Type)
             .Select(res => new GetPoemTypeSampleResponse
             {
-                Type = res.Key,
+                Type = res.Key.Name ?? "",
                 TotalPoems = res.Count()
             })
             .ToListAsync();
@@ -626,7 +626,7 @@ public class StatisticService : IStatisticService
         {
             TransactionType.DepositCommissionFee,
             TransactionType.MasterTemplates,
-            TransactionType.RecordFiles,
+            //TransactionType.RecordFiles,
         };
 
         // Filter by condition: transaction type must be one of transactionIncomeType, CreatedTime is less than or equal to current date (UTC + 7)
@@ -696,16 +696,16 @@ public class StatisticService : IStatisticService
         {
             TransactionType.DepositCommissionFee,
             TransactionType.MasterTemplates,
-            TransactionType.RecordFiles,
+            //TransactionType.RecordFiles,
         };
 
         var withdrawTypes = new[]
         {
             TransactionType.Withdraw
         };
-        
+
         // Filter by condition: transaction type must be one of transactionIncomeType, CreatedTime is less than or equal to current date (UTC + 7)
-        transactionQuery = transactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow 
+        transactionQuery = transactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow
                                                        && p.Status == TransactionStatus.Paid);
 
         // Admin EWallet
@@ -716,10 +716,10 @@ public class StatisticService : IStatisticService
             .FirstOrDefaultAsync();
 
         var incomeQuery = transactionQuery.Where(p => transactionIncomeType.Contains(p.Type));
-        
+
         // Filter RecordFiles like before
         incomeQuery = incomeQuery.Where(p =>
-            p.Type != TransactionType.RecordFiles || 
+            p.Type != TransactionType.RecordFiles ||
             (p.Type == TransactionType.RecordFiles && p.IsAddToWallet == true && p.UserEWallet == adminEWallet));
 
         // Transaction samples (total transactions & total amounts)
@@ -748,9 +748,44 @@ public class StatisticService : IStatisticService
             sampleValueSelector: p => 1,
             amountValueSelector: p => p.Amount
         );
+
+        // Calculate daily profit samples
+        var dailyProfitSamples = new List<GetSampleStatisticResponse<int, decimal>>();
+
+        // Assume both incomeSamples and withdrawSamples are ordered by date (they are based on GetSampleStatisticResponse)
+        foreach (var income in incomeSamples)
+        {
+            var income1 = income;
+            
+            // Find the corresponding withdraw sample for the same date
+            var withdraw = withdrawSamples.FirstOrDefault(w =>
+                w.Year == income1.Year && w.Month == income1.Month && w.Day == income1.Day);
+
+            var withdrawAmount = withdraw?.TotalAmount ?? 0;
+            var incomeAmount = income.TotalAmount;
+
+            var profitSample = new GetSampleStatisticResponse<int, decimal>
+            {
+                Year = income.Year,
+                Month = income.Month,
+                Day = income.Day,
+                TotalSamples = 0,
+                TotalAmount = incomeAmount - withdrawAmount
+            };
+
+            dailyProfitSamples.Add(profitSample);
+        }
+
+        // Calculate cumulative profit by summing up the daily profit samples
+        decimal cumulativeProfit = 0;
+        foreach (var sample in dailyProfitSamples)
+        {
+            cumulativeProfit += sample.TotalAmount;
+            sample.TotalAmount = cumulativeProfit;
+        }
         
         IList<GetProfitTypeStatisticResponse> result = new List<GetProfitTypeStatisticResponse>();
-        
+
         // Add income samples to the result
         result.Add(new GetProfitTypeStatisticResponse
         {
@@ -775,6 +810,18 @@ public class StatisticService : IStatisticService
             }
         });
 
+        // Add daily profit samples to the result
+        result.Add(new GetProfitTypeStatisticResponse
+        {
+            ProfitType = TransactionProfitType.LifeTimeProfit,
+            Samples = new GetStatisticResponse<int, decimal>
+            {
+                TotalDataSamples = dailyProfitSamples.Sum(s => s.TotalSamples),
+                TotalDataAmount = dailyProfitSamples.Sum(s => s.TotalAmount),
+                Samples = dailyProfitSamples
+            }
+        });
+        
         return new GetProfitStatisticResponse()
         {
             ProfitTypeStatisticResponses = result

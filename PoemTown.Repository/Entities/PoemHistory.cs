@@ -19,7 +19,6 @@ namespace PoemTown.Repository.Entities
         public int? Version { get; set; }
         public string? Title { get; set; }
         public string? Content { get; set; }
-        public PoemType? Type { get; set; }
         public PoemStatus? Status { get; set; }
         public string? Description { get; set; }
         public int? ChapterNumber { get; set; }
@@ -30,6 +29,8 @@ namespace PoemTown.Repository.Entities
         public bool? IsPublic { get; set; }
         public Guid PoemId { get; set; }
         
+        public Guid? PoemTypeId { get; set; }
+        public virtual PoemType? Type { get; set; }
         public virtual Poem Poem { get; set; } = default!;
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Client;
+using PoemTown.Repository.Entities;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Email;
 using PoemTown.Service.BusinessModels.ConfigurationModels.Payment;
 using PoemTown.Service.BusinessModels.ConfigurationModels.RabbitMQ;
@@ -30,6 +31,7 @@ using PoemTown.Service.Scheduler.LeaderBoardJobs;
 using PoemTown.Service.PlagiarismDetector.Interfaces;
 using PoemTown.Service.PlagiarismDetector.Services;
 using PoemTown.Service.PlagiarismDetector.Settings;
+using PoemTown.Service.Scheduler.DailyMessageJobs;
 using PoemTown.Service.Scheduler.PaymentJobs;
 using PoemTown.Service.Services;
 using PoemTown.Service.ThirdParties.Interfaces;
@@ -42,6 +44,10 @@ using Qdrant.Client;
 using Quartz;
 using RazorLight;
 using PoemTown.Service.Scheduler.UsageRightJobs;
+using PoemTown.Service.ThirdParties.Settings.Stripe;
+using Stripe;
+using AccountService = PoemTown.Service.Services.AccountService;
+using TokenService = PoemTown.Service.Services.TokenService;
 
 namespace PoemTown.Service;
 
@@ -67,6 +73,7 @@ public static class ConfigureService
         services.AddSignalRConfig();
         services.AddQDrantConfig(configuration);
         services.AddVnPayConfig(configuration);
+        services.AddStripeConfig(configuration);
     }
 
     private static void AddDependencyInjection(this IServiceCollection services)
@@ -102,6 +109,11 @@ public static class ConfigureService
         services.AddScoped<IAnnouncementService, AnnouncementService>();
         services.AddScoped<IPoetSampleService, PoetSampleService>();
         services.AddScoped<IWithdrawalFormService, WithdrawalFormService>();
+        services.AddScoped<IPoemTypeService, PoemTypeService>();
+        services.AddScoped<ITitleSampleService, TitleSampleService>();
+        services.AddScoped<ISystemContactService, SystemContactService>();
+        services.AddScoped<IDailyMessageService, DailyMessageService>();
+        services.AddScoped<IContentPageService, ContentPageService>();
 
         //Plagiarism detector
         services.AddScoped<IEmbeddingService, EmbeddingService>();
@@ -113,6 +125,8 @@ public static class ConfigureService
         services.AddScoped<IVnPayService, VnPayService>();
         services.AddScoped<VnPayService>();
         services.AddScoped<ZaloPayService>();
+        services.AddScoped<IStripeService, StripeService>();
+        services.AddScoped<StripeService>();
         services.AddScoped<ITheHiveAiService, TheHiveAiService>();
     }
 
@@ -146,6 +160,7 @@ public static class ConfigureService
             config.AddConsumer<UpdateAndSendUserAnnouncementConsumer>();
             config.AddConsumer<UpdatePaidTransactionConsumer>();
             config.AddConsumer<UpdateCancelledTransactionConsumer>();
+            config.AddConsumer<StorePoemIntoQDrantConsumer>();
 
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>
@@ -291,14 +306,15 @@ public static class ConfigureService
             var leaderBoardJobKey = new JobKey("LeaderBoardCalculationJob", "LeaderBoard");
             var achievementJobKey = new JobKey("MonthlyAchievementJob", "Achievement");
             var usageRightJobKey = new JobKey("TimeOutUsageRightJob", "TimeOut");
-
+            var updateInUseDailyMessageJobKey = new JobKey("UpdateInUseDailyMessageJob", "DailyMessage");
 
             // Register the jobs.
             q.AddJob<MonthlyAchievementJob>(opts => opts.WithIdentity(achievementJobKey));
             q.AddJob<LeaderBoardCalculationJob>(opts => opts.WithIdentity(leaderBoardJobKey));
             q.AddJob<TimeOutUsageRightJob>(opts => opts.WithIdentity(usageRightJobKey));
+            q.AddJob<UpdateInUseDailyMessageJob>(opts => opts.WithIdentity(updateInUseDailyMessageJobKey));
 
-
+            
             // Trigger for LeaderBoardCalculationJob: fire immediately and every 30 seconds.
             q.AddTrigger(opts => opts
                 .ForJob(leaderBoardJobKey)
@@ -323,6 +339,14 @@ public static class ConfigureService
                     .WithCronSchedule("0 0/5 * * * ?", cron =>
                      cron.InTimeZone(
                          TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"))));
+            
+            q.AddTrigger(opts => opts
+                .ForJob(updateInUseDailyMessageJobKey)
+                .WithIdentity("UpdateInUseDailyMessageTrigger", "DailyMessage")
+                .WithCronSchedule("0 0 0 * * ?", x =>
+                {
+                    x.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time"));
+                }));
 
         });
         services.AddQuartzHostedService(p => p.WaitForJobsToComplete = true);
@@ -331,6 +355,7 @@ public static class ConfigureService
         services.AddScoped<LeaderBoardCalculationJob>();
         services.AddScoped<MonthlyAchievementJob>();
         services.AddScoped<TimeOutUsageRightJob>();
+        services.AddScoped<UpdateInUseDailyMessageJob>();
     }
 
     private static void AddSignalRConfig(this IServiceCollection services)
@@ -399,5 +424,23 @@ public static class ConfigureService
             };
             return vnPaySettings;
         });
+    }
+    
+    private static void AddStripeConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        var stripeConfig = configuration.GetSection("Stripe");
+        services.AddSingleton<StripeSettings>(options =>
+        {
+            var stripeSettings = new StripeSettings
+            {
+                ApiKey = stripeConfig.GetSection("ApiKey").Value ?? "",
+                WebhookSecret = stripeConfig.GetSection("WebhookSecret").Value ?? "",
+                WebhookEndpoint = stripeConfig.GetSection("WebhookEndpoint").Value ?? "",
+                SuccessUrl = stripeConfig.GetSection("SuccessUrl").Value ?? "",
+                CancelUrl = stripeConfig.GetSection("CancelUrl").Value ?? ""
+            };
+            return stripeSettings;
+        });
+        services.AddSingleton(new StripeClient(configuration["Stripe:ApiKey"]));
     }
 }

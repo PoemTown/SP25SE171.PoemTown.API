@@ -36,6 +36,15 @@ public class ReportService : IReportService
 
     public async Task CreateReportPoem(Guid userId, CreateReportPoemRequest request)
     {
+        var reportMessage = await _unitOfWork.GetRepository<ReportMessage>()
+            .FindAsync(r => r.Id == request.ReportMessageId);
+        
+        // Check if the report message exists
+        if (reportMessage == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message not found");
+        }
+        
         // Check if the poem exists
         var poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == request.PoemId);
         if (poem == null)
@@ -57,9 +66,10 @@ public class ReportService : IReportService
         var report = new Report
         {
             PoemId = request.PoemId,
-            ReportReason = request.ReportReason,
+            ReportReason = request.ReportReason ?? string.Empty,
             Type = ReportType.Poem,
             ReportUserId = userId,
+            ReportMessage = reportMessage
         };
 
         await _unitOfWork.GetRepository<Report>().InsertAsync(report);
@@ -268,6 +278,15 @@ public class ReportService : IReportService
 
     public async Task CreateReportUser(Guid userId, CreateReportUserRequest request)
     {
+        var reportMessage = await _unitOfWork.GetRepository<ReportMessage>()
+            .FindAsync(r => r.Id == request.ReportMessageId);
+        
+        // Check if the report message exists
+        if (reportMessage == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message not found");
+        }
+        
         // Check if the user exists
         var user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == request.UserId);
         if (user == null)
@@ -290,12 +309,122 @@ public class ReportService : IReportService
         var report = new Report
         {
             ReportedUserId = request.UserId,
-            ReportReason = request.ReportReason,
+            ReportReason = request.ReportReason ?? string.Empty,
             Type = ReportType.User,
             ReportUserId = userId,
+            ReportMessage = reportMessage
         };
 
         await _unitOfWork.GetRepository<Report>().InsertAsync(report);
         await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task CreateReportMessage(CreateReportMessageRequest request)
+    {
+        ReportMessage reportMessage = new()
+        {
+            Description = request.Description,
+            Type = request.Type,
+        };
+        await _unitOfWork.GetRepository<ReportMessage>().InsertAsync(reportMessage);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UpdateReportMessage(UpdateReportMessageRequest request)
+    {
+        ReportMessage? reportMessage = await _unitOfWork.GetRepository<ReportMessage>()
+            .FindAsync(r => r.Id == request.Id);
+        
+        // Check if the report message exists
+        if (reportMessage == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message not found");
+        }
+        
+        reportMessage.Description = request.Description;
+        reportMessage.Type = request.Type;
+        
+        _unitOfWork.GetRepository<ReportMessage>().Update(reportMessage);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteReportMessage(Guid reportMessageId)
+    {
+        ReportMessage? reportMessage = await _unitOfWork.GetRepository<ReportMessage>()
+            .FindAsync(r => r.Id == reportMessageId);
+        
+        // Check if the report message exists
+        if (reportMessage == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message not found");
+        }
+        
+        // Check if the report message is used in reports
+        if(reportMessage.Reports is { Count: > 0 })
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message is used in reports");
+        }
+        
+        _unitOfWork.GetRepository<ReportMessage>().Delete(reportMessage);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteReportMessagePermanent(Guid reportMessageId)
+    {
+        ReportMessage? reportMessage = await _unitOfWork.GetRepository<ReportMessage>()
+            .FindAsync(r => r.Id == reportMessageId, true);
+
+        // Check if the report message exists
+        if (reportMessage == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message not found");
+        }
+
+        // Check if the report message is used in reports
+        if (reportMessage.Reports is { Count: > 0 })
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message is used in reports");
+        }
+
+        // Check if report message has not been soft deleted
+        if (reportMessage.DeletedTime == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message has not yet soft deleted");
+        }
+        
+        _unitOfWork.GetRepository<ReportMessage>().DeletePermanent(reportMessage);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<IList<GetReportMessageResponse>> GetReportMessages(ReportType? type)
+    {
+        var reportQuery = _unitOfWork.GetRepository<ReportMessage>().AsQueryable();
+
+        reportQuery = reportQuery.Where(p => p.DeletedTime == null);
+
+        // Filter the reports by report type if exists
+        if (type != null)
+        {
+            reportQuery = reportQuery.Where(r => r.Type == type);
+        }
+
+        // Get the report messages
+        var reportMessages = await reportQuery.ToListAsync();
+
+        return _mapper.Map<IList<GetReportMessageResponse>>(reportMessages);
+    }
+    
+    public async Task<GetReportMessageResponse> GetReportMessage(Guid reportMessageId)
+    {
+        ReportMessage? reportMessage = await _unitOfWork.GetRepository<ReportMessage>()
+            .FindAsync(r => r.Id == reportMessageId);
+
+        // Check if the report message exists
+        if (reportMessage == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Report message not found");
+        }
+
+        return _mapper.Map<GetReportMessageResponse>(reportMessage);
     }
 }

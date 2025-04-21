@@ -27,5 +27,5 @@ public class CreateNewPoemRequest
     
     public ICollection<CreateNewRecordFileRequest>? RecordFiles { get; set; }
 
-    public PoemType? Type { get; set; }
+    public required Guid PoemTypeId { get; set; }
 }

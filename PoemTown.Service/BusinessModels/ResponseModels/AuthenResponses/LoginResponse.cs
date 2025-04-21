@@ -11,4 +11,5 @@ public class LoginResponse
     public string AccessToken { get; set; }
     public string RefreshToken { get; set; }
     public IList<string> Role { get; set; }
+    public string? Avatar { get; set; }
 }

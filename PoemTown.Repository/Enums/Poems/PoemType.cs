@@ -2,7 +2,7 @@
 
 namespace PoemTown.Repository.Enums.Poems;
 
-public enum PoemType
+/*public enum PoemType
 {
     [Description("Thơ tự do")]
     ThoTuDo = 1,
@@ -36,4 +36,4 @@ public enum PoemType
 
     [Description("Thơ tám chữ")]
     ThoTamChu = 11,
-}
+}*/

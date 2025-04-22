@@ -70,12 +70,6 @@ namespace PoemTown.Service.Services
                 throw new CoreException(StatusCodes.Status401Unauthorized, "User not found");
             }
 
-            //check if email is confirmed
-            if (!await _userManager.IsEmailConfirmedAsync(user))
-            {
-                throw new CoreException(StatusCodes.Status401Unauthorized, "Email is not confirmed");
-            }
-
             
             /*if(!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash, user.Salt))
             {
@@ -110,6 +104,13 @@ namespace PoemTown.Service.Services
             if (!signInResult.Succeeded)
             {
                 throw new CoreException(StatusCodes.Status401Unauthorized, "Login failed");
+            }
+
+
+            //check if email is confirmed
+            if (!await _userManager.IsEmailConfirmedAsync(user))
+            {
+                throw new CoreException(StatusCodes.Status401Unauthorized, "Email is not confirmed");
             }
 
             // Check the account status before generate token

@@ -58,7 +58,7 @@ public class AccountService : IAccountService
     public async Task ConfirmEmail(ConfirmEmailRequest request)
     {
         User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Email == request.Email);
-         
+        
         if(user == null)
         {
             throw new CoreException(StatusCodes.Status400BadRequest, "User not found");

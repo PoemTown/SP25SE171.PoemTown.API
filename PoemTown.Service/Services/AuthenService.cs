@@ -76,13 +76,6 @@ namespace PoemTown.Service.Services
                 throw new CoreException(StatusCodes.Status401Unauthorized, "Email is not confirmed");
             }
 
-            switch (user.Status)
-            {
-                case AccountStatus.Locked:
-                    throw new CoreException(StatusCodes.Status401Unauthorized, "Account is locked, please contact admin");
-                case AccountStatus.InActive:
-                    throw new CoreException(StatusCodes.Status401Unauthorized, "Account is inactive");
-            }
             
             /*if(!PasswordHasher.VerifyPassword(request.Password, user.PasswordHash, user.Salt))
             {
@@ -117,6 +110,15 @@ namespace PoemTown.Service.Services
             if (!signInResult.Succeeded)
             {
                 throw new CoreException(StatusCodes.Status401Unauthorized, "Login failed");
+            }
+
+            // Check the account status before generate token
+            switch (user.Status)
+            {
+                case AccountStatus.Locked:
+                    throw new CoreException(StatusCodes.Status401Unauthorized, "Account is locked, please contact admin");
+                case AccountStatus.InActive:
+                    throw new CoreException(StatusCodes.Status401Unauthorized, "Account is inactive");
             }
 
             // Tracking user login by date

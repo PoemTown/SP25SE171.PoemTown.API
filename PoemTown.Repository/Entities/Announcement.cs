@@ -20,6 +20,7 @@ namespace PoemTown.Repository.Entities
         public string Title { get; set; } = default!;
         public string Content { get; set; } = default!;
         public AnnouncementType? Type { get; set; } = default!;
+        public bool? IsSystem { get; set; } = false;
         public bool? IsRead { get; set; } = false;
         
         // User

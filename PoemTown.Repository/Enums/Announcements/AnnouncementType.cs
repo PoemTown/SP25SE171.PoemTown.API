@@ -16,4 +16,5 @@ public enum AnnouncementType
     Follower = 12,
     WithdrawalForm = 13,
     Chat = 14 ,
+    System = 15,
 }

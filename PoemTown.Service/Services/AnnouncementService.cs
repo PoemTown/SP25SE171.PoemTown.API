@@ -1,14 +1,18 @@
 ﻿using AutoMapper;
+using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using PoemTown.Repository.Base;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
+using PoemTown.Repository.Enums.Accounts;
+using PoemTown.Repository.Enums.Announcements;
 using PoemTown.Repository.Interfaces;
 using PoemTown.Repository.Utils;
 using PoemTown.Service.BusinessModels.RequestModels.AnnouncementRequests;
 using PoemTown.Service.BusinessModels.ResponseModels.AnnouncementResponses;
+using PoemTown.Service.Events.AnnouncementEvents;
 using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.AnnouncementFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
@@ -24,14 +28,17 @@ public class AnnouncementService : IAnnouncementService
     private readonly IHubContext<AnnouncementHub, IAnnouncementClient> _hubContext;
     private readonly IMapper _mapper;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPublishEndpoint _publishEndpoint;
 
     public AnnouncementService(IHubContext<AnnouncementHub, IAnnouncementClient> hubContext,
         IUnitOfWork unitOfWork,
-        IMapper mapper)
+        IMapper mapper,
+        IPublishEndpoint publishEndpoint)
     {
         _hubContext = hubContext;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _publishEndpoint = publishEndpoint;
     }
 
     public async Task SendAnnouncementAsync(CreateNewAnnouncementRequest request)
@@ -71,6 +78,25 @@ public class AnnouncementService : IAnnouncementService
         });
 
         await _unitOfWork.SaveChangesAsync();
+    }
+    
+    public async Task AdminSendAnnouncementAsync(CreateNewAnnouncementRequest request)
+    {
+        // Get all user ids
+        var userIds = await _unitOfWork.GetRepository<User>()
+            .AsQueryable()
+            .Where(u => u.DeletedTime == null && u.Status == AccountStatus.Active)
+            .Select(u => u.Id)
+            .ToListAsync();
+        
+        await _publishEndpoint.Publish(new SendBulkUserAnnouncementEvent()
+        {
+            Title = request.Title ?? "Thông báo mới từ hệ thống",
+            Content = request.Content,
+            IsRead = false,
+            UserIds = userIds,
+            Type = AnnouncementType.System,
+        });
     }
 
     public async Task<PaginationResponse<GetAnnouncementResponse>> GetUserAnnouncementsAsync(Guid userId,
@@ -147,6 +173,47 @@ public class AnnouncementService : IAnnouncementService
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task<PaginationResponse<GetAnnouncementResponse>> 
+        GetSystemAnnouncements(RequestOptionsBase<GetAnnouncementFilterOption, GetAnnouncementSortOption> request)
+    {
+        var announcementQuery = _unitOfWork.GetRepository<Announcement>().AsQueryable();
+
+        announcementQuery = announcementQuery.Where(p => p.Type == AnnouncementType.System);
+
+        // Filter
+        if (request.FilterOptions != null)
+        {
+            if (request.FilterOptions.IsRead != null)
+            {
+                announcementQuery = announcementQuery.Where(p => p.IsRead == request.FilterOptions.IsRead);
+            }
+
+            if (request.FilterOptions.Type != null)
+            {
+                announcementQuery = announcementQuery.Where(p => p.Type == request.FilterOptions.Type);
+            }
+        }
+
+        // Sort
+        announcementQuery = request.SortOptions switch
+        {
+            GetAnnouncementSortOption.CreatedtimeAscending => announcementQuery.OrderBy(p => p.CreatedTime),
+            GetAnnouncementSortOption.CreatedtimeDescending => announcementQuery.OrderByDescending(p => p.CreatedTime),
+            _ => announcementQuery.OrderByDescending(p => p.CreatedTime)
+        };
+
+        // Pagination
+        var queryPaging = await _unitOfWork.GetRepository<Announcement>()
+            .GetPagination(announcementQuery, request.PageNumber, request.PageSize);
+
+        var announcements = _mapper.Map<IList<GetAnnouncementResponse>>(queryPaging.Data);
+
+        return new PaginationResponse<GetAnnouncementResponse>(
+            announcements, queryPaging.PageNumber,
+            request.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
+    }
+    
     public async Task UpdateAnnouncementToRead(Guid userId, Guid announcementId)
     {
         var announcement = await _unitOfWork.GetRepository<Announcement>()

@@ -15,4 +15,8 @@ public interface IAnnouncementService
     Task UpdateAnnouncementToRead(Guid userId, Guid announcementId);
     Task DeleteAnnouncementAsync(Guid userId, Guid announcementId);
     Task DeleteAllUserAnnouncementsAsync(Guid userId);
+    Task AdminSendAnnouncementAsync(CreateNewAnnouncementRequest request);
+
+    Task<PaginationResponse<GetAnnouncementResponse>>
+        GetSystemAnnouncements(RequestOptionsBase<GetAnnouncementFilterOption, GetAnnouncementSortOption> request);
 }

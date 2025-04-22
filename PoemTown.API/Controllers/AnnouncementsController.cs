@@ -37,6 +37,20 @@ public class AnnouncementsController : BaseController
     }
     
     /// <summary>
+    /// Gửi thông báo từ hệ thống đến tất cả người dùng, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/admin")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> CreateAnnouncementToUser([FromBody] CreateNewAnnouncementRequest request)
+    {
+        await _announcementService.AdminSendAnnouncementAsync(request);
+        return Created(String.Empty, new BaseResponse(StatusCodes.Status201Created, "Created successfully"));
+    }
+    
+    /// <summary>
     /// Lấy danh sách thông báo của tôi, yêu cầu đăng nhập
     /// </summary>
     /// <remarks>
@@ -74,6 +88,26 @@ public class AnnouncementsController : BaseController
         var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetAnnouncementResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;
         basePaginationResponse.Message = "Get user announcements successfully";
+
+        return basePaginationResponse;
+    }
+    
+    /// <summary>
+    /// Lấy danh sách thông báo hệ thống, yêu cầu đăng nhập dưới quyền ADMIN
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/system")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BasePaginationResponse<GetAnnouncementResponse>>>
+        GetSystemAnnouncements(RequestOptionsBase<GetAnnouncementFilterOption, GetAnnouncementSortOption> request)
+    {
+        var paginationResponse = await _announcementService.GetSystemAnnouncements(request);
+        
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetAnnouncementResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get system announcements successfully";
 
         return basePaginationResponse;
     }

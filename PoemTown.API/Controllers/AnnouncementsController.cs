@@ -44,7 +44,7 @@ public class AnnouncementsController : BaseController
     [HttpPost]
     [Route("v1/system")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<ActionResult<BaseResponse>> CreateAnnouncementToUser([FromBody] CreateNewAnnouncementRequest request)
+    public async Task<ActionResult<BaseResponse>> CreateAnnouncementToUser([FromBody] CreateSystemAnnouncementRequest request)
     {
         await _announcementService.AdminSendAnnouncementAsync(request);
         return Created(String.Empty, new BaseResponse(StatusCodes.Status201Created, "Created successfully"));
@@ -68,7 +68,10 @@ public class AnnouncementsController : BaseController
     /// - UserLeaderboard = 10,
     /// - RecordFile = 11,
     /// - Follower = 12,
-    ///
+    /// - WithdrawalForm = 13,
+    /// - Chat = 14 ,
+    /// - System = 15,
+    /// 
     /// sortOptions:
     ///
     /// - CreatedtimeAscending = 1,
@@ -95,13 +98,37 @@ public class AnnouncementsController : BaseController
     /// <summary>
     /// Lấy danh sách thông báo hệ thống, yêu cầu đăng nhập dưới quyền ADMIN
     /// </summary>
+    /// <remarks>
+    /// type:
+    ///
+    /// - Like = 1,
+    /// - Comment = 2,
+    /// - User = 3,
+    /// - Report = 4,
+    /// - Collection = 5,
+    /// - Poem = 6,
+    /// - Transaction = 7,
+    /// - Achievement = 8,
+    /// - PoemLeaderboard = 9,
+    /// - UserLeaderboard = 10,
+    /// - RecordFile = 11,
+    /// - Follower = 12,
+    /// - WithdrawalForm = 13,
+    /// - Chat = 14 ,
+    /// - System = 15,
+    ///
+    /// sortOptions:
+    ///
+    /// - CreatedtimeAscending = 1,
+    /// - CreatedtimeDescending = 2,
+    /// </remarks>
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpGet]
     [Route("v1/system")]
     [Authorize(Roles = "ADMIN")]
     public async Task<ActionResult<BasePaginationResponse<GetAnnouncementResponse>>>
-        GetSystemAnnouncements(RequestOptionsBase<GetAnnouncementFilterOption, GetAnnouncementSortOption> request)
+        GetSystemAnnouncements(RequestOptionsBase<GetSystemAnnouncementFilterOption, GetSystemAnnouncementSortOption> request)
     {
         var paginationResponse = await _announcementService.GetSystemAnnouncements(request);
         

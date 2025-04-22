@@ -80,7 +80,7 @@ public class AnnouncementService : IAnnouncementService
         await _unitOfWork.SaveChangesAsync();
     }
     
-    public async Task AdminSendAnnouncementAsync(CreateNewAnnouncementRequest request)
+    public async Task AdminSendAnnouncementAsync(CreateSystemAnnouncementRequest request)
     {
         // Get all user ids
         var userIds = await _unitOfWork.GetRepository<User>()
@@ -174,7 +174,7 @@ public class AnnouncementService : IAnnouncementService
     }
 
     public async Task<PaginationResponse<GetAnnouncementResponse>> 
-        GetSystemAnnouncements(RequestOptionsBase<GetAnnouncementFilterOption, GetAnnouncementSortOption> request)
+        GetSystemAnnouncements(RequestOptionsBase<GetSystemAnnouncementFilterOption, GetSystemAnnouncementSortOption> request)
     {
         var announcementQuery = _unitOfWork.GetRepository<Announcement>().AsQueryable();
 
@@ -183,7 +183,7 @@ public class AnnouncementService : IAnnouncementService
         // Filter
         if (request.FilterOptions != null)
         {
-            if (request.FilterOptions.IsRead != null)
+            /*if (request.FilterOptions.IsRead != null)
             {
                 announcementQuery = announcementQuery.Where(p => p.IsRead == request.FilterOptions.IsRead);
             }
@@ -191,14 +191,14 @@ public class AnnouncementService : IAnnouncementService
             if (request.FilterOptions.Type != null)
             {
                 announcementQuery = announcementQuery.Where(p => p.Type == request.FilterOptions.Type);
-            }
+            }*/
         }
 
         // Sort
         announcementQuery = request.SortOptions switch
         {
-            GetAnnouncementSortOption.CreatedtimeAscending => announcementQuery.OrderBy(p => p.CreatedTime),
-            GetAnnouncementSortOption.CreatedtimeDescending => announcementQuery.OrderByDescending(p => p.CreatedTime),
+            GetSystemAnnouncementSortOption.CreatedtimeAscending => announcementQuery.OrderBy(p => p.CreatedTime),
+            GetSystemAnnouncementSortOption.CreatedtimeDescending => announcementQuery.OrderByDescending(p => p.CreatedTime),
             _ => announcementQuery.OrderByDescending(p => p.CreatedTime)
         };
 

@@ -31,6 +31,8 @@ public interface IPoemService
     Task<PaginationResponse<GetPostedPoemResponse>>
         GetTrendingPoems(Guid? userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
 
+    Task<PaginationResponse<GetPostedPoemResponse>>
+        GetPoems(Guid userId, RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request);
     Task<string> UploadPoemImage(Guid userId, IFormFile file);
 
     Task SellingSaleVersionPoem(Guid userId, SellingSaleVersionPoemRequest request);

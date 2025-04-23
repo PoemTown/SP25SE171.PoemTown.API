@@ -297,6 +297,75 @@ public class PoemsController : BaseController
     }
 
     /// <summary>
+    /// Lấy toàn bộ bài thơ trong hệ thống, không yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// CHÚ Ý REQUEST PARAMETER:
+    ///
+    /// - tất cả lấy từ request query
+    /// 
+    /// Status: Trạng thái của bài thơ
+    ///
+    /// - 0: Draft
+    /// - 1: Posted
+    /// - 2: Suspended
+    /// - 3: Pending
+    ///
+    /// Type:
+    ///
+    /// - ThoTuDo = 1,
+    /// - ThoLucBat = 2,
+    /// - ThoSongThatLucBat = 3,
+    /// - ThoThatNgonTuTuyet = 4,
+    /// - ThoNguNgonTuTuyet = 5,
+    /// - ThoThatNgonBatCu = 6,
+    /// - ThoBonChu = 7,
+    /// - ThoNamChu = 8,
+    /// - ThoSauChu = 9,
+    /// - ThoBayChu = 10,
+    /// - ThoTamChu = 11,
+    ///
+    /// SortOptions: Sắp xếp bài thơ theo thứ tự
+    ///
+    /// - 1: LikeCountAscending (Lượt thích tăng dần)
+    /// - 2: LikeCountDescending (Lượt thích giảm dần)
+    /// - 3: CommentCountAscending (Lượt bình luận tăng dần)
+    /// - 4: CommentCountDescending (Lượt bình luận giảm dần)
+    /// - 5: TypeAscending (Loại bài thơ theo chữ cái tăng dần a -> z)
+    /// - 6: TypeDescending (Loại bài thơ theo chữ cái giảm dần z -> a)
+    ///
+    /// TargetMark Type:
+    ///
+    /// - Poem = 1,
+    /// - Collection = 2
+    ///
+    /// SaleVersion Status:
+    /// 
+    /// - InSale = 1,
+    /// - NotInSale = 2,
+    /// - Free = 3,
+    /// - Default = 4
+    /// </remarks>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/poems")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse<GetPostedPoemResponse>>> GetPoems(
+        RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+
+        var paginationResponse = await _poemService.GetPoems(userId, request);
+        
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetPostedPoemResponse>>(paginationResponse);
+        basePaginationResponse.StatusCode = StatusCodes.Status200OK;
+        basePaginationResponse.Message = "Get poems successfully";
+        
+        return Ok(basePaginationResponse);
+    }
+    
+    /// <summary>
     /// Lấy danh sách bài thơ đã được đăng tải, không yêu cầu đăng nhập
     /// </summary>
     /// <remarks>

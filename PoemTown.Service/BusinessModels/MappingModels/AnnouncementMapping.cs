@@ -11,5 +11,7 @@ public class AnnouncementMapping : Profile
         CreateMap<GetAnnouncementResponse, Announcement>().ReverseMap()
             .ForMember(dest => dest.FollowerUserName,
                 opt => opt.MapFrom(src => src.Follower != null ? src.Follower.FollowUser!.UserName : null));
+
+        CreateMap<SystemAnnouncement, GetSystemAnnouncementResponse>().ReverseMap();
     }
 }

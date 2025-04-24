@@ -161,6 +161,7 @@ public static class ConfigureService
             config.AddConsumer<UpdatePaidTransactionConsumer>();
             config.AddConsumer<UpdateCancelledTransactionConsumer>();
             config.AddConsumer<StorePoemIntoQDrantConsumer>();
+            config.AddConsumer<DeletePoemPointInQDrantConsumer>();
 
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>

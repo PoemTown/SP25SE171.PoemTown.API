@@ -129,6 +129,33 @@ public class QDrantService : IQDrantService
 
         return responseObject;
     }
+
+    public async Task DeletePoemEmbeddingPoint(IList<Guid> poemIds)
+    {
+        var client = _httpClientFactory.CreateClient();
+
+        // Create request body
+        var requestBody = new
+        {
+            collection_name = CollectionName,
+            points = poemIds.Select(id => id.ToString()).ToArray(),
+        };
+        
+        // Add API key to request header
+        client.DefaultRequestHeaders.Add("api-key", $"{_qDrantSettings.ApiKey}");
+        
+        // Send request to QDrant
+        var response = await client.PostAsJsonAsync($"{GetQDrantUri}/collections/{CollectionName}/points/delete", requestBody);
+        
+        var responseContent = await response.Content.ReadAsStringAsync();
+        
+        // Check if response is not successful and throw exception
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorResponse = JsonSerializer.Deserialize<QdrantErrorResponse>(responseContent);
+            throw new Exception($"QDrant error: {errorResponse!.Message}");
+        }
+    }
     
     private string GetQDrantUri => _webHostEnvironment.IsDevelopment()
             ? $"http://{_qDrantSettings.Host}:{_qDrantSettings.Port}"

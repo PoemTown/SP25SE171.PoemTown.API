@@ -33,6 +33,7 @@ public class GetPoemDetailResponse
     public Guid? SourceCopyRightId { get; set; }
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset? DeletedTime { get; set; }
     public bool? IsFollowed { get; set; } = false;
     public GetCollectionInPoemResponse Collection { get; set; }
     public GetLikeResponse? Like { get; set; }

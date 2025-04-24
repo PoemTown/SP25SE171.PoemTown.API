@@ -886,7 +886,7 @@ public class PoemsController : BaseController
     }
     
     /// <summary>
-    /// Admin update trạng thái của bài thơ, yêu cầu đăng nhập dưới quyền ADMIN
+    /// Admin update trạng thái của bài thơ, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
     /// </summary>
     /// <remarks>
     /// status:
@@ -901,7 +901,7 @@ public class PoemsController : BaseController
     /// <returns></returns>
     [HttpPut]
     [Route("v1/admin/{poemId}")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> AdminUpdatePoemStatus(Guid poemId, [FromQuery] PoemStatus status)
     {
         await _poemService.AdminUpdatePoemStatus(poemId, status);
@@ -1081,5 +1081,19 @@ public class PoemsController : BaseController
         var response = await _poemService.GetPoemSampleFromPoetSample();
         
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Get poet sample successfully", response));
+    }
+    
+    /// <summary>
+    /// Xóa bài thơ, yêu cầu đăng nhập dưới quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <param name="poemId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/admin/{poemId}")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> DeletePoemByAdmin(Guid poemId)
+    {
+        await _poemService.AdminDeletePoem(poemId);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Delete poem successfully"));
     }
 }

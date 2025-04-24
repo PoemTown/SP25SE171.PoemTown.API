@@ -545,7 +545,18 @@ public class AccountService : IAccountService
 
     public async Task DeleteAccount(Guid accountId)
     {
-        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == accountId);
+        Role? roleUser = await _unitOfWork.GetRepository<Role>()
+            .AsQueryable()
+            .FirstOrDefaultAsync(p => p.Name == "USER");
+
+        // Check if role is null
+        if (roleUser == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Role not found");
+        }
+        
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == accountId && p.UserRoles
+            .Any(r => r.RoleId == roleUser.Id));
         
         // Check if user is null
         if(user == null)
@@ -578,6 +589,51 @@ public class AccountService : IAccountService
         await _unitOfWork.SaveChangesAsync();
     }
     
+    public async Task DeleteModeratorAccount(Guid accountId)
+    {
+        Role? roleModerator = await _unitOfWork.GetRepository<Role>()
+            .AsQueryable()
+            .FirstOrDefaultAsync(p => p.Name == "MODERATOR");
+
+        // Check if role is null
+        if (roleModerator == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Role not found");
+        }
+        
+        User? user = await _unitOfWork.GetRepository<User>().FindAsync(p => p.Id == accountId && p.UserRoles
+            .Any(r => r.RoleId == roleModerator.Id));
+        
+        // Check if user is null
+        if(user == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "User not found");
+        }
+        
+        // Check if user is admin
+        if(user.UserRoles.Any(p => p.Role.Name == "ADMIN"))
+        {
+            throw new CoreException(StatusCodes.Status401Unauthorized, "Cannot delete admin account");
+        }
+
+        user.UserName = null;
+        user.NormalizedUserName = null;
+        user.Email = null;
+        user.NormalizedEmail = null;
+        user.PhoneNumber = null;
+        user.DeletedTime = DateTimeHelper.SystemTimeNow;
+        
+        _unitOfWork.GetRepository<User>().Update(user);
+        
+        // Remove all user tokens
+        var userTokens = await _unitOfWork.GetRepository<UserToken>()
+            .AsQueryable()
+            .Where(p => p.UserId == accountId)
+            .ToListAsync();
+        
+        _unitOfWork.GetRepository<UserToken>().DeletePermanentRange(userTokens);
+        await _unitOfWork.SaveChangesAsync();
+    }
     /*public async Task DeleteAccountPermanent(Guid accountId)
     {
         User? user = await _userManager.FindByIdAsync(accountId.ToString());

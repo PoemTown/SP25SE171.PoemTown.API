@@ -244,16 +244,30 @@ public class AccountsController : BaseController
     }
     
     /// <summary>
-    /// Xóa tài khoản, yêu cầu quyền ADMIN
+    /// Xóa tài khoản của user, yêu cầu quyền ADMIN hoặc MODERATOR
     /// </summary>
     /// <param name="accountId"></param>
     /// <returns></returns>
     [HttpDelete]
     [Route("v1/accounts/{accountId}")]
-    [Authorize(Roles = "ADMIN")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
     public async Task<ActionResult<BaseResponse>> DeleteAccount(Guid accountId)
     {
         await _accountService.DeleteAccount(accountId);
         return Accepted(String.Empty, new BaseResponse(StatusCodes.Status202Accepted, "Account deleted"));
+    }
+    
+    /// <summary>
+    /// Xóa tài khoản của Moderator, yêu cầu quyền ADMIN
+    /// </summary>
+    /// <param name="accountId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/accounts/moderator/{accountId}")]
+    [Authorize(Roles = "ADMIN")]
+    public async Task<ActionResult<BaseResponse>> DeleteModeratorAccount(Guid accountId)
+    {
+        await _accountService.DeleteModeratorAccount(accountId);
+        return Accepted(String.Empty, new BaseResponse(StatusCodes.Status202Accepted, "Moderator account deleted"));
     }
 }

@@ -62,6 +62,8 @@ public interface IAccountService
         Task UpdateAccountRole(Guid userId, Guid roleId);
         Task CreateModeratorAccount(CreateModeratorAccountRequest request);
         Task DeleteAccount(Guid accountId);
+
+        Task DeleteModeratorAccount(Guid accountId);
         /*
         Task DeleteAccountPermanent(Guid accountId);
     */

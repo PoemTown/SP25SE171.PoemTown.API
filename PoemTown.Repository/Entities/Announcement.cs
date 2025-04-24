@@ -73,5 +73,9 @@ namespace PoemTown.Repository.Entities
         // WithdrawalForm
         public Guid? WithdrawalFormId { get; set; }
         public virtual WithdrawalForm? WithdrawalForm { get; set; }
+        
+        // SystemAnnouncement
+        public Guid? SystemAnnouncementId { get; set; }
+        public virtual SystemAnnouncement? SystemAnnouncement { get; set; }
     }
 }

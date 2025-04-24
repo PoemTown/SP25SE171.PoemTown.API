@@ -42,7 +42,7 @@ public class StatisticService : IStatisticService
         // Lấy danh sách bài thơ chưa bị xóa từ các bộ sưu tập
         var poemsQuery = collections
             .SelectMany(c => c.Poems)
-            .Where(p => p.DeletedTime == null);
+            .Where(p => p.DeletedTime == null && p.Status == PoemStatus.Posted);
 
         var totalPoemBookmarks = await _unitOfWork.GetRepository<TargetMark>().AsQueryable()
             .Where(pt => pt.MarkByUserId == userId && pt.Type == TargetMarkType.Poem).CountAsync();

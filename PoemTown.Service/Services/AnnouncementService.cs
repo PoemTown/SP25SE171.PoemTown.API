@@ -180,6 +180,10 @@ public class AnnouncementService : IAnnouncementService
 
         announcementQuery = announcementQuery.Where(p => p.Type == AnnouncementType.System);
 
+        announcementQuery = announcementQuery
+            .GroupBy(a => new { a.Title, a.Content }) // adjust based on your announcement schema
+            .Select(g => g.OrderByDescending(x => x.CreatedTime).First());
+        
         // Filter
         if (request.FilterOptions != null)
         {

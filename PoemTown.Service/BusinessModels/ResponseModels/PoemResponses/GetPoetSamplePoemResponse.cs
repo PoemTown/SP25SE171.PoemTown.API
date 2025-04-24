@@ -22,6 +22,7 @@ public class GetPoetSamplePoemResponse
     public bool IsSellUsageRight { get; set; }
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
+    public DateTimeOffset? DeletedTime { get; set; }
      
     public GetCollectionInPoemResponse Collection { get; set; }
     public GetPoetSampleResponse PoetSample { get; set; }

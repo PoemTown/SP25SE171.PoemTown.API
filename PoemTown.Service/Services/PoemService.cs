@@ -2178,6 +2178,11 @@ public class PoemService : IPoemService
 
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
+
+        await _publishEndpoint.Publish(new DeletePoemPointInQDrantEvent()
+        {
+            PoemIds = [poemId],
+        });
     }
     
     public async Task RemoveRecordFileFromPoem(Guid userId, Guid recordFileId)
@@ -2562,6 +2567,12 @@ public class PoemService : IPoemService
 
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
+        
+        // Delete poem from QDrant
+        await _publishEndpoint.Publish(new DeletePoemPointInQDrantEvent()
+        {
+            PoemIds = [poemId],
+        });
     }
 
     public async Task UpdatePoetSampleSaleVersionCommissionPercentage(Guid poemId, int commissionPercentage)

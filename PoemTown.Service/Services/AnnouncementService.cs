@@ -82,6 +82,18 @@ public class AnnouncementService : IAnnouncementService
     
     public async Task AdminSendAnnouncementAsync(CreateSystemAnnouncementRequest request)
     {
+        Guid systemAnnouncementId = Guid.NewGuid();
+        SystemAnnouncement systemAnnouncement = new SystemAnnouncement
+        {
+            Id = systemAnnouncementId,
+            Title = request.Title ?? "",
+            Content = request.Content,
+        };
+        
+        await _unitOfWork.GetRepository<SystemAnnouncement>()
+            .InsertAsync(systemAnnouncement);
+        await _unitOfWork.SaveChangesAsync();
+        
         // Get all user ids
         var userIds = await _unitOfWork.GetRepository<User>()
             .AsQueryable()
@@ -95,6 +107,7 @@ public class AnnouncementService : IAnnouncementService
             Content = request.Content,
             IsRead = false,
             UserIds = userIds,
+            SystemAnnouncementId = systemAnnouncementId,
             Type = AnnouncementType.System,
         });
     }
@@ -173,7 +186,7 @@ public class AnnouncementService : IAnnouncementService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<PaginationResponse<GetAnnouncementResponse>> 
+    /*public async Task<PaginationResponse<GetAnnouncementResponse>> 
         GetSystemAnnouncements(RequestOptionsBase<GetSystemAnnouncementFilterOption, GetSystemAnnouncementSortOption> request)
     {
         var allAnnouncements = await _unitOfWork.GetRepository<Announcement>()
@@ -202,7 +215,7 @@ public class AnnouncementService : IAnnouncementService
                 distinctAnnouncements = distinctAnnouncements
                     .Where(p => p.Type == request.FilterOptions.Type)
                     .ToList();
-            }*/
+            }#1#
         }
 
         // Step 3: Sort
@@ -228,6 +241,45 @@ public class AnnouncementService : IAnnouncementService
             distinctAnnouncements.Count,
             pagedAnnouncements.Count
         );
+    }*/
+    
+    public async Task<PaginationResponse<GetSystemAnnouncementResponse>> 
+        GetSystemAnnouncements(RequestOptionsBase<GetSystemAnnouncementFilterOption, GetSystemAnnouncementSortOption> request)
+    {
+        var announcementQuery = _unitOfWork.GetRepository<SystemAnnouncement>().AsQueryable();
+
+        // Filter
+        if (request.FilterOptions != null)
+        {
+            /*if (request.FilterOptions.IsRead != null)
+            {
+                announcementQuery = announcementQuery.Where(p => p.IsRead == request.FilterOptions.IsRead);
+            }
+
+            if (request.FilterOptions.Type != null)
+            {
+                announcementQuery = announcementQuery.Where(p => p.Type == request.FilterOptions.Type);
+            }*/
+        }
+
+        // Sort
+        announcementQuery = request.SortOptions switch
+        {
+            GetSystemAnnouncementSortOption.CreatedtimeAscending => announcementQuery.OrderBy(p => p.CreatedTime),
+            GetSystemAnnouncementSortOption.CreatedtimeDescending => announcementQuery.OrderByDescending(p => p.CreatedTime),
+            _ => announcementQuery.OrderByDescending(p => p.CreatedTime)
+        };
+
+        // Pagination
+        var queryPaging = await _unitOfWork.GetRepository<SystemAnnouncement>()
+            .GetPagination(announcementQuery, request.PageNumber, request.PageSize);
+
+        var announcements = _mapper.Map<IList<GetSystemAnnouncementResponse>>(queryPaging.Data);
+
+        return new PaginationResponse<GetSystemAnnouncementResponse>(
+            announcements, queryPaging.PageNumber,
+            request.PageSize,
+            queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
     }
     
     public async Task UpdateAnnouncementToRead(Guid userId, Guid announcementId)

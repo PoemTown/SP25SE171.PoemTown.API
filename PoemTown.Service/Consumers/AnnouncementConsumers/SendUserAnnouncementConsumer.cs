@@ -77,6 +77,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
             RecordFileId = message.RecordFileId,
             FollowerId = message.FollowerId,
             WithdrawalFormId = message.WithdrawalFormId,
+            SystemAnnouncementId = message.SystemAnnouncementId,
         };
 
         switch (message.Type)
@@ -182,6 +183,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 RecordFileId = message.RecordFileId,
                 FollowerId = message.FollowerId,
                 WithdrawalFormId = message.WithdrawalFormId,
+                SystemAnnouncementId = message.SystemAnnouncementId,
             });
             return;
         }
@@ -227,6 +229,7 @@ public class SendUserAnnouncementConsumer : IConsumer<SendUserAnnouncementEvent>
                 FollowerId = message.FollowerId,
                 FollowerUserName = followerUserName,
                 WithdrawalFormId = message.WithdrawalFormId,
+                SystemAnnouncementId = message.SystemAnnouncementId,
             });
         }
     }

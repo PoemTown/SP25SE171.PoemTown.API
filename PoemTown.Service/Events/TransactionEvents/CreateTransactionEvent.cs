@@ -14,4 +14,5 @@ public class CreateTransactionEvent
     public string? AnnouncementTitle { get; set; }
     public string? AnnouncementContent { get; set; }
     public bool? IsAddToWallet { get; set; } = false;
+    public bool? IsUpdateBalance { get; set; } = true;
 }

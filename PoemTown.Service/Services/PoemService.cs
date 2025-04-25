@@ -830,11 +830,11 @@ public class PoemService : IPoemService
         // If poem is in sale, then can not delete
         var existInSaleSaleVersion = await _unitOfWork.GetRepository<SaleVersion>()
             .AsQueryable()
-            .AnyAsync(p => p.PoemId == poem.Id && p.Status == SaleVersionStatus.InSale);
+            .AnyAsync(p => p.PoemId == poem.Id && p.Status != SaleVersionStatus.Default);
 
         if (existInSaleSaleVersion)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is in sale, cannot delete");
+            throw new CoreException(StatusCodes.Status400BadRequest, "Bài thơ đã được đăng bán, không thể xóa");
         }
 
         /*// If poem is free, then update all RecordFile poemId into null
@@ -1780,7 +1780,7 @@ public class PoemService : IPoemService
             {
                 new ChatMessage("system", "Bạn là con trí tuệ nhân tạo thơ, giỏi viết những bài thơ tiếng Việt đẹp."),
                 new ChatMessage("user", $"Thể thơ: {poemType.Name}"),
-                //new ChatMessage("user", $"Thể thơ {poemType.Name} là: {poemType.Description}"),
+                new ChatMessage("user", $"Cách làm thể thơ {poemType.Name} là: {poemType.GuideLine}"),
                 new ChatMessage("user", $"Nội dung thơ: {request.PoemContent}"),
                 new ChatMessage("user", $"Câu hỏi: {request.ChatContent}"),
             },

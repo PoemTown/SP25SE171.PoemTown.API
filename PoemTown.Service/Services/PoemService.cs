@@ -2172,21 +2172,30 @@ public class PoemService : IPoemService
 
         poem.Status = status;
         
+        var recordFiles = await _unitOfWork.GetRepository<RecordFile>()
+            .AsQueryable()
+            .Where(p => p.PoemId == poem.Id && p.DeletedTime == null)
+            .ToListAsync();
+        
         if (poem.Status == PoemStatus.Suspended || poem.Status == PoemStatus.Pending)
         {
-            var recordFiles = await _unitOfWork.GetRepository<RecordFile>()
-                .AsQueryable()
-                .Where(p => p.PoemId == poem.Id && p.DeletedTime == null)
-                .ToListAsync();
-        
             // If poem has record files, then set all recordFiles IsAbleToRemoveFromPoem == true
             foreach (var recordFile in recordFiles)
             {
                 recordFile.IsAbleToRemoveFromPoem = true;
             }
-            _unitOfWork.GetRepository<RecordFile>().UpdateRange(recordFiles);
         }
         
+        else if (poem.Status == PoemStatus.Posted)
+        {
+            // If poem has record files, then set all recordFiles IsAbleToRemoveFromPoem == true
+            foreach (var recordFile in recordFiles)
+            {
+                recordFile.IsAbleToRemoveFromPoem = false;
+            }
+        }
+        _unitOfWork.GetRepository<RecordFile>().UpdateRange(recordFiles);
+
         _unitOfWork.GetRepository<Poem>().Update(poem);
         await _unitOfWork.SaveChangesAsync();
     }

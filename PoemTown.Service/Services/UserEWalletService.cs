@@ -261,7 +261,7 @@ public class UserEWalletService : IUserEWalletService
             DiscountAmount = 0,
             AnnouncementContent = $"Rút {request.Amount} từ ví điện tử",
             AnnouncementTitle = "Rút tiền từ ví điện tử",
-            IsUpdateBalance = false,
+            IsUpdateBalance = true,
         });
     }
 }

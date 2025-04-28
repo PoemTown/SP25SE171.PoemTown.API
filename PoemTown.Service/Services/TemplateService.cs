@@ -348,6 +348,29 @@ public class TemplateService : ITemplateService
         }
 
         _unitOfWork.GetRepository<MasterTemplateDetail>().DeletePermanent(masterTemplateDetail);
+        
+        // Check if MasterTemplateDetail is the last one in MasterTemplate
+        var masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
+            .FindAsync(p => p.Id == masterTemplateDetail.MasterTemplateId);
+        if (masterTemplate == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
+        }
+
+        if (masterTemplate.MasterTemplateDetails == null)
+        {
+            masterTemplate.Status = TemplateStatus.Inactive;
+            masterTemplate.Type = TemplateType.Single;
+            _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
+        }
+        
+        // Check if MasterTemplateDetails count is 1 then set MasterTemplate Type to Single
+        if (masterTemplate.MasterTemplateDetails != null && masterTemplate.MasterTemplateDetails.Count == 1)
+        {
+            masterTemplate.Type = TemplateType.Single;
+            _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
+        }
+        
         await _unitOfWork.SaveChangesAsync();
     }
 

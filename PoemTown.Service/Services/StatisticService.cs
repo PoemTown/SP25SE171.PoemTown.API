@@ -448,7 +448,7 @@ public class StatisticService : IStatisticService
             .AsQueryable();
 
         // Filter by condition: CreatedTime is less than or equal to current date (UTC + 7)
-        transactionQuery = transactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow);
+        transactionQuery = transactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow && p.Type != TransactionType.DepositCommissionFee);
 
         // Transaction samples (total transactions & total amounts
         var samples = await GetSampleStatisticResponse<Transaction, int, decimal>(

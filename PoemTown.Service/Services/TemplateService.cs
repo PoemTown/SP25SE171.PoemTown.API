@@ -357,18 +357,31 @@ public class TemplateService : ITemplateService
             throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
         }
 
-        if (masterTemplate.MasterTemplateDetails == null)
-        {
-            masterTemplate.Status = TemplateStatus.Inactive;
-            masterTemplate.Type = TemplateType.Single;
-            _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
-        }
+
         
         // Check if MasterTemplateDetails count is 1 then set MasterTemplate Type to Single
         if (masterTemplate.MasterTemplateDetails != null && masterTemplate.MasterTemplateDetails.Count == 1)
         {
             masterTemplate.Type = TemplateType.Single;
             _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
+        }
+        
+        await _unitOfWork.SaveChangesAsync();
+        
+        // Check if MasterTemplateDetails count is 0 then set MasterTemplate Status to Inactive
+        var masterTemplateAfterDelete = await _unitOfWork.GetRepository<MasterTemplate>()
+            .FindAsync(p => p.Id == masterTemplateDetail.MasterTemplateId);
+
+        if (masterTemplateAfterDelete == null)
+        {
+            return;
+        }
+        
+        if (masterTemplateAfterDelete.MasterTemplateDetails == null)
+        {
+            masterTemplateAfterDelete.Status = TemplateStatus.Inactive;
+            masterTemplateAfterDelete.Type = TemplateType.Single;
+            _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplateAfterDelete);
         }
         
         await _unitOfWork.SaveChangesAsync();

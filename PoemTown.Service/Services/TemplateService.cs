@@ -370,7 +370,7 @@ public class TemplateService : ITemplateService
         
         // Check if MasterTemplateDetails count is 0 then set MasterTemplate Status to Inactive
         var masterTemplateAfterDelete = await _unitOfWork.GetRepository<MasterTemplate>()
-            .FindAsync(p => p.Id == masterTemplateDetail.MasterTemplateId);
+            .FindAsync(p => p.Id == masterTemplate.Id);
 
         if (masterTemplateAfterDelete == null)
         {

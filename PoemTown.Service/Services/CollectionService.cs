@@ -379,7 +379,7 @@ namespace PoemTown.Service.Services
                 _unitOfWork.GetRepository<Collection>().Delete(collection);
                 
                 // Verify remove all collectionId from poem even they are already deleted (DeletedTime != null)
-                var poems = await _unitOfWork.GetRepository<Poem>()
+                /*var poems = await _unitOfWork.GetRepository<Poem>()
                     .AsQueryable()
                     .Where(p => p.CollectionId == collectionId)
                     .ToListAsync();
@@ -387,7 +387,7 @@ namespace PoemTown.Service.Services
                 {
                     deletePoem.CollectionId = null;
                     _unitOfWork.GetRepository<Poem>().Update(deletePoem);
-                }
+                }*/
                 
                 await _unitOfWork.SaveChangesAsync();
             }

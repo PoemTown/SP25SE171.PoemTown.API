@@ -377,14 +377,14 @@ public class TemplateService : ITemplateService
             return;
         }
         
-        if (masterTemplateAfterDelete.MasterTemplateDetails == null)
+        if (masterTemplateAfterDelete.MasterTemplateDetails == null || masterTemplateAfterDelete.MasterTemplateDetails.Count == 0)
         {
             masterTemplateAfterDelete.Status = TemplateStatus.Inactive;
             masterTemplateAfterDelete.Type = TemplateType.Single;
             _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplateAfterDelete);
+            await _unitOfWork.SaveChangesAsync();
         }
         
-        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task DeleteMasterTemplatePermanently(Guid masterTemplateId)

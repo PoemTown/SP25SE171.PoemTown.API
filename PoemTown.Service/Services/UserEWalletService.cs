@@ -207,6 +207,7 @@ public class UserEWalletService : IUserEWalletService
                 WalletStatus = WalletStatus.Active,
             };
             await _unitOfWork.GetRepository<UserEWallet>().InsertAsync(userEWallet);
+            await _unitOfWork.SaveChangesAsync();
         }
         
         return new GetUserEWalletResponse()

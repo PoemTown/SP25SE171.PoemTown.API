@@ -347,7 +347,7 @@ public class TemplateService : ITemplateService
             throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplateDetail not found");
         }
 
-        _unitOfWork.GetRepository<MasterTemplateDetail>().Delete(masterTemplateDetail);
+        _unitOfWork.GetRepository<MasterTemplateDetail>().DeletePermanent(masterTemplateDetail);
         await _unitOfWork.SaveChangesAsync();
     }
 

@@ -55,6 +55,9 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<SystemContact> SystemContacts => Set<SystemContact>();
     public virtual DbSet<ContentPage> ContentPages => Set<ContentPage>();
     public virtual DbSet<SystemAnnouncement> SystemAnnouncements => Set<SystemAnnouncement>();
+    public virtual DbSet<DepositCommissionSetting> DepositCommissionSettings => Set<DepositCommissionSetting>();
+    public virtual DbSet<WithdrawalComplaint> WithdrawalComplaints => Set<WithdrawalComplaint>();
+    public virtual DbSet<WithdrawalComplaintImage> WithdrawalComplaintImages => Set<WithdrawalComplaintImage>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
     */

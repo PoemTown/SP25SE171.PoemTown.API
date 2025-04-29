@@ -49,7 +49,7 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
             {
                 Id = userTransactionId,
                 Amount = message.Amount,
-                Description = $"Quyên tặng {message.Amount}VND tới người dùng '{receiveUserEWallet.User.FullName}' với lời nhắn là: '{message.DonateMessage}'",
+                Description = $"Quyên tặng {(int) message.Amount}VND tới người dùng '{receiveUserEWallet.User.FullName}' với lời nhắn là: '{message.DonateMessage}'",
                 ReceiveUserEWallet = receiveUserEWallet,
                 UserEWallet = userEWallet,
                 Type = TransactionType.Donate,
@@ -65,7 +65,7 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
             {
                 Id = receiveTransactionId,
                 Amount = message.Amount,
-                Description = $"Nhận {message.Amount}VND từ người dùng: '{userEWallet.User.FullName}' với lời nhắn là: '{message.DonateMessage}'",
+                Description = $"Nhận {(int) message.Amount}VND từ người dùng: '{userEWallet.User.FullName}' với lời nhắn là: '{message.DonateMessage}'",
                 UserEWallet = receiveUserEWallet,
                 Type = TransactionType.Donate,
                 Balance = receiveUserEWallet.WalletBalance,
@@ -91,7 +91,7 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
         {
             UserId = userEWallet.User.Id,
             Title = "Hóa đơn tiền quyên tặng",
-            Content = $"Hóa đơn quyên tặng '{message.Amount}VND' tới người dùng '{receiveUserEWallet.User.UserName}' đã khởi tạo thành công",
+            Content = $"Hóa đơn quyên tặng '{(int) message.Amount}VND' tới người dùng '{receiveUserEWallet.User.UserName}' đã khởi tạo thành công",
             Type = AnnouncementType.Transaction,
             TransactionId = userTransactionId,
             IsRead = false
@@ -103,7 +103,7 @@ public class CreateDonateTransactionConsumer : IConsumer<CreateDonateTransaction
         {
             UserId = receiveUserEWallet.UserId,
             Title = "Nhận tiền quyên tặng",
-            Content = $"Bạn đã nhận được khoản quyên tặng '{message.Amount}VND' từ {userEWallet.User.UserName} với lời nhắn là '{message.DonateMessage}'",
+            Content = $"Bạn đã nhận được khoản quyên tặng '{(int) message.Amount}VND' từ {userEWallet.User.UserName} với lời nhắn là '{message.DonateMessage}'",
             IsRead = false,
             Type = AnnouncementType.Transaction,
             TransactionId = receiveTransactionId,

@@ -47,5 +47,8 @@ namespace PoemTown.Repository.Entities
         public virtual PaymentGateway? PaymentGateway { get; set; }
         public virtual Order? Order { get; set; }
         public virtual ICollection<Announcement>? Announcements { get; set; }
+        
+        public Guid? DepositCommissionSettingId { get; set; }
+        public virtual DepositCommissionSetting? DepositCommissionSetting { get; set; }
     }
 }

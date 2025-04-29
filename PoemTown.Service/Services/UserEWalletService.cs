@@ -260,7 +260,7 @@ public class UserEWalletService : IUserEWalletService
             TransactionCode = OrderCodeGenerator.Generate(),
             IsAddToWallet = false,
             DiscountAmount = 0,
-            AnnouncementContent = $"Rút {request.Amount} từ ví điện tử",
+            AnnouncementContent = $"Rút {(int) request.Amount} từ ví điện tử",
             AnnouncementTitle = "Rút tiền từ ví điện tử",
             IsUpdateBalance = true,
         });

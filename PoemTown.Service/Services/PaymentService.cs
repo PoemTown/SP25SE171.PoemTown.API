@@ -62,6 +62,15 @@ public class PaymentService : IPaymentService
         }
         
         decimal commissionAmount = (decimal)request.Amount! * decimal.Parse("0.05");
+
+        DepositCommissionSetting? depositCommissionSetting = await _unitOfWork.GetRepository<DepositCommissionSetting>()
+            .FindAsync(p => p.IsInUse == true && p.DeletedTime == null);
+        // Check if deposit commission setting is null
+        if(depositCommissionSetting != null)
+        {
+            commissionAmount = (decimal)request.Amount! * depositCommissionSetting.AmountPercentage / 100;
+        }
+        
         // Wallet balance is increased by the amount of the order
         userEWallet.WalletBalance += (decimal)request.Amount! - commissionAmount;
         

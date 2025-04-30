@@ -115,7 +115,7 @@ public class ZaloPayService : IZaloPayService, IPaymentMethod
             AppUser = request.UserId.ToString(),
             ApptransId = orderCode,
             Amount = (long)request.Amount,
-            Description = $"Nạp: {request.Amount}VNĐ vào ví điện tử",
+            Description = $"Nạp: {(int) request.Amount}VNĐ vào ví điện tử",
             Items = new List<UserEWalletData>
             {
                 new()

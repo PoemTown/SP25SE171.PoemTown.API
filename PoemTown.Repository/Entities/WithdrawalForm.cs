@@ -18,4 +18,6 @@ public class WithdrawalForm : BaseEntity
     public Guid UserEWalletId { get; set; }
     public virtual UserEWallet UserEWallet { get; set; } = null!;
     public virtual ICollection<Announcement>? Announcements { get; set; }
+    
+    public virtual ICollection<WithdrawalComplaint>? WithdrawalComplaints { get; set; }
 }

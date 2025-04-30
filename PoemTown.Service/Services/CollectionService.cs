@@ -358,7 +358,7 @@ namespace PoemTown.Service.Services
             try
             {
                 Collection? collection = await _unitOfWork.GetRepository<Collection>().FindAsync(a => a.Id == collectionId);
-                var poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.CollectionId == collectionId);
+                var poem = await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.CollectionId == collectionId && p.DeletedTime == null);
                 if(poem != null)
                 {
                     throw new CoreException(StatusCodes.Status400BadRequest, "Vui lòng chuyển hết thơ trong bộ sưu tập trước khi xóa");
@@ -377,6 +377,18 @@ namespace PoemTown.Service.Services
                         "Collection has been modified by another user. Please refresh and try again.");
                 }
                 _unitOfWork.GetRepository<Collection>().Delete(collection);
+                
+                // Verify remove all collectionId from poem even they are already deleted (DeletedTime != null)
+                /*var poems = await _unitOfWork.GetRepository<Poem>()
+                    .AsQueryable()
+                    .Where(p => p.CollectionId == collectionId)
+                    .ToListAsync();
+                foreach (var deletePoem in poems)
+                {
+                    deletePoem.CollectionId = null;
+                    _unitOfWork.GetRepository<Poem>().Update(deletePoem);
+                }*/
+                
                 await _unitOfWork.SaveChangesAsync();
             }
             catch(DbUpdateConcurrencyException) 

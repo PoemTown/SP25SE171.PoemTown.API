@@ -1,8 +1,9 @@
-﻿using PoemTown.Repository.Enums.WithdrawalComplaints;
+﻿using PoemTown.Repository.Base;
+using PoemTown.Repository.Enums.WithdrawalComplaints;
 
 namespace PoemTown.Repository.Entities;
 
-public class WithdrawalComplaintImage
+public class WithdrawalComplaintImage : BaseEntity
 {
     public Guid Id { get; set; }
     public string? Image { get; set; }

@@ -45,7 +45,7 @@ public class UpdatePaidTransactionConsumer : IConsumer<UpdatePaidTransactionEven
         transaction.Balance = transaction.UserEWallet!.WalletBalance;
         transaction.Amount = message.Amount!.Value - message.CommissionAmount.Value;
         transaction.AppId = message.AppId;
-        transaction.Description = $"Nạp: '{(int) message.Amount}VNĐ' vào ví điện tử, trừ đi: '{(int) message.CommissionAmount}VNĐ' (5% phí dịch vụ), còn lại: '{(int)(message.Amount - message.CommissionAmount)}VNĐ'";
+        transaction.Description = $"Nạp: '{(int) message.Amount}VNĐ' vào ví điện tử, trừ đi: '{(int) message.CommissionAmount}VNĐ' (phí dịch vụ), còn lại: '{(int)(message.Amount - message.CommissionAmount)}VNĐ'";
         transaction.IsAddToWallet = true;
 
         // Save changes to the database
@@ -85,7 +85,7 @@ public class UpdatePaidTransactionConsumer : IConsumer<UpdatePaidTransactionEven
         var transactionAdmin = new Transaction()
         {
             Amount = message.CommissionAmount.Value,
-            Description = $"Phí dịch vụ nạp tiền: '{message.CommissionAmount}VNĐ (5% phí dịch vụ)' từ người dùng: '{transaction.UserEWallet.User.UserName}'",
+            Description = $"Phí dịch vụ nạp tiền: '{message.CommissionAmount}VNĐ (phí dịch vụ)' từ người dùng: '{transaction.UserEWallet.User.UserName}'",
             TransactionCode = OrderCodeGenerator.Generate(),
             UserEWallet = adminEWallet,
             Type = TransactionType.DepositCommissionFee,

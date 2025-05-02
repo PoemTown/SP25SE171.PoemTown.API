@@ -183,14 +183,14 @@ namespace PoemTown.Service.Services
                 throw new CoreException(StatusCodes.Status400BadRequest, "Can not set price with public record file");
             }
 
-            var userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
+            /*var userPoemRecordFile = await _unitOfWork.GetRepository<UsageRight>()
                 .FindAsync(r => r.RecordFileId == request.Id && r.Type == UserPoemType.RecordBuyer);
 
             //Check if record file has been bought, cannot update
             if (userPoemRecordFile != null)
             {
                 throw new CoreException(StatusCodes.Status400BadRequest, "Record file has been bought, cannot update");
-            }
+            }*/
 
             _mapper.Map(request, recordFile);
             _unitOfWork.GetRepository<RecordFile>().Update(recordFile);

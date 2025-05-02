@@ -277,13 +277,14 @@ public class UserEWalletService : IUserEWalletService
         // Check user e-wallet balance
         if (userEWallet.WalletBalance < request.Amount)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Insufficient balance in e-wallet");
+            throw new CoreException(StatusCodes.Status400BadRequest, "Không đủ số dư trong ví");
         }
 
         // Create withdrawal form
         var withdrawalForm = _mapper.Map<WithdrawalForm>(request);
         withdrawalForm.UserEWallet = userEWallet;
         withdrawalForm.Status = WithdrawalFormStatus.Pending;
+        withdrawalForm.Id = Guid.NewGuid();
         
         await _unitOfWork.GetRepository<WithdrawalForm>().InsertAsync(withdrawalForm);
         
@@ -296,14 +297,16 @@ public class UserEWalletService : IUserEWalletService
         {
             UserEWalletId = userEWallet.Id,
             Amount = request.Amount,
-            Description = "Rút tiền từ ví điện tử",
+            Description = $"Số tiền cần rút: '{(int) request.Amount}' đang được tạm giữ để xử lý.",
             Type = TransactionType.Withdraw,
             TransactionCode = OrderCodeGenerator.Generate(),
             IsAddToWallet = false,
             DiscountAmount = 0,
-            AnnouncementContent = $"Rút {(int) request.Amount} từ ví điện tử",
+            AnnouncementContent = $"Số tiền cần rút: '{(int) request.Amount}' đang được tạm giữ để xử lý.",
             AnnouncementTitle = "Rút tiền từ ví điện tử",
             IsUpdateBalance = true,
+            WithdrawalFormId = withdrawalForm.Id,
+            Status = TransactionStatus.Pending
         });
     }
 }

@@ -152,6 +152,43 @@ public class TransactionService : ITransactionService
             transactionResponse.ReceiveUser =
                 _mapper.Map<GetUserInTransactionResponse>(transaction.ReceiveUserEWallet.User);
         }
+        
+        // Handle WithdrawalForm.UserBankType explicitly
+        if (transaction.WithdrawalForm != null && transaction.WithdrawalForm.UserBankType == null)
+        {
+            transactionResponse.WithdrawalForm!.UserBankType = null;
+        }
+
+        return transactionResponse;
+    }
+    
+    public async Task<UserGetTransactionDetailResponse> UserGetTransactionDetail(Guid userId, Guid transactionId)
+    {
+        var transaction = await _unitOfWork.GetRepository<Transaction>().FindAsync(p => p.Id == transactionId && p.UserEWallet!.UserId == userId);
+
+        // Check if transaction is null
+        if (transaction == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy giao dịch");
+        }
+
+        var transactionResponse = _mapper.Map<UserGetTransactionDetailResponse>(transaction);
+
+        // Map user in transaction
+        transactionResponse.User = _mapper.Map<GetUserInTransactionResponse>(transaction.UserEWallet!.User);
+
+        // Map receive user in transaction when transaction type is donate
+        if (transaction is { Type: TransactionType.Donate, ReceiveUserEWallet: not null })
+        {
+            transactionResponse.ReceiveUser =
+                _mapper.Map<GetUserInTransactionResponse>(transaction.ReceiveUserEWallet.User);
+        }
+        
+        // Handle WithdrawalForm.UserBankType explicitly
+        if (transaction.WithdrawalForm != null && transaction.WithdrawalForm.UserBankType == null)
+        {
+            transactionResponse.WithdrawalForm!.UserBankType = null;
+        }
 
         return transactionResponse;
     }

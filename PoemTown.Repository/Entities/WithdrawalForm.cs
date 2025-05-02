@@ -25,4 +25,5 @@ public class WithdrawalForm : BaseEntity
     public virtual ICollection<Announcement>? Announcements { get; set; }
     
     public virtual ICollection<WithdrawalComplaint>? WithdrawalComplaints { get; set; }
+    public virtual Transaction? Transaction { get; set; }
 }

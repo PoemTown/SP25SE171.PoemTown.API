@@ -20,7 +20,6 @@ namespace PoemTown.Repository.Entities
         public string Title { get; set; } = default!;
         public string Content { get; set; } = default!;
         public AnnouncementType? Type { get; set; } = default!;
-        public bool? IsSystem { get; set; } = false;
         public bool? IsRead { get; set; } = false;
         
         // User
@@ -74,5 +73,9 @@ namespace PoemTown.Repository.Entities
         // WithdrawalForm
         public Guid? WithdrawalFormId { get; set; }
         public virtual WithdrawalForm? WithdrawalForm { get; set; }
+        
+        // SystemAnnouncement
+        public Guid? SystemAnnouncementId { get; set; }
+        public virtual SystemAnnouncement? SystemAnnouncement { get; set; }
     }
 }

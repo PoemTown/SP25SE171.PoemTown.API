@@ -67,7 +67,7 @@ namespace PoemTown.Service.Consumers.TransactionConsumers
                 UserId = userEWallet.UserId,
                 Title = $"Tiền hoa hồng từ quyền sử dụng bài thơ {poem.Title}",
                 Content =
-                    $"Bạn đã nhận được: {message.Amount} từ khoản tiền hoa hồng quyền sử dụng bài thơ '{poem.Title}'",
+                    $"Bạn đã nhận được: {(int) message.Amount} từ khoản tiền hoa hồng quyền sử dụng bài thơ '{poem.Title}'",
                 Type = AnnouncementType.Transaction,
                 TransactionId = transactionId,
                 IsRead = false

@@ -347,8 +347,44 @@ public class TemplateService : ITemplateService
             throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplateDetail not found");
         }
 
-        _unitOfWork.GetRepository<MasterTemplateDetail>().Delete(masterTemplateDetail);
+        _unitOfWork.GetRepository<MasterTemplateDetail>().DeletePermanent(masterTemplateDetail);
+        
+        // Check if MasterTemplateDetail is the last one in MasterTemplate
+        var masterTemplate = await _unitOfWork.GetRepository<MasterTemplate>()
+            .FindAsync(p => p.Id == masterTemplateDetail.MasterTemplateId);
+        if (masterTemplate == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "MasterTemplate not found");
+        }
+
+
+        
+        // Check if MasterTemplateDetails count is 1 then set MasterTemplate Type to Single
+        if (masterTemplate.MasterTemplateDetails != null && masterTemplate.MasterTemplateDetails.Count == 1)
+        {
+            masterTemplate.Type = TemplateType.Single;
+            _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplate);
+        }
+        
         await _unitOfWork.SaveChangesAsync();
+        
+        // Check if MasterTemplateDetails count is 0 then set MasterTemplate Status to Inactive
+        var masterTemplateAfterDelete = await _unitOfWork.GetRepository<MasterTemplate>()
+            .FindAsync(p => p.Id == masterTemplate.Id);
+
+        if (masterTemplateAfterDelete == null)
+        {
+            return;
+        }
+        
+        if (masterTemplateAfterDelete.MasterTemplateDetails == null || masterTemplateAfterDelete.MasterTemplateDetails.Count == 0)
+        {
+            masterTemplateAfterDelete.Status = TemplateStatus.Inactive;
+            masterTemplateAfterDelete.Type = TemplateType.Single;
+            _unitOfWork.GetRepository<MasterTemplate>().Update(masterTemplateAfterDelete);
+            await _unitOfWork.SaveChangesAsync();
+        }
+        
     }
 
     public async Task DeleteMasterTemplatePermanently(Guid masterTemplateId)

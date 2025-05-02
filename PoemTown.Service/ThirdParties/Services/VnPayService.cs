@@ -67,7 +67,7 @@ public class VnPayService : IVnPayService, IPaymentMethod
         {
             TransactionCode = transactionCode,
             Amount = request.Amount,
-            TransactionDescription = $"Nap {request.Amount} vao vi dien tu",
+            TransactionDescription = $"Nap {(int) request.Amount} vao vi dien tu",
             UserIpAddress = request.UserIpAddress ?? "",
         };
 
@@ -77,7 +77,7 @@ public class VnPayService : IVnPayService, IPaymentMethod
         {
             UserEWalletId = request.UserEWalletId,
             Amount = request.Amount,
-            Description = $"Nạp: {request.Amount}VNĐ vào ví điện tử",
+            Description = $"Nạp: {(int) request.Amount}VNĐ vào ví điện tử",
             TransactionCode = transactionCode,
             Type = TransactionType.EWalletDeposit,
             Status = TransactionStatus.Pending,

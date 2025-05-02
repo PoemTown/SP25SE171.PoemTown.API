@@ -22,4 +22,5 @@ public class SendUserAnnouncementEvent
     public Guid? UserLeaderboardId { get; set; }
     public Guid? FollowerId { get; set; }
     public Guid? WithdrawalFormId { get; set; }
+    public Guid? SystemAnnouncementId { get; set; }
 }

@@ -114,6 +114,8 @@ public static class ConfigureService
         services.AddScoped<ISystemContactService, SystemContactService>();
         services.AddScoped<IDailyMessageService, DailyMessageService>();
         services.AddScoped<IContentPageService, ContentPageService>();
+        services.AddScoped<IDepositCommissionSettingService, DepositCommissionSettingService>();
+        services.AddScoped<IWithdrawalComplaintService, WithdrawalComplaintService>();
 
         //Plagiarism detector
         services.AddScoped<IEmbeddingService, EmbeddingService>();
@@ -161,6 +163,7 @@ public static class ConfigureService
             config.AddConsumer<UpdatePaidTransactionConsumer>();
             config.AddConsumer<UpdateCancelledTransactionConsumer>();
             config.AddConsumer<StorePoemIntoQDrantConsumer>();
+            config.AddConsumer<DeletePoemPointInQDrantConsumer>();
 
             //config rabbitmq host
             config.UsingRabbitMq((context, cfg) =>

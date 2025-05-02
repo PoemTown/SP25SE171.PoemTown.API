@@ -70,4 +70,5 @@ public interface IPoemService
     Task DeletePoetSamplePoem(Guid poetSampleId, Guid poemId);
     Task UpdatePoetSampleSaleVersionCommissionPercentage(Guid poemId, int commissionPercentage);
     Task<IList<GetPoemSampleResponse>> GetPoemSampleFromPoetSample();
+    Task AdminDeletePoem(Guid poemId);
 }

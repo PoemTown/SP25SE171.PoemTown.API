@@ -207,6 +207,7 @@ public class UserEWalletService : IUserEWalletService
                 WalletStatus = WalletStatus.Active,
             };
             await _unitOfWork.GetRepository<UserEWallet>().InsertAsync(userEWallet);
+            await _unitOfWork.SaveChangesAsync();
         }
         
         return new GetUserEWalletResponse()
@@ -249,5 +250,19 @@ public class UserEWalletService : IUserEWalletService
         userEWallet.WalletBalance -= request.Amount;
         
         await _unitOfWork.SaveChangesAsync();
+
+        await _publishEndpoint.Publish(new CreateTransactionEvent()
+        {
+            UserEWalletId = userEWallet.Id,
+            Amount = request.Amount,
+            Description = "Rút tiền từ ví điện tử",
+            Type = TransactionType.Withdraw,
+            TransactionCode = OrderCodeGenerator.Generate(),
+            IsAddToWallet = false,
+            DiscountAmount = 0,
+            AnnouncementContent = $"Rút {(int) request.Amount} từ ví điện tử",
+            AnnouncementTitle = "Rút tiền từ ví điện tử",
+            IsUpdateBalance = true,
+        });
     }
 }

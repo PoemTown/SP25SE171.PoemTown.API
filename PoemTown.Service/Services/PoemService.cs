@@ -830,14 +830,26 @@ public class PoemService : IPoemService
         // If poem is in sale, then can not delete
         var existInSaleSaleVersion = await _unitOfWork.GetRepository<SaleVersion>()
             .AsQueryable()
-            .AnyAsync(p => p.PoemId == poem.Id && p.Status == SaleVersionStatus.InSale);
+            .AnyAsync(p => p.PoemId == poem.Id && p.Status != SaleVersionStatus.Default);
 
         if (existInSaleSaleVersion)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Poem is in sale, cannot delete");
+            throw new CoreException(StatusCodes.Status400BadRequest, "Bài thơ đã được đăng bán, không thể xóa");
         }
 
-        // If poem is free, then update all RecordFile poemId into null
+        var recordFiles = await _unitOfWork.GetRepository<RecordFile>()
+            .AsQueryable()
+            .Where(p => p.PoemId == poem.Id && p.DeletedTime == null)
+            .ToListAsync();
+        
+        // If poem has record files, then set all recordFiles IsAbleToRemoveFromPoem == true
+        foreach (var recordFile in recordFiles)
+        {
+            recordFile.IsAbleToRemoveFromPoem = true;
+        }
+        _unitOfWork.GetRepository<RecordFile>().UpdateRange(recordFiles);
+        
+        /*// If poem is free, then update all RecordFile poemId into null
         var existFreeSaleVersion = await _unitOfWork.GetRepository<SaleVersion>()
             .AsQueryable()
             .AnyAsync(p => p.PoemId == poem.Id && p.Status == SaleVersionStatus.Free);
@@ -853,7 +865,7 @@ public class PoemService : IPoemService
                 recordFile.PoemId = null;
                 _unitOfWork.GetRepository<RecordFile>().Update(recordFile);
             }
-        }
+        }*/
 
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
@@ -1780,7 +1792,7 @@ public class PoemService : IPoemService
             {
                 new ChatMessage("system", "Bạn là con trí tuệ nhân tạo thơ, giỏi viết những bài thơ tiếng Việt đẹp."),
                 new ChatMessage("user", $"Thể thơ: {poemType.Name}"),
-                //new ChatMessage("user", $"Thể thơ {poemType.Name} là: {poemType.Description}"),
+                new ChatMessage("user", $"Cách làm thể thơ {poemType.Name} là: {poemType.GuideLine}"),
                 new ChatMessage("user", $"Nội dung thơ: {request.PoemContent}"),
                 new ChatMessage("user", $"Câu hỏi: {request.ChatContent}"),
             },
@@ -2159,11 +2171,68 @@ public class PoemService : IPoemService
         }
 
         poem.Status = status;
+        
+        var recordFiles = await _unitOfWork.GetRepository<RecordFile>()
+            .AsQueryable()
+            .Where(p => p.PoemId == poem.Id && p.DeletedTime == null)
+            .ToListAsync();
+        
+        if (poem.Status == PoemStatus.Suspended || poem.Status == PoemStatus.Pending)
+        {
+            // If poem has record files, then set all recordFiles IsAbleToRemoveFromPoem == true
+            foreach (var recordFile in recordFiles)
+            {
+                recordFile.IsAbleToRemoveFromPoem = true;
+            }
+        }
+        
+        else if (poem.Status == PoemStatus.Posted)
+        {
+            // If poem has record files, then set all recordFiles IsAbleToRemoveFromPoem == true
+            foreach (var recordFile in recordFiles)
+            {
+                recordFile.IsAbleToRemoveFromPoem = false;
+            }
+        }
+        _unitOfWork.GetRepository<RecordFile>().UpdateRange(recordFiles);
 
         _unitOfWork.GetRepository<Poem>().Update(poem);
         await _unitOfWork.SaveChangesAsync();
     }
 
+    public async Task AdminDeletePoem(Guid poemId)
+    {
+        // Find poem by id
+        Poem? poem = await _unitOfWork.GetRepository<Poem>()
+            .FindAsync(p => p.Id == poemId);
+
+        // If poem not found then throw exception
+        if (poem == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Poem not found");
+        }
+
+        var recordFiles = await _unitOfWork.GetRepository<RecordFile>()
+            .AsQueryable()
+            .Where(p => p.PoemId == poem.Id && p.DeletedTime == null)
+            .ToListAsync();
+        
+        // If poem has record files, then set all recordFiles IsAbleToRemoveFromPoem == true
+        foreach (var recordFile in recordFiles)
+        {
+            recordFile.IsAbleToRemoveFromPoem = true;
+        }
+        _unitOfWork.GetRepository<RecordFile>().UpdateRange(recordFiles);
+        
+        _unitOfWork.GetRepository<Poem>().Delete(poem);
+        await _unitOfWork.SaveChangesAsync();
+
+        await _publishEndpoint.Publish(new DeletePoemPointInQDrantEvent()
+        {
+            PoemIds = [poemId],
+        });
+    }
+    
     public async Task RemoveRecordFileFromPoem(Guid userId, Guid recordFileId)
     {
         RecordFile? recordFile = await _unitOfWork.GetRepository<RecordFile>().FindAsync(p => p.Id == recordFileId);
@@ -2546,6 +2615,12 @@ public class PoemService : IPoemService
 
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
+        
+        // Delete poem from QDrant
+        await _publishEndpoint.Publish(new DeletePoemPointInQDrantEvent()
+        {
+            PoemIds = [poemId],
+        });
     }
 
     public async Task UpdatePoetSampleSaleVersionCommissionPercentage(Guid poemId, int commissionPercentage)

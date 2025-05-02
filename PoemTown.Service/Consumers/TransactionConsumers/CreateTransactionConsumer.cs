@@ -47,6 +47,7 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
             throw new Exception("User e-wallet not found");
         }
         
+        bool isUpdateBalance = message.IsUpdateBalance ?? true;
         // Create transaction
         Transaction transaction = new Transaction()
         {
@@ -56,7 +57,7 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
             Type = message.Type,
             DiscountAmount = message.DiscountAmount,
             UserEWallet = userEWallet,
-            Balance = userEWallet.WalletBalance,
+            Balance = isUpdateBalance ? userEWallet.WalletBalance : null,
             Status = TransactionStatus.Paid,
             PaidDate = DateTimeHelper.SystemTimeNow,
             TransactionCode = message.TransactionCode,

@@ -127,12 +127,12 @@ public class AnnouncementsController : BaseController
     [HttpGet]
     [Route("v1/system")]
     [Authorize(Roles = "ADMIN")]
-    public async Task<ActionResult<BasePaginationResponse<GetAnnouncementResponse>>>
+    public async Task<ActionResult<BasePaginationResponse<GetSystemAnnouncementResponse>>>
         GetSystemAnnouncements(RequestOptionsBase<GetSystemAnnouncementFilterOption, GetSystemAnnouncementSortOption> request)
     {
         var paginationResponse = await _announcementService.GetSystemAnnouncements(request);
         
-        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetAnnouncementResponse>>(paginationResponse);
+        var basePaginationResponse = _mapper.Map<BasePaginationResponse<GetSystemAnnouncementResponse>>(paginationResponse);
         basePaginationResponse.StatusCode = StatusCodes.Status200OK;
         basePaginationResponse.Message = "Get system announcements successfully";
 

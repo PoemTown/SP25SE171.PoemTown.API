@@ -41,7 +41,7 @@ namespace PoemTown.API.Controllers
         [HttpPost]
         [Route("v1")]
         [Authorize]
-        public async Task<ActionResult<BaseResponse>> CreateNewPoem([FromQuery]Guid poemId, CreateNewRecordFileRequest request)
+        public async Task<ActionResult<BaseResponse>> CreateNewRecord([FromQuery]Guid poemId, CreateNewRecordFileRequest request)
         {
             Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
             await _service.CreateNewRecord(userId, poemId, request);

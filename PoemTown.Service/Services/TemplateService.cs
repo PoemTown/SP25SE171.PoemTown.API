@@ -23,7 +23,7 @@ using PoemTown.Service.Interfaces;
 using PoemTown.Service.QueryOptions.FilterOptions.TemplateFilters;
 using PoemTown.Service.QueryOptions.RequestOptions;
 using PoemTown.Service.QueryOptions.SortOptions.TemplateSorts;
-using PoemTown.Service.ThirdParties.Interfaces;
+using PoemTown.Service.ThirdParties.Interfaces; 
 using PoemTown.Service.ThirdParties.Models.AwsS3;
 
 namespace PoemTown.Service.Services;

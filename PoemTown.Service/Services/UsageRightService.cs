@@ -164,8 +164,8 @@ namespace PoemTown.Service.Services
                 var poemDto = _mapper.Map<GetPoemDetailResponse>(saleVersion.Poem);
                 poemDto.SaleVersion = null; // Xóa hoặc gán lại tùy mục đích
                 boughtPoems.Last().Poem = poemDto;
-
             }
+            boughtPoems = boughtPoems.OrderByDescending(p => p.CopyRightValidFrom).ToList();
             return new PaginationResponse<GetBoughtPoemResponse>(boughtPoems, queryPaging.PageNumber, queryPaging.PageSize,
                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }
@@ -176,7 +176,7 @@ namespace PoemTown.Service.Services
             var versions = _unitOfWork.GetRepository<SaleVersion>()
                                          .AsQueryable()
                                          .Where(v => v.PoemId == poemId && v.DeletedTime == null)
-                                         .OrderByDescending(v => v.CreatedTime);
+                                         .OrderByDescending(v => v.Poem.CreatedTime);
 
             /*if (request.FilterOptions != null)
             {
@@ -209,6 +209,7 @@ namespace PoemTown.Service.Services
                     .Where(u => u.SaleVersionId == version.Id && u.Type == UserPoemType.PoemBuyer && u.DeletedTime == null)
                     .ToList());
             }
+
             return new PaginationResponse<GetPoemVersionResponse>(poemVersions, queryPaging.PageNumber, queryPaging.PageSize,
                queryPaging.TotalRecords, queryPaging.CurrentPageRecords);
         }

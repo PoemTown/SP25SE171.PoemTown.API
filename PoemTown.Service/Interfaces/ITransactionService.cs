@@ -15,4 +15,5 @@ public interface ITransactionService
         GetTransactions(RequestOptionsBase<GetTransactionFilterOption, GetTransactionSortOption> request);
 
     Task<GetTransactionDetailResponse> GetTransactionDetail(Guid transactionId);
+    Task<UserGetTransactionDetailResponse> UserGetTransactionDetail(Guid userId, Guid transactionId);
 }

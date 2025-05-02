@@ -16,7 +16,7 @@ namespace PoemTown.Repository.Entities
 {
     public class UsageRight : BaseEntity
     {
-        [Key]
+        [Key] 
         public Guid Id { get; set; }
 
         public Guid? UserId { get; set; }

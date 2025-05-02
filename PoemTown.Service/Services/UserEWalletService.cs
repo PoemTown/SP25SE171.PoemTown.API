@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Announcements;
+using PoemTown.Repository.Enums.BankTypes;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Enums.Wallets;
 using PoemTown.Repository.Enums.WithdrawalForm;
@@ -227,6 +228,46 @@ public class UserEWalletService : IUserEWalletService
             throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet not found");
         }
 
+        BankType? bankType = await _unitOfWork.GetRepository<BankType>()
+            .FindAsync(p => p.Id == request.BankTypeId 
+                            && p.Status == BankTypeStatus.Active 
+                            && p.DeletedTime == null);
+        
+        // Check bank type exist
+        if (bankType == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy ngân hàng");
+        }
+        
+        // Check user bank type exist
+        if (request.UserBankTypeId != null)
+        {
+            UserBankType? userBankType = await _unitOfWork.GetRepository<UserBankType>()
+                .FindAsync(p => p.Id == request.UserBankTypeId 
+                                && p.DeletedTime == null);
+            
+            if (userBankType == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy thông tin ngân hàng của bạn");
+            }
+            
+            // Check user bank type belong to user
+            if(userBankType.UserId != userId)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Thông tin ngân hàng không thuộc về bạn");
+            }
+            
+            // Check user bank type status
+            if(userBankType.BankType!.Status != BankTypeStatus.Active)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Ngân hàng này hiện không khả dụng");
+            }
+            
+            request.AccountNumber = userBankType.AccountNumber;
+            request.AccountName = userBankType.AccountName;
+            request.BankTypeId = userBankType.BankTypeId!.Value;
+        }
+        
         // Check if e-wallet belongs to user
         if (userEWallet.UserId != userId)
         {

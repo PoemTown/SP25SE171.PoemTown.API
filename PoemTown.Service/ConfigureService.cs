@@ -116,6 +116,7 @@ public static class ConfigureService
         services.AddScoped<IContentPageService, ContentPageService>();
         services.AddScoped<IDepositCommissionSettingService, DepositCommissionSettingService>();
         services.AddScoped<IWithdrawalComplaintService, WithdrawalComplaintService>();
+        services.AddScoped<IBankTypeService, BankTypeService>();
 
         //Plagiarism detector
         services.AddScoped<IEmbeddingService, EmbeddingService>();

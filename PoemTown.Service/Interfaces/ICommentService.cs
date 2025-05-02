@@ -15,4 +15,6 @@ public interface ICommentService
 
     Task<PaginationResponse<GetCommentResponse>>
         GetPostComments(Guid? userId, Guid poemId, RequestOptionsBase<GetPostCommentFilterOption, GetPostCommentSortOption> request);
+
+    Task DeleteCommentPermanentByAdminAndModerator(Guid commentId);
 }

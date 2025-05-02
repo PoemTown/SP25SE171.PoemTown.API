@@ -184,6 +184,34 @@ public class CommentService : ICommentService
         await _unitOfWork.SaveChangesAsync();
     }
     
+    public async Task DeleteCommentPermanentByAdminAndModerator(Guid commentId)
+    {
+        Comment? comment = await _unitOfWork.GetRepository<Comment>().FindAsync(c => c.Id == commentId);
+        if (comment == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy bình luân");
+        }
+        
+        // Check if comment has children comments, if yes, remove parent comment id
+        bool hasChildrenComments = await _unitOfWork.GetRepository<Comment>()
+            .AsQueryable()
+            .AnyAsync(c => c.ParentCommentId == commentId);
+        if(hasChildrenComments)
+        {
+            var childrenComments = await _unitOfWork.GetRepository<Comment>()
+                .AsQueryable()
+                .Where(c => c.ParentCommentId == commentId)
+                .ToListAsync();
+            foreach (var children in childrenComments)
+            {
+                _unitOfWork.GetRepository<Comment>().DeletePermanent(children);
+            }
+        }
+
+        _unitOfWork.GetRepository<Comment>().DeletePermanent(comment);
+        await _unitOfWork.SaveChangesAsync();
+    }
+    
     public async Task<PaginationResponse<GetCommentResponse>>
         GetPostComments(Guid? userId, Guid poemId, RequestOptionsBase<GetPostCommentFilterOption, GetPostCommentSortOption> request)
     {

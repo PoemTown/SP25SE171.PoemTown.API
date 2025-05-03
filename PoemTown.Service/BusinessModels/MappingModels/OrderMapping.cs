@@ -16,5 +16,8 @@ public class OrderMapping : Profile
         CreateMap<GetRecordFileInOrderDetailResponse, GetOrderDetailResponse>();
         CreateMap<GetMasterTemplateInOrderDetailResponse, GetOrderDetailResponse>();
         CreateMap<GetSaleVersionInOrderDetailResponse, GetOrderDetailResponse>();
+
+        CreateMap<Order, GetOrderWithOrderDetailResponse>().ReverseMap();
+        //CreateMap<OrderDetail, GetOrderWithOrderDetailResponse>().ReverseMap();
     }
 }

@@ -15,13 +15,13 @@ public class TransactionMapping : Profile
         CreateMap<Transaction, GetTransactionResponse>().ReverseMap();
         CreateMap<Transaction, GetTransactionDetailResponse>().ReverseMap();
 
-        CreateMap<GetOrderDetailResponse, GetTransactionDetailResponse>();
+        CreateMap<GetOrderWithOrderDetailResponse, GetTransactionDetailResponse>();
         CreateMap<GetDepositCommissionSettingsResponse, GetTransactionDetailResponse>();
         CreateMap<GetWithdrawalFormResponse, GetTransactionDetailResponse>();
         
         CreateMap<Transaction, UserGetTransactionDetailResponse>().ReverseMap();
 
-        CreateMap<GetOrderDetailResponse, UserGetTransactionDetailResponse>();
+        CreateMap<GetOrderWithOrderDetailResponse, UserGetTransactionDetailResponse>();
         CreateMap<GetDepositCommissionSettingsResponse, UserGetTransactionDetailResponse>();
         CreateMap<GetWithdrawalFormResponse, UserGetTransactionDetailResponse>();
     }

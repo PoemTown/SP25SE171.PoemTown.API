@@ -164,7 +164,7 @@ public class CommentService : ICommentService
             throw new CoreException(StatusCodes.Status403Forbidden, "You are not the author of this comment");
         }
         
-        // Check if comment has children comments, if yes, remove parent comment id
+        /*// Check if comment has children comments, if yes, remove parent comment id
         bool hasChildrenComments = await _unitOfWork.GetRepository<Comment>()
             .AsQueryable()
             .AnyAsync(c => c.ParentCommentId == commentId);
@@ -178,10 +178,26 @@ public class CommentService : ICommentService
             {
                 _unitOfWork.GetRepository<Comment>().DeletePermanent(children);
             }
-        }
+        }*/
+        await DeleteCommentAndChildrenRecursive(commentId);
 
         _unitOfWork.GetRepository<Comment>().DeletePermanent(comment);
         await _unitOfWork.SaveChangesAsync();
+    }
+    
+    private async Task DeleteCommentAndChildrenRecursive(Guid parentCommentId)
+    {
+        var children = await _unitOfWork.GetRepository<Comment>()
+            .AsQueryable()
+            .Where(c => c.ParentCommentId == parentCommentId)
+            .ToListAsync();
+
+        foreach (var child in children)
+        {
+            // Recursively delete descendants
+            await DeleteCommentAndChildrenRecursive(child.Id);
+            _unitOfWork.GetRepository<Comment>().DeletePermanent(child);
+        }
     }
     
     public async Task DeleteCommentPermanentByAdminAndModerator(Guid commentId)
@@ -192,7 +208,7 @@ public class CommentService : ICommentService
             throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy bình luân");
         }
         
-        // Check if comment has children comments, if yes, remove parent comment id
+        /*// Check if comment has children comments, if yes, remove parent comment id
         bool hasChildrenComments = await _unitOfWork.GetRepository<Comment>()
             .AsQueryable()
             .AnyAsync(c => c.ParentCommentId == commentId);
@@ -206,7 +222,8 @@ public class CommentService : ICommentService
             {
                 _unitOfWork.GetRepository<Comment>().DeletePermanent(children);
             }
-        }
+        }*/
+        await DeleteCommentAndChildrenRecursive(commentId);
 
         _unitOfWork.GetRepository<Comment>().DeletePermanent(comment);
         await _unitOfWork.SaveChangesAsync();

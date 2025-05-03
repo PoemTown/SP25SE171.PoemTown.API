@@ -28,6 +28,6 @@ public class GetTransactionDetailResponse
     public GetUserInTransactionResponse User { get; set; }
     public GetUserInTransactionResponse? ReceiveUser { get; set; }
     public GetPaymentGatewayResponse? PaymentGateway { get; set; }
-    public GetOrderDetailResponse? Order { get; set; }
+    public GetOrderWithOrderDetailResponse? Order { get; set; }
     public GetWithdrawalFormResponse? WithdrawalForm { get; set; }
 }

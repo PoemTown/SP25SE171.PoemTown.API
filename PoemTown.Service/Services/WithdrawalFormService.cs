@@ -205,7 +205,7 @@ public class WithdrawalFormService : IWithdrawalFormService
                 await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);*/
 
                 // Update transaction
-                transaction.Status = TransactionStatus.Paid;
+                transaction.Status = TransactionStatus.Refunded;
                 transaction.IsAddToWallet = true;
                 transaction.Description = "Hoàn tiền từ đơn rút tiền từ ví điện tử";
                 transaction.Balance = userEWallet.WalletBalance;
@@ -230,7 +230,7 @@ public class WithdrawalFormService : IWithdrawalFormService
                 };
                 await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);*/
                 // Update transaction
-                transaction.Status = TransactionStatus.Paid;
+                transaction.Status = TransactionStatus.Transferred;
                 transaction.IsAddToWallet = false;
                 transaction.Description = "Rút tiền từ đơn rút tiền từ ví điện tử";
                 transaction.Balance = userEWallet.WalletBalance;

@@ -74,7 +74,32 @@ public class TransactionService : ITransactionService
     public async Task<PaginationResponse<GetTransactionResponse>>
         GetTransactions(RequestOptionsBase<GetTransactionFilterOption, GetTransactionSortOption> request)
     {
-        var transactionQuery = _unitOfWork.GetRepository<Transaction>().AsQueryable();
+        var adminRole = await _unitOfWork.GetRepository<Role>().FindAsync(p => p.Name == "ADMIN");
+        
+        // Check if admin role is null
+        if (adminRole == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Admin role not found");
+        }
+        
+        var adminUser = await _unitOfWork.GetRepository<User>().FindAsync(p => p.UserRoles.Any(p => p.RoleId == adminRole.Id));
+        
+        // Check if admin user is null
+        if (adminUser == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Admin user not found");
+        }
+        
+        // Check if admin user has e-wallet
+        var adminUserEWallet = await _unitOfWork.GetRepository<UserEWallet>().FindAsync(p => p.UserId == adminUser.Id);
+        if (adminUserEWallet == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Admin user e-wallet not found");
+        }
+        
+        var transactionQuery = _unitOfWork.GetRepository<Transaction>()
+            .AsQueryable()
+            .Where(p => p.Id != adminUserEWallet.Id);
 
         // Filter
         if (request.FilterOptions != null)

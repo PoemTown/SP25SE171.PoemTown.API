@@ -705,9 +705,14 @@ public class StatisticService : IStatisticService
             TransactionType.Withdraw
         };
 
+        var withdrawTransactionQuery = _unitOfWork.GetRepository<Transaction>()
+            .AsQueryable();
         // Filter by condition: transaction type must be one of transactionIncomeType, CreatedTime is less than or equal to current date (UTC + 7)
         transactionQuery = transactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow
                                                        && p.Status == TransactionStatus.Paid);
+        
+        withdrawTransactionQuery = withdrawTransactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow
+                                                                       && p.Status == TransactionStatus.Transferred);
 
         // Admin EWallet
         var adminEWallet = await _unitOfWork.GetRepository<User>()
@@ -738,7 +743,7 @@ public class StatisticService : IStatisticService
         );
 
         // WITHDRAW transactions
-        var withdrawQuery = transactionQuery.Where(p => withdrawTypes.Contains(p.Type));
+        var withdrawQuery = withdrawTransactionQuery.Where(p => withdrawTypes.Contains(p.Type));
 
         var withdrawSamples = await GetSampleStatisticResponse(
             withdrawQuery,

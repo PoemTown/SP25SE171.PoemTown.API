@@ -20,4 +20,5 @@ public interface IPoetSampleService
 
     Task<GetPoetSampleResponse> GetPoetSample(Guid poetSampleId);
     //Task RemovePoetSampleTitleSample(Guid poetSampleId, IList<Guid> titleSampleIds);
+    Task<IList<GetPoetSampleResponse>> GetLiveBoardPoetSamples();
 }

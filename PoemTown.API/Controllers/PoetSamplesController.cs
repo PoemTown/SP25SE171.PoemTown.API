@@ -127,4 +127,16 @@ public class PoetSamplesController : BaseController
         await _poetSampleService.RemovePoetSampleTitleSample(poetSampleId, titleSampleIds);
         return Accepted(new BaseResponse(StatusCodes.Status202Accepted, "Remove title sample from poet sample successfully"));
     }*/
+    
+    /// <summary>
+    /// Lấy danh sách nhà thơ nổi tiếng trên bảng tin, không yêu cầu đăng nhập
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/live-board")]
+    public async Task<ActionResult<IList<GetPoetSampleResponse>>> GetLiveBoardPoetSamples()
+    {
+        var poetSamples = await _poetSampleService.GetLiveBoardPoetSamples();
+        return Ok(new BaseResponse<IList<GetPoetSampleResponse>>(StatusCodes.Status200OK, "Get live board poet samples successfully", poetSamples));
+    }
 }

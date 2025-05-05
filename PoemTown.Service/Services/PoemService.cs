@@ -869,6 +869,11 @@ public class PoemService : IPoemService
 
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
+        // Delete poem from QDrant
+        await _publishEndpoint.Publish(new DeletePoemPointInQDrantEvent()
+        {
+            PoemIds = [poemId],
+        });
     }
 
 

@@ -1,6 +1,6 @@
 ﻿namespace PoemTown.Repository.Enums.WithdrawalForm;
 
-public enum BankType
+/*public enum BankType
 {
     Momo = 1,
     TpBank = 2,
@@ -12,4 +12,4 @@ public enum BankType
     VpBank = 8,
     Sacombank = 9,
     Shb = 10,
-}
+}*/

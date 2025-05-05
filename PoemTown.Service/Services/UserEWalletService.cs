@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using PoemTown.Repository.CustomException;
 using PoemTown.Repository.Entities;
 using PoemTown.Repository.Enums.Announcements;
+using PoemTown.Repository.Enums.BankTypes;
 using PoemTown.Repository.Enums.Transactions;
 using PoemTown.Repository.Enums.Wallets;
 using PoemTown.Repository.Enums.WithdrawalForm;
@@ -227,6 +228,46 @@ public class UserEWalletService : IUserEWalletService
             throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet not found");
         }
 
+        BankType? bankType = await _unitOfWork.GetRepository<BankType>()
+            .FindAsync(p => p.Id == request.BankTypeId 
+                            && p.Status == BankTypeStatus.Active 
+                            && p.DeletedTime == null);
+        
+        // Check bank type exist
+        if (bankType == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy ngân hàng");
+        }
+        
+        // Check user bank type exist
+        if (request.UserBankTypeId != null)
+        {
+            UserBankType? userBankType = await _unitOfWork.GetRepository<UserBankType>()
+                .FindAsync(p => p.Id == request.UserBankTypeId 
+                                && p.DeletedTime == null);
+            
+            if (userBankType == null)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy thông tin ngân hàng của bạn");
+            }
+            
+            // Check user bank type belong to user
+            if(userBankType.UserId != userId)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Thông tin ngân hàng không thuộc về bạn");
+            }
+            
+            // Check user bank type status
+            if(userBankType.BankType!.Status != BankTypeStatus.Active)
+            {
+                throw new CoreException(StatusCodes.Status400BadRequest, "Ngân hàng này hiện không khả dụng");
+            }
+            
+            request.AccountNumber = userBankType.AccountNumber;
+            request.AccountName = userBankType.AccountName;
+            request.BankTypeId = userBankType.BankTypeId!.Value;
+        }
+        
         // Check if e-wallet belongs to user
         if (userEWallet.UserId != userId)
         {
@@ -236,13 +277,14 @@ public class UserEWalletService : IUserEWalletService
         // Check user e-wallet balance
         if (userEWallet.WalletBalance < request.Amount)
         {
-            throw new CoreException(StatusCodes.Status400BadRequest, "Insufficient balance in e-wallet");
+            throw new CoreException(StatusCodes.Status400BadRequest, "Không đủ số dư trong ví");
         }
 
         // Create withdrawal form
         var withdrawalForm = _mapper.Map<WithdrawalForm>(request);
         withdrawalForm.UserEWallet = userEWallet;
         withdrawalForm.Status = WithdrawalFormStatus.Pending;
+        withdrawalForm.Id = Guid.NewGuid();
         
         await _unitOfWork.GetRepository<WithdrawalForm>().InsertAsync(withdrawalForm);
         
@@ -255,14 +297,16 @@ public class UserEWalletService : IUserEWalletService
         {
             UserEWalletId = userEWallet.Id,
             Amount = request.Amount,
-            Description = "Rút tiền từ ví điện tử",
+            Description = $"Số tiền cần rút: '{(int) request.Amount}' đang được tạm giữ để xử lý.",
             Type = TransactionType.Withdraw,
             TransactionCode = OrderCodeGenerator.Generate(),
             IsAddToWallet = false,
             DiscountAmount = 0,
-            AnnouncementContent = $"Rút {(int) request.Amount} từ ví điện tử",
+            AnnouncementContent = $"Số tiền cần rút: '{(int) request.Amount}' đang được tạm giữ để xử lý.",
             AnnouncementTitle = "Rút tiền từ ví điện tử",
             IsUpdateBalance = true,
+            WithdrawalFormId = withdrawalForm.Id,
+            Status = TransactionStatus.Pending
         });
     }
 }

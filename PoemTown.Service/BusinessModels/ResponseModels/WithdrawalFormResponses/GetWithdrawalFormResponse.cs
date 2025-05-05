@@ -1,4 +1,6 @@
 ﻿using PoemTown.Repository.Enums.WithdrawalForm;
+using PoemTown.Service.BusinessModels.RequestModels.BankTypeRequests;
+using PoemTown.Service.BusinessModels.ResponseModels.BankTypeResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.WithdrawalFormResponses;
 
@@ -7,7 +9,8 @@ public class GetWithdrawalFormResponse
     public Guid Id { get; set; }
     public WithdrawalFormStatus Status { get; set; }
     public decimal Amount { get; set; }
-    public BankType BankType { get; set; }
+    public GetBankTypeResponse? BankType { get; set; }
+    public GetUserBankTypeResponse? UserBankType { get; set; }
     public string? Description { get; set; }
     public string? ResolveDescription { get; set; }
     public string? ResolveEvidence { get; set; }

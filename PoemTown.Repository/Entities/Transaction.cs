@@ -39,6 +39,8 @@ namespace PoemTown.Repository.Entities
         public Guid? ReceiveUserEWalletId { get; set; }
         public Guid? OrderId {  get; set; }
         public Guid? PaymentGatewayId { get; set; }
+        public Guid? WithdrawalFormId { get; set; }
+        public virtual WithdrawalForm? WithdrawalForm { get; set; }
 
         //public virtual User? User { get; set; }
         //public virtual PaymentGateway? PaymentGateway { get; set; }

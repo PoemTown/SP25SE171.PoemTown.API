@@ -99,7 +99,7 @@ public class TransactionService : ITransactionService
         
         var transactionQuery = _unitOfWork.GetRepository<Transaction>()
             .AsQueryable()
-            .Where(p => p.Id != adminUserEWallet.Id);
+            .Where(p => p.UserEWalletId != adminUserEWallet.Id);
 
         // Filter
         if (request.FilterOptions != null)

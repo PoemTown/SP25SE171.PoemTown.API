@@ -763,7 +763,7 @@ public class PoemService : IPoemService
                     CommissionPercentage = 0,
                     DurationTime = 100,
                     IsInUse = true,
-                    Status = SaleVersionStatus.Free,
+                    Status = SaleVersionStatus.Default,
                     Price = 0,
                 };
                 await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);

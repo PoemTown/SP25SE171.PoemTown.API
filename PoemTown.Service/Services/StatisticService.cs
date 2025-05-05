@@ -544,10 +544,11 @@ public class StatisticService : IStatisticService
 
         // Get actual data from database
         var actualData = await masterTemplateOrderQuery
-            .GroupBy(p => p.MasterTemplate!.TemplateName)
+            .GroupBy(p => new {p.MasterTemplate!.TemplateName, p.MasterTemplate.TagName})
             .Select(res => new GetMasterTemplateOrderSampleResponse()
             {
-                TemplateName = res.Key ?? "",
+                TemplateName = res.Key.TemplateName ?? "",
+                TagName = res.Key.TagName ?? "",
                 TotalOrders = res.Count()
             })
             .ToListAsync();

@@ -256,4 +256,15 @@ public class PoetSampleService : IPoetSampleService
         _unitOfWork.GetRepository<PoetSampleTitleSample>().DeletePermanentRange(poetSampleTitleSamples);
         await _unitOfWork.SaveChangesAsync();
     }*/
+    
+    public async Task<IList<GetPoetSampleResponse>> GetLiveBoardPoetSamples()
+    {
+        var poetSamples = await _unitOfWork.GetRepository<PoetSample>()
+            .AsQueryable()
+            .Where(p => p.DeletedTime == null)
+            .OrderByDescending(p => p.CreatedTime)
+            .ToListAsync();
+        
+        return _mapper.Map<IList<GetPoetSampleResponse>>(poetSamples);
+    }
 }

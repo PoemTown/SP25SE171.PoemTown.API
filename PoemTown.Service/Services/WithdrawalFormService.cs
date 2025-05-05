@@ -232,7 +232,7 @@ public class WithdrawalFormService : IWithdrawalFormService
                 // Update transaction
                 transaction.Status = TransactionStatus.Transferred;
                 transaction.IsAddToWallet = false;
-                transaction.Description = "Rút tiền từ đơn rút tiền từ ví điện tử";
+                transaction.Description = "Giao dịch từ đơn rút tiền ví điện tử";
                 transaction.Balance = userEWallet.WalletBalance;
                 transaction.Type = TransactionType.Withdraw;
                 transaction.PaidDate = DateTimeHelper.SystemTimeNow;

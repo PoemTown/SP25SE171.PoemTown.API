@@ -208,7 +208,8 @@ public class WithdrawalFormService : IWithdrawalFormService
                 transaction.Status = TransactionStatus.Refunded;
                 transaction.IsAddToWallet = true;
                 transaction.Description = "Hoàn tiền từ đơn rút tiền từ ví điện tử";
-                transaction.Balance = userEWallet.WalletBalance;
+                //transaction.Balance = userEWallet.WalletBalance;
+                transaction.Balance += withdrawalForm.Amount;
                 transaction.Type = TransactionType.Refund;
                 transaction.PaidDate = DateTimeHelper.SystemTimeNow;
                 _unitOfWork.GetRepository<Transaction>().Update(transaction);
@@ -233,7 +234,8 @@ public class WithdrawalFormService : IWithdrawalFormService
                 transaction.Status = TransactionStatus.Transferred;
                 transaction.IsAddToWallet = false;
                 transaction.Description = "Giao dịch từ đơn rút tiền ví điện tử";
-                transaction.Balance = userEWallet.WalletBalance;
+                //transaction.Balance = userEWallet.WalletBalance;
+                transaction.Balance -= withdrawalForm.Amount;
                 transaction.Type = TransactionType.Withdraw;
                 transaction.PaidDate = DateTimeHelper.SystemTimeNow;
                 _unitOfWork.GetRepository<Transaction>().Update(transaction);

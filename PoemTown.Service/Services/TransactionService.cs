@@ -212,7 +212,7 @@ public class TransactionService : ITransactionService
         if (transaction is { Type: TransactionType.ReceiveDonation, ReceiveUserEWallet: not null })
         {
             transactionResponse.User = _mapper.Map<GetUserInTransactionResponse>(transaction.ReceiveUserEWallet.User);
-            transactionResponse.User =
+            transactionResponse.ReceiveUser =
                 _mapper.Map<GetUserInTransactionResponse>(transaction.UserEWallet.User);
 
         }

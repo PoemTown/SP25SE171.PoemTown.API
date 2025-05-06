@@ -208,6 +208,14 @@ public class TransactionService : ITransactionService
             transactionResponse.ReceiveUser =
                 _mapper.Map<GetUserInTransactionResponse>(transaction.ReceiveUserEWallet.User);
         }
+
+        if (transaction is { Type: TransactionType.ReceiveDonation, ReceiveUserEWallet: not null })
+        {
+            transactionResponse.User = _mapper.Map<GetUserInTransactionResponse>(transaction.ReceiveUserEWallet.User);
+            transactionResponse.User =
+                _mapper.Map<GetUserInTransactionResponse>(transaction.UserEWallet.User);
+
+        }
         
         // Handle WithdrawalForm.UserBankType explicitly
         if (transaction.WithdrawalForm != null && transaction.WithdrawalForm.UserBankType == null)

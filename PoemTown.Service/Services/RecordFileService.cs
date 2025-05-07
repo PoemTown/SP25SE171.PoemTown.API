@@ -89,6 +89,25 @@ namespace PoemTown.Service.Services
             {
                 SaleVersion? saleVersion = await _unitOfWork.GetRepository<SaleVersion>()
                     .FindAsync(s => s.IsInUse == true && s.PoemId == poemID);
+                var saleVersions = await _unitOfWork.GetRepository<SaleVersion>().AsQueryable().Where(s => s.IsInUse == true && s.PoemId == poemID).ToListAsync();
+                foreach(SaleVersion sale in saleVersions)
+                {
+                    var matchedUsageRight = await _unitOfWork
+                                    .GetRepository<UsageRight>()
+                                    .AsQueryable()
+                                    .FirstOrDefaultAsync(ur =>
+                                        ur.UserId == userId &&
+                                        ur.SaleVersionId == sale.Id &&
+                                        ur.DeletedTime == null &&
+                                        ur.Status == UsageRightStatus.StillValid);
+                    if (matchedUsageRight != null)
+                    {
+                        saleVersion = sale;
+                        break;
+                    }
+                }
+
+
                 // check sale version to create record (free) 
                 if (saleVersion.Status == SaleVersionStatus.Free)
                 {

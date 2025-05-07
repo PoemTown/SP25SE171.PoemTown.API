@@ -153,4 +153,39 @@ public class TransactionsController : BaseController
         
         return new BaseResponse<GetTransactionDetailResponse>(StatusCodes.Status200OK, "Get transaction detail successfully", transactionDetail);
     }
+    
+    /// <summary>
+    /// Người dùng lấy chi tiết giao dịch, yêu cầu đăng nhập
+    /// </summary>
+    /// <remarks>
+    /// TransactionType:
+    ///
+    /// - EWalletDeposit = 1,
+    /// - MasterTemplates = 2,
+    /// - RecordFiles = 3,
+    /// - Poems = 4,
+    /// - Withdraw = 5,
+    /// - Donate = 6,
+    /// - CommissionFee = 7,
+    /// - Refund = 8,
+    ///
+    /// status:
+    ///
+    /// - Pending = 1,
+    /// - Paid = 2,
+    /// - Cancelled = 3,
+    /// </remarks>
+    /// <param name="transactionId"></param>
+    /// <returns></returns>
+    [HttpGet]
+    [Route("v1/user/{transactionId}")]
+    [Authorize]
+    public async Task<BaseResponse<UserGetTransactionDetailResponse>> UserGetTransactionDetail(Guid transactionId)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+
+        var transactionDetail = await _transactionService.UserGetTransactionDetail(userId, transactionId);
+        
+        return new BaseResponse<UserGetTransactionDetailResponse>(StatusCodes.Status200OK, "Lấy chi tiết giao dịch thành công", transactionDetail);
+    }
 }

@@ -1,5 +1,8 @@
 ﻿using PoemTown.Repository.Enums.Transactions;
+using PoemTown.Service.BusinessModels.ResponseModels.DepositCommissionSettingResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.OrderResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PaymentGatewayResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.WithdrawalFormResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.TransactionResponses;
 
@@ -25,5 +28,6 @@ public class GetTransactionDetailResponse
     public GetUserInTransactionResponse User { get; set; }
     public GetUserInTransactionResponse? ReceiveUser { get; set; }
     public GetPaymentGatewayResponse? PaymentGateway { get; set; }
-
+    public GetOrderWithOrderDetailResponse? Order { get; set; }
+    public GetWithdrawalFormResponse? WithdrawalForm { get; set; }
 }

@@ -77,7 +77,7 @@ public class CheckPoemPlagiarismConsumer : IConsumer<CheckPoemPlagiarismEvent>
             // Get the list of existing poem IDs
             var existingPoemIds = await _unitOfWork.GetRepository<Poem>()
                 .AsQueryable()
-                .Where(p => p.Status == PoemStatus.Posted)
+                .Where(p => p.Status == PoemStatus.Posted && p.DeletedTime == null)
                 .Where(p => plagiarismFromPoems.Select(x => Guid.Parse(x.Id)).Contains(p.Id))
                 .Select(p => p.Id)
                 .ToListAsync();

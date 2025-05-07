@@ -763,7 +763,7 @@ public class PoemService : IPoemService
                     CommissionPercentage = 0,
                     DurationTime = 100,
                     IsInUse = true,
-                    Status = SaleVersionStatus.Free,
+                    Status = SaleVersionStatus.Default,
                     Price = 0,
                 };
                 await _unitOfWork.GetRepository<SaleVersion>().InsertAsync(saleVersion);
@@ -869,6 +869,11 @@ public class PoemService : IPoemService
 
         _unitOfWork.GetRepository<Poem>().Delete(poem);
         await _unitOfWork.SaveChangesAsync();
+        // Delete poem from QDrant
+        await _publishEndpoint.Publish(new DeletePoemPointInQDrantEvent()
+        {
+            PoemIds = [poemId],
+        });
     }
 
 
@@ -1933,7 +1938,11 @@ public class PoemService : IPoemService
     {
         return score > 0.75;
     }
-
+    public bool IsPoemDuplicated(double score)
+    {
+        return score > 0.9;
+    }
+    
     public IList<SearchPointsResult> GetListQDrantSearchPoint(QDrantResponse<SearchPointsResult> response, int top)
     {
         var poemPlagiarism = response.Results
@@ -1950,9 +1959,32 @@ public class PoemService : IPoemService
         {
             Id = p.Id,
             Score = p.Score
-        }).ToList();
+        }).Where(p => IsPoemPlagiarism(p.Score))
+            .ToList();
 
         return plagiarismFromResponses;
+    }
+    
+    public IList<SearchPointsResult> GetDuplicatedPoemFromQDrantSearchPoint(QDrantResponse<SearchPointsResult> response, int top)
+    {
+        var duplicatedPoem = response.Results
+            .OrderByDescending(p => p.Score)
+            .Take(top)
+            .Select(p => new
+            {
+                Id = p.Id,
+                Score = p.Score
+            }).ToList();
+
+        // Map to response
+        IList<SearchPointsResult> duplicatedFromResponses = duplicatedPoem.Select(p => new SearchPointsResult()
+            {
+                Id = p.Id,
+                Score = p.Score
+            }).Where(p => IsPoemDuplicated(p.Score))
+            .ToList();
+
+        return duplicatedFromResponses;
     }
 
     public async Task<PoemPlagiarismResponse> CheckPoemPlagiarism(Guid userId, CheckPoemPlagiarismRequest request)
@@ -1990,7 +2022,7 @@ public class PoemService : IPoemService
         foreach (var poem in qDrantSearchPoint)
         {
             var poemPlagiarismEntity =
-                await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == Guid.Parse(poem.Id));
+                await _unitOfWork.GetRepository<Poem>().FindAsync(p => p.Id == Guid.Parse(poem.Id) && p.DeletedTime == null);
 
             // If poem not found then continue to next
             if (poemPlagiarismEntity == null)
@@ -1998,6 +2030,11 @@ public class PoemService : IPoemService
                 continue;
             }
 
+            /*// If poem is not mark as plagiarism (score < 0.75) then continue 
+            if (!IsPoemPlagiarism(poem.Score))
+            {
+                continue;
+            }*/
             // Map to response
             plagiarismFromResponses.Add(_mapper.Map<PoemPlagiarismFromResponse>(poemPlagiarismEntity));
 
@@ -2017,6 +2054,49 @@ public class PoemService : IPoemService
         };
     }
 
+    public async Task<GetPoemDuplicatedResponse> CheckDuplicatedPoem(Guid userId, CheckDuplicatedPoemRequest request)
+    {
+        // Search similar poem embedding point
+        var response = await _qDrantService.SearchSimilarDuplicatedPoemEmbeddingPoint(userId, request.PoemContent);
+        
+        // Get source plagiarism
+        IList<PoemDuplicatedFromResponse> duplicatedFromResponses = new List<PoemDuplicatedFromResponse>();
+        
+        var qDrantSearchPoint = GetDuplicatedPoemFromQDrantSearchPoint(response, 1);
+
+        var averageScore = response.Results.Select(p => p.Score).Average();
+        
+        foreach (var poem in qDrantSearchPoint)
+        {
+            var duplicatedPoemEntity =
+                await _unitOfWork.GetRepository<Poem>()
+                    .FindAsync(p => p.Id == Guid.Parse(poem.Id) && p.DeletedTime == null);
+
+            // If poem not found then continue to next
+            if (duplicatedPoemEntity == null)
+            {
+                continue;
+            }
+            
+            // Map to response
+            duplicatedFromResponses.Add(_mapper.Map<PoemDuplicatedFromResponse>(duplicatedPoemEntity));
+
+            // Assign author to poem by adding into the last element of the list
+            duplicatedFromResponses.Last().User =
+                _mapper.Map<GetBasicUserInformationResponse>(duplicatedPoemEntity.User);
+
+            // Map source
+            duplicatedFromResponses.Last().Score = poem.Score;
+        }
+
+        return new GetPoemDuplicatedResponse()
+        {
+            Score = averageScore,
+            IsDuplicated = IsPoemDuplicated(averageScore),
+            DuplicatedFrom = IsPoemDuplicated(averageScore) ? duplicatedFromResponses : null,
+        };
+    }
+    
     public async Task<PaginationResponse<GetUserPoemResponse>>
         GetUserPoems(Guid? userId, string userName,
             RequestOptionsBase<GetPoemsFilterOption, GetPoemsSortOption> request)

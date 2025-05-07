@@ -173,6 +173,15 @@ public class WithdrawalFormService : IWithdrawalFormService
             throw new CoreException(StatusCodes.Status400BadRequest, "User e-wallet not found");
         }
 
+        Transaction? transaction = await _unitOfWork.GetRepository<Transaction>()
+            .FindAsync(p => p.WithdrawalFormId == withdrawalForm.Id);
+
+        // Check if transaction exists
+        if (transaction == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy giao dịch");
+        }
+
         switch (request.Status)
         {
             // Refunds to user e-wallet if withdrawal form is rejected
@@ -181,7 +190,7 @@ public class WithdrawalFormService : IWithdrawalFormService
                 userEWallet.WalletBalance += withdrawalForm.Amount;
                 _unitOfWork.GetRepository<UserEWallet>().Update(userEWallet);
 
-                // Create transaction
+                /*// Create transaction
                 var transaction = new Transaction()
                 {
                     UserEWalletId = userEWallet.Id,
@@ -193,13 +202,23 @@ public class WithdrawalFormService : IWithdrawalFormService
                     IsAddToWallet = true,
                     Balance = userEWallet.WalletBalance,
                 };
-                await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
+                await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);*/
+
+                // Update transaction
+                transaction.Status = TransactionStatus.Refunded;
+                transaction.IsAddToWallet = true;
+                transaction.Description = "Hoàn tiền từ đơn rút tiền từ ví điện tử";
+                //transaction.Balance = userEWallet.WalletBalance;
+                transaction.Balance += withdrawalForm.Amount;
+                transaction.Type = TransactionType.Refund;
+                transaction.PaidDate = DateTimeHelper.SystemTimeNow;
+                _unitOfWork.GetRepository<Transaction>().Update(transaction);
                 break;
             }
             case WithdrawalFormStatus.Accepted:
             {
                 // Create transaction
-                var transaction = new Transaction()
+                /*var transaction = new Transaction()
                 {
                     UserEWalletId = userEWallet.Id,
                     Amount = withdrawalForm.Amount,
@@ -210,7 +229,16 @@ public class WithdrawalFormService : IWithdrawalFormService
                     IsAddToWallet = false,
                     Balance = userEWallet.WalletBalance,
                 };
-                await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);
+                await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);*/
+                // Update transaction
+                transaction.Status = TransactionStatus.Transferred;
+                transaction.IsAddToWallet = false;
+                transaction.Description = "Giao dịch từ đơn rút tiền ví điện tử";
+                //transaction.Balance = userEWallet.WalletBalance;
+                transaction.Balance = transaction.Balance;
+                transaction.Type = TransactionType.Withdraw;
+                transaction.PaidDate = DateTimeHelper.SystemTimeNow;
+                _unitOfWork.GetRepository<Transaction>().Update(transaction);
                 break;
             }
         }

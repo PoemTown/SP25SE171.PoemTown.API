@@ -108,6 +108,18 @@ public class CommentsController : BaseController
         return Ok(basePaginationResponse);
     }
     
-    
+    /// <summary>
+    /// Xóa một bình luận (vĩnh viễn), yêu cầu đăng nhập dung quyền ADMIN hoặc MODERATOR
+    /// </summary>
+    /// <param name="commentId"></param>
+    /// <returns></returns>
+    [HttpDelete]
+    [Route("v1/admin/{commentId}")]
+    [Authorize(Roles = "ADMIN, MODERATOR")]
+    public async Task<ActionResult<BaseResponse>> DeleteCommentPermanentByAdminAndModerator(Guid commentId)
+    {
+        await _commentService.DeleteCommentPermanentByAdminAndModerator(commentId);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Xóa bình luận thành công!"));
+    }
     
 }

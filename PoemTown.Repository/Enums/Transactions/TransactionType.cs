@@ -11,4 +11,5 @@ public enum TransactionType
     CommissionFee = 7,
     Refund = 8,
     DepositCommissionFee = 9,
+    ReceiveDonation = 10,
 }

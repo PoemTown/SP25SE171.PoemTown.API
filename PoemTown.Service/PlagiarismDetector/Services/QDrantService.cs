@@ -129,6 +129,55 @@ public class QDrantService : IQDrantService
 
         return responseObject;
     }
+    
+    public async Task<QDrantResponse<SearchPointsResult>?> SearchSimilarDuplicatedPoemEmbeddingPoint(Guid userId, string poemText)
+    {
+        var client = _httpClientFactory.CreateClient();
+        
+        // Generate embedding from OpenAI
+        double[] embedding = await _embeddingService.GenerateEmbeddingFromOpenAI(poemText);
+        
+        // Create request body
+        var requestBody = new
+        {
+            collection_name = CollectionName,
+            vector = embedding,
+            limit = 1,
+            filter = new
+            {
+                must = new[]
+                {
+                    new
+                    {
+                        key = "poetId",
+                        match = new
+                        {
+                            value = userId.ToString()
+                        }
+                    }
+                }
+            }
+        };
+        
+        // Add API key to request header
+        client.DefaultRequestHeaders.Add("api-key", $"{_qDrantSettings.ApiKey}");
+        
+        // Send request to QDrant
+        var response = await client.PostAsJsonAsync($"{GetQDrantUri}/collections/{CollectionName}/points/search", requestBody);
+        
+        var responseContent = await response.Content.ReadAsStringAsync();
+        
+        // Check if response is not successful and throw exception
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorResponse = JsonSerializer.Deserialize<QdrantErrorResponse>(responseContent);
+            throw new Exception($"QDrant error: {errorResponse!.Message}");
+        }
+        
+        var responseObject = JsonSerializer.Deserialize<QDrantResponse<SearchPointsResult>>(responseContent);
+
+        return responseObject;
+    }
 
     public async Task DeletePoemEmbeddingPoint(IList<Guid> poemIds)
     {

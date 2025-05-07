@@ -15,4 +15,6 @@ public class CreateTransactionEvent
     public string? AnnouncementContent { get; set; }
     public bool? IsAddToWallet { get; set; } = false;
     public bool? IsUpdateBalance { get; set; } = true;
+    public TransactionStatus? Status { get; set; } = TransactionStatus.Paid;
+    public Guid? WithdrawalFormId { get; set; }
 }

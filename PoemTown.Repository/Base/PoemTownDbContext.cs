@@ -58,6 +58,8 @@ public class PoemTownDbContext : IdentityDbContext<User, Role, Guid, UserClaim, 
     public virtual DbSet<DepositCommissionSetting> DepositCommissionSettings => Set<DepositCommissionSetting>();
     public virtual DbSet<WithdrawalComplaint> WithdrawalComplaints => Set<WithdrawalComplaint>();
     public virtual DbSet<WithdrawalComplaintImage> WithdrawalComplaintImages => Set<WithdrawalComplaintImage>();
+    public virtual DbSet<BankType> BankTypes => Set<BankType>();
+    public virtual DbSet<UserBankType> UserBankTypes => Set<UserBankType>();
     /*
     public virtual DbSet<UserTemplate> UserTemplates => Set<UserTemplate>();
     */

@@ -1,12 +1,13 @@
 ﻿using PoemTown.Repository.Enums.Poems;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemTypeResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
 
 namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 
 public class PoemPlagiarismResponse
 {
-    public double Score { get; set; }
+    public double? Score { get; set; }
     public bool IsPlagiarism { get; set; }
     
     public IList<PoemPlagiarismFromResponse>? PlagiarismFrom { get; set; }
@@ -19,7 +20,9 @@ public class PoemPlagiarismFromResponse
     public string Content { get; set; }
     public GetPoemTypeResponse Type { get; set; }
     public string Description { get; set; }
+    public bool? IsFamousPoet { get; set; } = false;
+    public GetPoetSampleResponse? PoetSample { get; set; }
     public string? PoemImage { get; set; }
     public double Score { get; set; }
-    public GetBasicUserInformationResponse User { get; set; }
+    public GetBasicUserInformationResponse? User { get; set; }
 }

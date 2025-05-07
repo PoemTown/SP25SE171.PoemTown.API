@@ -58,10 +58,11 @@ public class CreateTransactionConsumer : IConsumer<CreateTransactionEvent>
             DiscountAmount = message.DiscountAmount,
             UserEWallet = userEWallet,
             Balance = isUpdateBalance ? userEWallet.WalletBalance : null,
-            Status = TransactionStatus.Paid,
+            Status = message.Status ?? TransactionStatus.Paid,
             PaidDate = DateTimeHelper.SystemTimeNow,
             TransactionCode = message.TransactionCode,
             IsAddToWallet = message.IsAddToWallet,
+            WithdrawalFormId = message.WithdrawalFormId,
         };
         
         await _unitOfWork.GetRepository<Transaction>().InsertAsync(transaction);

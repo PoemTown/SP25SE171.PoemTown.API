@@ -544,10 +544,11 @@ public class StatisticService : IStatisticService
 
         // Get actual data from database
         var actualData = await masterTemplateOrderQuery
-            .GroupBy(p => p.MasterTemplate!.TemplateName)
+            .GroupBy(p => new {p.MasterTemplate!.TemplateName, p.MasterTemplate.TagName})
             .Select(res => new GetMasterTemplateOrderSampleResponse()
             {
-                TemplateName = res.Key ?? "",
+                TemplateName = res.Key.TemplateName ?? "",
+                TagName = res.Key.TagName ?? "",
                 TotalOrders = res.Count()
             })
             .ToListAsync();
@@ -704,9 +705,14 @@ public class StatisticService : IStatisticService
             TransactionType.Withdraw
         };
 
+        var withdrawTransactionQuery = _unitOfWork.GetRepository<Transaction>()
+            .AsQueryable();
         // Filter by condition: transaction type must be one of transactionIncomeType, CreatedTime is less than or equal to current date (UTC + 7)
         transactionQuery = transactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow
                                                        && p.Status == TransactionStatus.Paid);
+        
+        withdrawTransactionQuery = withdrawTransactionQuery.Where(p => p.CreatedTime <= DateTimeHelper.SystemTimeNow
+                                                                       && p.Status == TransactionStatus.Transferred);
 
         // Admin EWallet
         var adminEWallet = await _unitOfWork.GetRepository<User>()
@@ -737,7 +743,7 @@ public class StatisticService : IStatisticService
         );
 
         // WITHDRAW transactions
-        var withdrawQuery = transactionQuery.Where(p => withdrawTypes.Contains(p.Type));
+        var withdrawQuery = withdrawTransactionQuery.Where(p => withdrawTypes.Contains(p.Type));
 
         var withdrawSamples = await GetSampleStatisticResponse(
             withdrawQuery,

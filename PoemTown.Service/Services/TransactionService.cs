@@ -74,7 +74,32 @@ public class TransactionService : ITransactionService
     public async Task<PaginationResponse<GetTransactionResponse>>
         GetTransactions(RequestOptionsBase<GetTransactionFilterOption, GetTransactionSortOption> request)
     {
-        var transactionQuery = _unitOfWork.GetRepository<Transaction>().AsQueryable();
+        var adminRole = await _unitOfWork.GetRepository<Role>().FindAsync(p => p.Name == "ADMIN");
+        
+        // Check if admin role is null
+        if (adminRole == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Admin role not found");
+        }
+        
+        var adminUser = await _unitOfWork.GetRepository<User>().FindAsync(p => p.UserRoles.Any(p => p.RoleId == adminRole.Id));
+        
+        // Check if admin user is null
+        if (adminUser == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Admin user not found");
+        }
+        
+        // Check if admin user has e-wallet
+        var adminUserEWallet = await _unitOfWork.GetRepository<UserEWallet>().FindAsync(p => p.UserId == adminUser.Id);
+        if (adminUserEWallet == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Admin user e-wallet not found");
+        }
+        
+        var transactionQuery = _unitOfWork.GetRepository<Transaction>()
+            .AsQueryable()
+            .Where(p => p.UserEWalletId != adminUserEWallet.Id);
 
         // Filter
         if (request.FilterOptions != null)
@@ -151,6 +176,57 @@ public class TransactionService : ITransactionService
         {
             transactionResponse.ReceiveUser =
                 _mapper.Map<GetUserInTransactionResponse>(transaction.ReceiveUserEWallet.User);
+        }
+        if (transaction is { Type: TransactionType.ReceiveDonation, ReceiveUserEWallet: not null })
+        {
+            transactionResponse.User = _mapper.Map<GetUserInTransactionResponse>(transaction.ReceiveUserEWallet.User);
+            transactionResponse.ReceiveUser =
+                _mapper.Map<GetUserInTransactionResponse>(transaction.UserEWallet.User);
+
+        }
+        // Handle WithdrawalForm.UserBankType explicitly
+        if (transaction.WithdrawalForm != null && transaction.WithdrawalForm.UserBankType == null)
+        {
+            transactionResponse.WithdrawalForm!.UserBankType = null;
+        }
+
+        return transactionResponse;
+    }
+    
+    public async Task<UserGetTransactionDetailResponse> UserGetTransactionDetail(Guid userId, Guid transactionId)
+    {
+        var transaction = await _unitOfWork.GetRepository<Transaction>().FindAsync(p => p.Id == transactionId && p.UserEWallet!.UserId == userId);
+
+        // Check if transaction is null
+        if (transaction == null)
+        {
+            throw new CoreException(StatusCodes.Status400BadRequest, "Không tìm thấy giao dịch");
+        }
+
+        var transactionResponse = _mapper.Map<UserGetTransactionDetailResponse>(transaction);
+
+        // Map user in transaction
+        transactionResponse.User = _mapper.Map<GetUserInTransactionResponse>(transaction.UserEWallet!.User);
+
+        // Map receive user in transaction when transaction type is donate
+        if (transaction is { Type: TransactionType.Donate, ReceiveUserEWallet: not null })
+        {
+            transactionResponse.ReceiveUser =
+                _mapper.Map<GetUserInTransactionResponse>(transaction.ReceiveUserEWallet.User);
+        }
+
+        if (transaction is { Type: TransactionType.ReceiveDonation, ReceiveUserEWallet: not null })
+        {
+            transactionResponse.User = _mapper.Map<GetUserInTransactionResponse>(transaction.ReceiveUserEWallet.User);
+            transactionResponse.ReceiveUser =
+                _mapper.Map<GetUserInTransactionResponse>(transaction.UserEWallet.User);
+
+        }
+        
+        // Handle WithdrawalForm.UserBankType explicitly
+        if (transaction.WithdrawalForm != null && transaction.WithdrawalForm.UserBankType == null)
+        {
+            transactionResponse.WithdrawalForm!.UserBankType = null;
         }
 
         return transactionResponse;

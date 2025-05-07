@@ -1096,4 +1096,19 @@ public class PoemsController : BaseController
         await _poemService.AdminDeletePoem(poemId);
         return Ok(new BaseResponse(StatusCodes.Status200OK, "Delete poem successfully"));
     }
+    
+    /// <summary>
+    /// Kiểm tra bài thơ có bị trùng lặp không, yêu cầu đăng nhập
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    [HttpPost]
+    [Route("v1/duplicate")]
+    [Authorize]
+    public async Task<ActionResult<BaseResponse>> CheckDuplicatedPoem([FromBody] CheckDuplicatedPoemRequest request)
+    {
+        Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
+        await _poemService.CheckDuplicatedPoem(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Duplicate poem successfully"));
+    }
 }

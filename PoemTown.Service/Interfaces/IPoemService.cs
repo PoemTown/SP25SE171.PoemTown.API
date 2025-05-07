@@ -71,4 +71,5 @@ public interface IPoemService
     Task UpdatePoetSampleSaleVersionCommissionPercentage(Guid poemId, int commissionPercentage);
     Task<IList<GetPoemSampleResponse>> GetPoemSampleFromPoetSample();
     Task AdminDeletePoem(Guid poemId);
+    Task<GetPoemDuplicatedResponse> CheckDuplicatedPoem(Guid userId, CheckDuplicatedPoemRequest request);
 }

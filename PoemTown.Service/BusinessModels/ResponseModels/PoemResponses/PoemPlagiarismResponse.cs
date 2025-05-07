@@ -7,7 +7,7 @@ namespace PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
 
 public class PoemPlagiarismResponse
 {
-    public double Score { get; set; }
+    public double? Score { get; set; }
     public bool IsPlagiarism { get; set; }
     
     public IList<PoemPlagiarismFromResponse>? PlagiarismFrom { get; set; }

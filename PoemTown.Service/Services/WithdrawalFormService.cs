@@ -209,7 +209,7 @@ public class WithdrawalFormService : IWithdrawalFormService
                 transaction.IsAddToWallet = true;
                 transaction.Description = "Hoàn tiền từ đơn rút tiền từ ví điện tử";
                 //transaction.Balance = userEWallet.WalletBalance;
-                transaction.Balance = transaction.Balance;
+                transaction.Balance += withdrawalForm.Amount;
                 transaction.Type = TransactionType.Refund;
                 transaction.PaidDate = DateTimeHelper.SystemTimeNow;
                 _unitOfWork.GetRepository<Transaction>().Update(transaction);

@@ -414,6 +414,12 @@ public class PoemService : IPoemService
             {
                 poemDetail.IsFollowed = poem.User.FollowedUser!.Any(p => p.FollowUserId == userId);
             }
+            
+            // Check if user is able to buy this poem
+            poemDetail.IsAlreadyBought =
+                await _unitOfWork.GetRepository<UsageRight>()
+                    .AsQueryable()
+                    .AnyAsync(p => p.UserId == userId && p.SaleVersion!.PoemId == poem.Id && p.Status == UsageRightStatus.StillValid);
         }
 
         if (poem.RecordFiles != null && poem.RecordFiles.Count <= 0)

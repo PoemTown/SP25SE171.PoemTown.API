@@ -27,13 +27,15 @@ public class PoemMapping : Profile
         CreateMap<UpdatePoetSamplePoemRequest, Poem>();
         
         CreateMap<GetPoetSamplePoemResponse, Poem>().ReverseMap()
-            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true && sv.Status == SaleVersionStatus.Free)));
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true && sv.Status == SaleVersionStatus.Free)))
+            .ForMember(dest => dest.RecordFileCount, opt => opt.MapFrom(p => p.RecordFiles!.Count(r => r.DeletedTime == null)));
         
         CreateMap<GetPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
             .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
-            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)))
+            .ForMember(dest => dest.RecordFileCount, opt => opt.MapFrom(p => p.RecordFiles!.Count(r => r.DeletedTime == null)));
             /*.ForMember(dest => dest.User,
                 opt => opt.MapFrom(src =>
                     // Pick the User from the UserPoemRecordFiles that is the copyright holder.
@@ -45,32 +47,38 @@ public class PoemMapping : Profile
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
             //.ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
-            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)))
+            .ForMember(dest => dest.RecordFileCount, opt => opt.MapFrom(p => p.RecordFiles!.Count(r => r.DeletedTime == null)));
+
         
         CreateMap<GetPoemInCollectionResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
             .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
-            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)))
+            .ForMember(dest => dest.RecordFileCount, opt => opt.MapFrom(p => p.RecordFiles!.Count(r => r.DeletedTime == null)));
 
         CreateMap<GetPostedPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
             .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
-            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)))
+            .ForMember(dest => dest.RecordFileCount, opt => opt.MapFrom(p => p.RecordFiles!.Count(r => r.DeletedTime == null)));
 
         CreateMap<GetUserPoemResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
             .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
-            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true))); 
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)))
+            .ForMember(dest => dest.RecordFileCount, opt => opt.MapFrom(p => p.RecordFiles!.Count(r => r.DeletedTime == null)));
         
         // poem in target mark
         CreateMap<GetPoemInTargetMarkResponse, Poem>().ReverseMap()
             .ForMember(dest => dest.LikeCount, opt => opt.MapFrom(p => p.Likes!.Count))
             .ForMember(dest => dest.CommentCount, opt => opt.MapFrom(p => p.Comments!.Count))
             .ForMember(dest => dest.IsSellUsageRight, opt => opt.MapFrom(p => p.SaleVersions!.Any(sv => sv.Status == SaleVersionStatus.InSale)))
-            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
+            .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)))
+            .ForMember(dest => dest.RecordFileCount, opt => opt.MapFrom(p => p.RecordFiles!.Count(r => r.DeletedTime == null)));
 
 
         CreateMap<GetPoetSampleResponse, PoemPlagiarismFromResponse>().ReverseMap();

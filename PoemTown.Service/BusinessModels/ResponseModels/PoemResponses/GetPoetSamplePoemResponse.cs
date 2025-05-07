@@ -20,6 +20,7 @@ public class GetPoetSamplePoemResponse
     public bool? IsAbleToUploadRecordFile { get; set; } = false;
     public bool? IsFamousPoet { get; set; } = false;
     public bool IsSellUsageRight { get; set; }
+    public int? RecordFileCount { get; set; }
     public PoemStatus Status { get; set; }
     public DateTimeOffset CreatedTime { get; set; }
     public DateTimeOffset? DeletedTime { get; set; }

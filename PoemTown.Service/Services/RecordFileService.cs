@@ -89,7 +89,7 @@ namespace PoemTown.Service.Services
             {
                 SaleVersion? saleVersion = await _unitOfWork.GetRepository<SaleVersion>()
                     .FindAsync(s => s.IsInUse == true && s.PoemId == poemID);
-                var saleVersions = await _unitOfWork.GetRepository<SaleVersion>().AsQueryable().Where(s => s.IsInUse == true && s.PoemId == poemID).ToListAsync();
+                var saleVersions = await _unitOfWork.GetRepository<SaleVersion>().AsQueryable().Where(s.PoemId == poemID).ToListAsync();
                 foreach(SaleVersion sale in saleVersions)
                 {
                     var matchedUsageRight = await _unitOfWork

@@ -2003,6 +2003,11 @@ public class PoemService : IPoemService
                 continue;
             }
 
+            // If poem is not mark as plagiarism (score < 0.75) then continue 
+            if (!IsPoemPlagiarism(poem.Score))
+            {
+                continue;
+            }
             // Map to response
             plagiarismFromResponses.Add(_mapper.Map<PoemPlagiarismFromResponse>(poemPlagiarismEntity));
 

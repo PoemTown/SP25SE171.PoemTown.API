@@ -1108,7 +1108,7 @@ public class PoemsController : BaseController
     public async Task<ActionResult<BaseResponse>> CheckDuplicatedPoem([FromBody] CheckDuplicatedPoemRequest request)
     {
         Guid userId = Guid.Parse(User.Claims.FirstOrDefault(p => p.Type == "UserId")!.Value);
-        await _poemService.CheckDuplicatedPoem(userId, request);
-        return Ok(new BaseResponse(StatusCodes.Status200OK, "Duplicate poem successfully"));
+        var response = await _poemService.CheckDuplicatedPoem(userId, request);
+        return Ok(new BaseResponse(StatusCodes.Status200OK, "Duplicate poem successfully", response));
     }
 }

@@ -35,6 +35,7 @@ public class GetPoemDetailResponse
     public DateTimeOffset CreatedTime { get; set; }
     public DateTimeOffset? DeletedTime { get; set; }
     public bool? IsFollowed { get; set; } = false;
+    public bool? IsAlreadyBought { get; set; } = false;
     public GetCollectionInPoemResponse Collection { get; set; }
     public GetLikeResponse? Like { get; set; }
     public GetTargetMarkResponse? TargetMark { get; set; }

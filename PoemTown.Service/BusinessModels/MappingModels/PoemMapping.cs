@@ -7,6 +7,7 @@ using PoemTown.Service.BusinessModels.ResponseModels.CollectionResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.OrderResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemHistoryResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.PoemResponses;
+using PoemTown.Service.BusinessModels.ResponseModels.PoetSampleResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.RecordFileResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.ReportResponses;
 using PoemTown.Service.BusinessModels.ResponseModels.UserResponses;
@@ -72,6 +73,7 @@ public class PoemMapping : Profile
             .ForMember(dest => dest.SaleVersion, opt => opt.MapFrom(p => p.SaleVersions!.FirstOrDefault(sv => sv.IsInUse == true)));
 
 
+        CreateMap<GetPoetSampleResponse, PoemPlagiarismFromResponse>().ReverseMap();
         // poem in collection
         CreateMap<GetCollectionInPoemResponse, GetPoemResponse>();
         CreateMap<GetCollectionInPoemResponse, GetPoemDetailResponse>();

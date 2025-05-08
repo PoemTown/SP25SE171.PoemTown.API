@@ -178,6 +178,7 @@ namespace PoemTown.Service.Services
                 CreatedBy = "System",
                 LastUpdatedBy = "System",
                 Salt = salt,
+                Avatar = "https://s3-hcm5-r1.longvan.net/poemtown.staging/profiles/EDFD9FD8-7CBB-4A8F-ECCE-08DD848EF9C5/z6581849614108_25dce713f6588cc407c74bd9ba105289-1746709046.jpg",
                 PasswordHash = hashedPassword,
                 EmailOtp = emailOtp,
                 EmailOtpExpiration = emailOtpExpiration,
